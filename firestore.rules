@@ -1,0 +1,123 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global Helpers
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // ─── Briefs Collection ───
+    function isValidBrief(data) {
+      return data.id is string && data.id.size() <= 128
+        && data.title is string && data.title.size() <= 500
+        && data.brand is string && data.brand.size() <= 100
+        && data.status is string && data.status.size() <= 50;
+    }
+
+    match /briefs/{briefId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(briefId) && isValidBrief(incoming());
+      allow update: if isSignedIn() && isValidId(briefId) && isValidBrief(incoming());
+      allow delete: if isSignedIn() && isValidId(briefId);
+    }
+
+    // ─── Reports Collection ───
+    function isValidReport(data) {
+      return data.id is string && data.id.size() <= 128
+        && data.title is string && data.title.size() <= 500
+        && data.type is string && data.type.size() <= 50
+        && data.status is string && data.status.size() <= 50;
+    }
+
+    match /reports/{reportId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(reportId) && isValidReport(incoming());
+      allow update: if isSignedIn() && isValidId(reportId) && isValidReport(incoming());
+      allow delete: if isSignedIn() && isValidId(reportId);
+    }
+
+    // ─── Tickets Collection ───
+    function isValidTicket(data) {
+      return data.id is string && data.id.size() <= 128
+        && data.title is string && data.title.size() <= 300
+        && data.status is string && data.status.size() <= 50;
+    }
+
+    match /tickets/{ticketId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(ticketId) && isValidTicket(incoming());
+      allow update: if isSignedIn() && isValidId(ticketId) && isValidTicket(incoming());
+      allow delete: if isSignedIn() && isValidId(ticketId);
+    }
+
+    // ─── Calendar Posts Collection ───
+    function isValidCalendarPost(data) {
+      return data.id != null
+        && data.canal is string && data.canal.size() <= 50
+        && data.status is string && data.status.size() <= 50;
+    }
+
+    match /calendarPosts/{postId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(postId) && isValidCalendarPost(incoming());
+      allow update: if isSignedIn() && isValidId(postId) && isValidCalendarPost(incoming());
+      allow delete: if isSignedIn() && isValidId(postId);
+    }
+
+    // ─── Publications Pipeline ───
+    function isValidPublication(data) {
+      return data.id != null
+        && data.title is string && data.title.size() <= 500
+        && data.statut is string && data.statut.size() <= 50;
+    }
+
+    match /publications/{pubId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(pubId) && isValidPublication(incoming());
+      allow update: if isSignedIn() && isValidId(pubId) && isValidPublication(incoming());
+      allow delete: if isSignedIn() && isValidId(pubId);
+    }
+
+    // ─── User Profiles ───
+    function isValidUserProfile(data) {
+      return data.uid is string && data.uid.size() <= 128
+        && data.email is string && data.email.size() <= 200
+        && data.role is string && (data.role == 'agence' || data.role == 'client');
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && (isOwner(userId) || request.auth.uid == incoming().uid) && isValidUserProfile(incoming());
+      allow delete: if isSignedIn() && isOwner(userId);
+    }
+
+    // ─── Notifications ───
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(notificationId);
+      allow update, delete: if isSignedIn() && isValidId(notificationId);
+    }
+  }
+}

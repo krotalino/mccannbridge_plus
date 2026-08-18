@@ -1,0 +1,37 @@
+# ==========================================
+# CONFIGURATION APACHE - MCCANN BRIDGE (SPA)
+# ==========================================
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  
+  # Si hébergé à la racine du domaine: '/'
+  # Si hébergé dans un sous-dossier (ex: /app/), remplacer par '/app/'
+  RewriteBase /
+
+  # Ne pas intercepter l'accès direct aux fichiers et dossiers réels
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  
+  # Rediriger toutes les routes SPA vers index.html
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# Optimisation du cache pour les assets générés par Vite
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/jpg "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/gif "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType text/css "access plus 1 month"
+  ExpiresByType application/javascript "access plus 1 month"
+</IfModule>
+
+# En-têtes de sécurité de base
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-Frame-Options "SAMEORIGIN"
+  Header set X-XSS-Protection "1; mode=block"
+</IfModule>

@@ -1,0 +1,174 @@
+{
+  "entities": {
+    "Brief": {
+      "title": "Brief",
+      "description": "Briefs de campagne et demandes créatives entre Orange Cameroun et McCann",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Identifiant unique du brief (ex: BRF-2026-001)" },
+        "title": { "type": "string", "description": "Titre du brief ou de la campagne", "maxLength": 300 },
+        "brand": { "type": "string", "description": "Entité ou BU Orange (ex: Orange TELCO, Orange Money)" },
+        "type": { "type": "string", "description": "Type de brief (Campagne 360, Social Media, etc.)" },
+        "status": { "type": "string", "description": "Statut du workflow du brief" },
+        "subStatus": { "type": "string", "description": "Sous-statut détaillé" },
+        "priority": { "type": "string", "description": "Niveau de priorité (urgente, haute, moyenne, basse)" },
+        "progress": { "type": "number", "description": "Pourcentage d'avancement de 0 à 100" },
+        "requester": { "type": "object", "description": "Demandeur (Client ou Agence)" },
+        "assignee": { "type": "object", "description": "Responsable ou Traffic Manager assigné" },
+        "dueDate": { "type": "string", "description": "Date d'échéance ou de livraison cible" },
+        "budget": { "type": "string", "description": "Budget alloué au projet" },
+        "objectives": { "type": "string", "description": "Objectifs de communication et KPI attendus" },
+        "milestones": { "type": "array", "description": "Jalons et étapes clés du projet" },
+        "comments": { "type": "array", "description": "Historique des commentaires et échanges" },
+        "assets": { "type": "array", "description": "Documents et livrables attachés" },
+        "createdAt": { "type": "string", "description": "Date de création ISO" },
+        "updatedAt": { "type": "string", "description": "Date de dernière modification ISO" }
+      },
+      "required": ["id", "title", "brand", "status"]
+    },
+    "Report": {
+      "title": "Report",
+      "description": "Rapports de performance, bilans de campagne et insights stratégiques",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Référence unique du rapport (ex: REP-2026-001)" },
+        "title": { "type": "string", "description": "Titre du rapport", "maxLength": 300 },
+        "brands": { "type": "array", "description": "Marques couvertes par le rapport" },
+        "type": { "type": "string", "description": "Typologie du rapport (hebdomadaire, mensuel, etc.)" },
+        "status": { "type": "string", "description": "Statut dans le workflow de reporting" },
+        "priority": { "type": "string", "description": "Priorité de la demande de rapport" },
+        "requester": { "type": "object", "description": "Demandeur du rapport" },
+        "assignee": { "type": "object", "description": "Analyste / Data Planner assigné" },
+        "dueDate": { "type": "string", "description": "Date limite de remise" },
+        "deliveredDate": { "type": "string", "description": "Date effective de livraison" },
+        "version": { "type": "string", "description": "Numéro de version du rapport" },
+        "briefCompleteness": { "type": "number", "description": "Indice de complétude du brief de reporting" },
+        "context": { "type": "object", "description": "Période, canaux et questions prioritaires" },
+        "data": { "type": "object", "description": "Données quantitatives, prises de parole et KPI" },
+        "auditLog": { "type": "array", "description": "Journal d'audit horodaté des actions et validations" },
+        "comments": { "type": "array", "description": "Commentaires et échanges de révision" },
+        "versions": { "type": "array", "description": "Historique des versions archivées" },
+        "createdAt": { "type": "string", "description": "Date de création ISO" },
+        "updatedAt": { "type": "string", "description": "Date de mise à jour ISO" }
+      },
+      "required": ["id", "title", "type", "status"]
+    },
+    "Ticket": {
+      "title": "Ticket",
+      "description": "Tâches journalières et tickets d'exécution opérationnelle",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Identifiant du ticket (ex: TCK-101)" },
+        "title": { "type": "string", "description": "Intitulé du ticket", "maxLength": 200 },
+        "brand": { "type": "string", "description": "Business Unit concernée" },
+        "type": { "type": "string", "description": "Catégorie de tâche (Création, CM, Média, etc.)" },
+        "status": { "type": "string", "description": "Statut du ticket (backlog, encours, validation, livre)" },
+        "priority": { "type": "string", "description": "Priorité (haute, moyenne, basse)" },
+        "assignee": { "type": "string", "description": "Identifiant du membre assigné" },
+        "dueDate": { "type": "string", "description": "Date d'échéance" },
+        "progress": { "type": "number", "description": "Progression en pourcentage" },
+        "createdAt": { "type": "string", "description": "Date de création" }
+      },
+      "required": ["id", "title", "status"]
+    },
+    "CalendarPost": {
+      "title": "CalendarPost",
+      "description": "Publications planifiées dans le calendrier éditorial",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Identifiant du post de calendrier" },
+        "client": { "type": "string", "description": "Client ou BU Orange" },
+        "canal": { "type": "string", "description": "Réseau social (Facebook, Instagram, TikTok, LinkedIn, X)" },
+        "type": { "type": "string", "description": "Format éditorial (Feed, Carrousel, Réels et Story)" },
+        "format": { "type": "string", "description": "Orientation visuelle (Carré, Paysage, Vertical)" },
+        "time": { "type": "string", "description": "Heure cible de publication" },
+        "status": { "type": "string", "description": "Statut (PENDING, SCHEDULED, PUBLISHED)" },
+        "title": { "type": "string", "description": "Titre ou sujet de la publication", "maxLength": 300 },
+        "desc": { "type": "string", "description": "Texte ou copywriting du post" },
+        "day": { "type": "number", "description": "Jour du mois" },
+        "image": { "type": "string", "description": "URL ou aperçu de l'asset visuel" }
+      },
+      "required": ["id", "canal", "title", "status"]
+    },
+    "Publication": {
+      "title": "Publication",
+      "description": "Flux de soumission, validation et publication de contenus",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Identifiant de la publication" },
+        "title": { "type": "string", "description": "Titre du contenu", "maxLength": 300 },
+        "plateforme": { "type": "string", "description": "Plateforme sociale ciblée" },
+        "format": { "type": "string", "description": "Format créatif" },
+        "description": { "type": "string", "description": "Texte d'accompagnement ou brief copy" },
+        "dateTarget": { "type": "string", "description": "Date cible" },
+        "heureTarget": { "type": "string", "description": "Heure cible" },
+        "statut": { "type": "string", "description": "Statut de validation" },
+        "action": { "type": "string", "description": "Prochaine action requise" },
+        "createdAt": { "type": "string", "description": "Date de création" },
+        "submittedAt": { "type": "string", "description": "Date de soumission" },
+        "validatedAt": { "type": "string", "description": "Date de validation" },
+        "scheduledAt": { "type": "string", "description": "Date de programmation" },
+        "publishedAt": { "type": "string", "description": "Date effective de diffusion" }
+      },
+      "required": ["id", "title", "plateforme", "statut"]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Profil utilisateur avec rôle agence ou client",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "UID Firebase Auth de l'utilisateur" },
+        "email": { "type": "string", "description": "Adresse email professionnelle" },
+        "name": { "type": "string", "description": "Nom complet de l'utilisateur" },
+        "role": { "type": "string", "description": "Rôle (agence ou client)" },
+        "poste": { "type": "string", "description": "Titre du poste ou fonction" },
+        "photoURL": { "type": "string", "description": "Avatar de l'utilisateur" },
+        "updatedAt": { "type": "string", "description": "Horodatage de dernière connexion" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "Notification d'activité ou d'alerte opérationnelle",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Identifiant de la notification" },
+        "text": { "type": "string", "description": "Message de notification" },
+        "type": { "type": "string", "description": "Type (info, success, warning, error)" },
+        "time": { "type": "string", "description": "Heure d'affichage" },
+        "createdAt": { "type": "string", "description": "Timestamp ISO" }
+      },
+      "required": ["id", "text"]
+    }
+  },
+  "firestore": {
+    "/briefs/{briefId}": {
+      "schema": "Brief",
+      "description": "Collection des briefs de campagnes créatives et 360"
+    },
+    "/reports/{reportId}": {
+      "schema": "Report",
+      "description": "Collection des rapports et analyses de performance"
+    },
+    "/tickets/{ticketId}": {
+      "schema": "Ticket",
+      "description": "Collection des tickets et tâches journalières"
+    },
+    "/calendarPosts/{postId}": {
+      "schema": "CalendarPost",
+      "description": "Collection des publications du calendrier éditorial"
+    },
+    "/publications/{pubId}": {
+      "schema": "Publication",
+      "description": "Collection du pipeline de validation des publications"
+    },
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Collection des profils utilisateurs et rôles applicatifs"
+    },
+    "/notifications/{notificationId}": {
+      "schema": "Notification",
+      "description": "Collection des notifications du flux d'activité"
+    }
+  }
+}

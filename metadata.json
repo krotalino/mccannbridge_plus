@@ -1,0 +1,6 @@
+{
+  "name": "BRIDGE — McCann × Orange Cameroun",
+  "description": "Plateforme SaaS de collaboration digitale McCann × Orange Cameroun",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

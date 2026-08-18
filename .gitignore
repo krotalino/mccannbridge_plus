@@ -1,0 +1,37 @@
+# Dependances
+node_modules/
+.pnpm-store/
+.yarn/
+
+# Fichiers de Build
+dist/
+dist-ssr/
+build/
+*.local
+
+# Variables d'Environnement & Secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+api/config.php
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editeurs et OS
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
