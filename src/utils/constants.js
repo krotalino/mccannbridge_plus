@@ -16,9 +16,10 @@ export const COLORS = {
 };
 
 export const AGENCE_SECTIONS = [
-
+  { id: 'assistant-ia', label: 'Assistant IA', icon: '✨', path: '/assistant-ia' },
+  { id: 'documents', label: 'Documents & Collab', icon: '📁', path: '/documents' },
+  { id: 'prompts', label: 'Prompt Library', icon: '💡', path: '/prompts' },
   { id: 'briefs', label: 'Briefs & Progress', icon: '📋', path: '/briefs' },
-
   { id: 'traffic-ia', label: 'Traffic IA', icon: '🤖', path: '/traffic' },
   { id: 'calendar', label: 'Community Managers', icon: '👩‍💻', path: '/calendar' },
   { id: 'validation', label: 'Validation Client', icon: '✅', path: '/validation' },
@@ -26,21 +27,22 @@ export const AGENCE_SECTIONS = [
   { id: 'reports', label: 'Reporting & Insights', icon: '📈', path: '/reports' },
   { id: 'dashboard', label: 'Dashboard Analytics', icon: '📊', path: '/dashboard' },
   { id: 'finance', label: 'Suivi Financier', icon: '💰', path: '/finance' },
-  { id: 'documents', label: 'Documents & Collab', icon: '📁', path: '/documents' },
   { id: 'growth', label: 'Growth Hacking', icon: '🚀', path: '/growth' },
+  { id: 'admin-ia', label: 'Admin IA & RAG', icon: '⚙️', path: '/admin-ia' },
   { id: 'tasks', label: 'Tâches transverses', icon: '✓', path: '/tasks' },
-  { id: 'users', label: 'Utilisateurs', icon: '👥', path: '/users' },
+  { id: 'users', label: 'Utilisateurs & Droits', icon: '👥', path: '/users' },
 ];
 
 export const CLIENT_SECTIONS = [
+  { id: 'assistant-ia', label: 'Assistant IA', icon: '✨', path: '/assistant-ia' },
+  { id: 'documents', label: 'Documents & Ressources', icon: '📁', path: '/documents' },
+  { id: 'prompts', label: 'Prompt Library', icon: '💡', path: '/prompts' },
   { id: 'briefs', label: 'Briefs & Demandes', icon: '📋', path: '/briefs' },
-
   { id: 'calendar', label: 'Community Managers', icon: '👩‍💻', path: '/calendar' },
   { id: 'validation', label: 'Validation', icon: '✅', path: '/validation' },
   { id: 'influence', label: 'Influence', icon: '⭐', path: '/influence' },
   { id: 'reports', label: 'Reporting & Insights', icon: '📈', path: '/reports' },
   { id: 'dashboard', label: 'Dashboard Analytics', icon: '📊', path: '/dashboard' },
   { id: 'finance', label: 'Suivi Financier', icon: '💰', path: '/finance' },
-  { id: 'documents', label: 'Documents', icon: '📁', path: '/documents' },
   { id: 'growth', label: 'Growth Hacking', icon: '🚀', path: '/growth' },
 ];

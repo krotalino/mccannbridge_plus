@@ -4942,4 +4942,48 @@ a { text-decoration: none; color: inherit; }
   }
 }
 
+/* Comprehensive Responsive Adjustments for Mobile Screens (<= 768px) */
+@media (max-width: 768px) {
+  .content-area {
+    padding: 12px 14px !important;
+  }
+
+  .card {
+    padding: 14px !important;
+    border-radius: 12px !important;
+  }
+
+  .table-responsive, .table-container, table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Grid fallbacks */
+  .grid-2, .grid-3, .grid-4 {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* Header wraps */
+  .section-header, .page-header, .filter-bar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+
+  /* Action buttons full width or scrollable on mobile */
+  .header-actions, .filter-actions {
+    flex-wrap: wrap !important;
+    width: 100% !important;
+  }
+
+  /* Chat & Assistant Canvas Mobile */
+  .assistant-canvas {
+    min-height: calc(100vh - 120px) !important;
+  }
+}
+
+
 

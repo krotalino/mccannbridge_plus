@@ -20,6 +20,15 @@ import { INITIAL_CALENDAR } from '../data/calendar';
 import { CM_DATA } from '../data/community';
 import { INITIAL_BRIEFS } from '../data/briefs';
 import { INITIAL_REPORTS, REPORT_STATUSES } from '../data/reportsData';
+import { 
+  INITIAL_DOCUMENTS, 
+  INITIAL_AGENTS, 
+  INITIAL_PROMPT_TEMPLATES, 
+  INITIAL_CONVERSATIONS, 
+  INITIAL_KNOWLEDGE_CHUNKS, 
+  INITIAL_AUDIT_LOGS,
+  INITIAL_CLIENTS_HIERARCHY
+} from '../data/aiAndDocsData';
 
 const AppContext = createContext(null);
 
@@ -62,6 +71,66 @@ const loadSavedReports = () => {
   }
 };
 
+// Load documents from localStorage fallback
+const loadSavedDocuments = () => {
+  try {
+    const saved = localStorage.getItem('bridge_documents_v2');
+    return saved ? JSON.parse(saved) : INITIAL_DOCUMENTS;
+  } catch (e) {
+    return INITIAL_DOCUMENTS;
+  }
+};
+
+// Load agents from localStorage fallback
+const loadSavedAgents = () => {
+  try {
+    const saved = localStorage.getItem('bridge_agents_v2');
+    return saved ? JSON.parse(saved) : INITIAL_AGENTS;
+  } catch (e) {
+    return INITIAL_AGENTS;
+  }
+};
+
+// Load prompts from localStorage fallback
+const loadSavedPrompts = () => {
+  try {
+    const saved = localStorage.getItem('bridge_prompts_v2');
+    return saved ? JSON.parse(saved) : INITIAL_PROMPT_TEMPLATES;
+  } catch (e) {
+    return INITIAL_PROMPT_TEMPLATES;
+  }
+};
+
+// Load conversations from localStorage fallback
+const loadSavedConversations = () => {
+  try {
+    const saved = localStorage.getItem('bridge_conversations_v2');
+    return saved ? JSON.parse(saved) : INITIAL_CONVERSATIONS;
+  } catch (e) {
+    return INITIAL_CONVERSATIONS;
+  }
+};
+
+// Load knowledge chunks from localStorage fallback
+const loadSavedKnowledgeChunks = () => {
+  try {
+    const saved = localStorage.getItem('bridge_knowledge_chunks_v2');
+    return saved ? JSON.parse(saved) : INITIAL_KNOWLEDGE_CHUNKS;
+  } catch (e) {
+    return INITIAL_KNOWLEDGE_CHUNKS;
+  }
+};
+
+// Load audit logs from localStorage fallback
+const loadSavedAuditLogs = () => {
+  try {
+    const saved = localStorage.getItem('bridge_audit_logs_v2');
+    return saved ? JSON.parse(saved) : INITIAL_AUDIT_LOGS;
+  } catch (e) {
+    return INITIAL_AUDIT_LOGS;
+  }
+};
+
 const initialState = {
   tickets: INITIAL_TICKETS,
   calendar: INITIAL_CALENDAR,
@@ -69,6 +138,20 @@ const initialState = {
   calendarPosts: INITIAL_CALENDAR_POSTS,
   briefs: loadSavedBriefs(),
   reports: loadSavedReports(),
+  documents: loadSavedDocuments(),
+  agents: loadSavedAgents(),
+  prompts: loadSavedPrompts(),
+  conversations: loadSavedConversations(),
+  knowledgeChunks: loadSavedKnowledgeChunks(),
+  auditLogs: loadSavedAuditLogs(),
+  clientsHierarchy: INITIAL_CLIENTS_HIERARCHY,
+  activeAIContext: {
+    client: 'Orange Cameroun',
+    brand: 'Orange (Telco & Data)',
+    project: 'Campagne Ramadan 2026',
+    documents: [],
+    agentId: 'creative',
+  },
   notifications: [],
   firestoreReady: false,
 };
@@ -93,6 +176,234 @@ function appReducer(state, action) {
 
     case 'SYNC_NOTIFICATIONS':
       return { ...state, notifications: action.notifications, firestoreReady: true };
+
+    case 'SYNC_DOCUMENTS':
+      return { ...state, documents: action.documents, firestoreReady: true };
+
+    case 'SYNC_AGENTS':
+      return { ...state, agents: action.agents, firestoreReady: true };
+
+    case 'SYNC_PROMPTS':
+      return { ...state, prompts: action.prompts, firestoreReady: true };
+
+    case 'SYNC_CONVERSATIONS':
+      return { ...state, conversations: action.conversations, firestoreReady: true };
+
+    case 'SYNC_KNOWLEDGE_CHUNKS':
+      return { ...state, knowledgeChunks: action.knowledgeChunks, firestoreReady: true };
+
+    case 'SYNC_AUDIT_LOGS':
+      return { ...state, auditLogs: action.auditLogs, firestoreReady: true };
+
+    // ─── Active AI Context ───
+    case 'SET_ACTIVE_AI_CONTEXT':
+      return { ...state, activeAIContext: { ...state.activeAIContext, ...action.context } };
+
+    // ─── Documents Management ───
+    case 'ADD_DOCUMENT': {
+      const updatedDocs = [action.document, ...state.documents.filter(d => d.id !== action.document.id)];
+      try { localStorage.setItem('bridge_documents_v2', JSON.stringify(updatedDocs)); } catch (e) {}
+      return { ...state, documents: updatedDocs };
+    }
+
+    case 'UPDATE_DOCUMENT': {
+      const updatedDocs = state.documents.map(d =>
+        d.id === action.id ? { ...d, ...action.updates, updatedAt: new Date().toISOString() } : d
+      );
+      try { localStorage.setItem('bridge_documents_v2', JSON.stringify(updatedDocs)); } catch (e) {}
+      return { ...state, documents: updatedDocs };
+    }
+
+    case 'DELETE_DOCUMENT': {
+      // Logical delete / archive
+      const updatedDocs = state.documents.filter(d => d.id !== action.id);
+      try { localStorage.setItem('bridge_documents_v2', JSON.stringify(updatedDocs)); } catch (e) {}
+      return { ...state, documents: updatedDocs };
+    }
+
+    case 'ADD_DOCUMENT_VERSION': {
+      const updatedDocs = state.documents.map(d => {
+        if (d.id === action.id) {
+          const versions = d.versions || [];
+          return {
+            ...d,
+            currentVersion: action.version.version,
+            versions: [action.version, ...versions],
+            updatedAt: new Date().toISOString(),
+          };
+        }
+        return d;
+      });
+      try { localStorage.setItem('bridge_documents_v2', JSON.stringify(updatedDocs)); } catch (e) {}
+      return { ...state, documents: updatedDocs };
+    }
+
+    case 'RESTORE_DOCUMENT_VERSION': {
+      const updatedDocs = state.documents.map(d => {
+        if (d.id === action.id) {
+          return {
+            ...d,
+            currentVersion: action.targetVersion,
+            updatedAt: new Date().toISOString(),
+          };
+        }
+        return d;
+      });
+      try { localStorage.setItem('bridge_documents_v2', JSON.stringify(updatedDocs)); } catch (e) {}
+      return { ...state, documents: updatedDocs };
+    }
+
+    case 'ADD_DOCUMENT_COMMENT': {
+      const updatedDocs = state.documents.map(d => {
+        if (d.id === action.id) {
+          const comments = d.comments || [];
+          return {
+            ...d,
+            comments: [...comments, action.comment],
+            updatedAt: new Date().toISOString(),
+          };
+        }
+        return d;
+      });
+      try { localStorage.setItem('bridge_documents_v2', JSON.stringify(updatedDocs)); } catch (e) {}
+      return { ...state, documents: updatedDocs };
+    }
+
+    case 'TOGGLE_KNOWLEDGE_BASE': {
+      const updatedDocs = state.documents.map(d => {
+        if (d.id === action.id) {
+          return {
+            ...d,
+            inKnowledgeBase: !d.inKnowledgeBase,
+            updatedAt: new Date().toISOString(),
+          };
+        }
+        return d;
+      });
+      try { localStorage.setItem('bridge_documents_v2', JSON.stringify(updatedDocs)); } catch (e) {}
+      return { ...state, documents: updatedDocs };
+    }
+
+    // ─── AI Agents Management ───
+    case 'ADD_AGENT': {
+      const updatedAgents = [...state.agents, action.agent];
+      try { localStorage.setItem('bridge_agents_v2', JSON.stringify(updatedAgents)); } catch (e) {}
+      return { ...state, agents: updatedAgents };
+    }
+
+    case 'UPDATE_AGENT': {
+      const updatedAgents = state.agents.map(a =>
+        a.id === action.id ? { ...a, ...action.updates } : a
+      );
+      try { localStorage.setItem('bridge_agents_v2', JSON.stringify(updatedAgents)); } catch (e) {}
+      return { ...state, agents: updatedAgents };
+    }
+
+    case 'DELETE_AGENT': {
+      const updatedAgents = state.agents.filter(a => a.id !== action.id);
+      try { localStorage.setItem('bridge_agents_v2', JSON.stringify(updatedAgents)); } catch (e) {}
+      return { ...state, agents: updatedAgents };
+    }
+
+    // ─── Prompt Templates Management ───
+    case 'ADD_PROMPT': {
+      const updatedPrompts = [action.prompt, ...state.prompts];
+      try { localStorage.setItem('bridge_prompts_v2', JSON.stringify(updatedPrompts)); } catch (e) {}
+      return { ...state, prompts: updatedPrompts };
+    }
+
+    case 'UPDATE_PROMPT': {
+      const updatedPrompts = state.prompts.map(p =>
+        p.id === action.id ? { ...p, ...action.updates } : p
+      );
+      try { localStorage.setItem('bridge_prompts_v2', JSON.stringify(updatedPrompts)); } catch (e) {}
+      return { ...state, prompts: updatedPrompts };
+    }
+
+    case 'DELETE_PROMPT': {
+      const updatedPrompts = state.prompts.filter(p => p.id !== action.id);
+      try { localStorage.setItem('bridge_prompts_v2', JSON.stringify(updatedPrompts)); } catch (e) {}
+      return { ...state, prompts: updatedPrompts };
+    }
+
+    case 'TOGGLE_FAVORITE_PROMPT': {
+      const updatedPrompts = state.prompts.map(p =>
+        p.id === action.id ? { ...p, favorite: !p.favorite } : p
+      );
+      try { localStorage.setItem('bridge_prompts_v2', JSON.stringify(updatedPrompts)); } catch (e) {}
+      return { ...state, prompts: updatedPrompts };
+    }
+
+    // ─── AI Conversations & Messages ───
+    case 'CREATE_CONVERSATION': {
+      const updatedConvs = [action.conversation, ...state.conversations];
+      try { localStorage.setItem('bridge_conversations_v2', JSON.stringify(updatedConvs)); } catch (e) {}
+      return { ...state, conversations: updatedConvs };
+    }
+
+    case 'ADD_MESSAGE_TO_CONVERSATION': {
+      const updatedConvs = state.conversations.map(c => {
+        if (c.id === action.convId) {
+          const msgs = c.messages || [];
+          return {
+            ...c,
+            messages: [...msgs, action.message],
+            updatedAt: new Date().toISOString(),
+          };
+        }
+        return c;
+      });
+      try { localStorage.setItem('bridge_conversations_v2', JSON.stringify(updatedConvs)); } catch (e) {}
+      return { ...state, conversations: updatedConvs };
+    }
+
+    case 'UPDATE_CONVERSATION': {
+      const updatedConvs = state.conversations.map(c =>
+        c.id === action.id ? { ...c, ...action.updates, updatedAt: new Date().toISOString() } : c
+      );
+      try { localStorage.setItem('bridge_conversations_v2', JSON.stringify(updatedConvs)); } catch (e) {}
+      return { ...state, conversations: updatedConvs };
+    }
+
+    case 'DELETE_CONVERSATION': {
+      const updatedConvs = state.conversations.filter(c => c.id !== action.id);
+      try { localStorage.setItem('bridge_conversations_v2', JSON.stringify(updatedConvs)); } catch (e) {}
+      return { ...state, conversations: updatedConvs };
+    }
+
+    case 'SET_MESSAGE_FEEDBACK': {
+      const updatedConvs = state.conversations.map(c => {
+        if (c.id === action.convId) {
+          const msgs = (c.messages || []).map(m =>
+            m.id === action.messageId ? { ...m, feedback: action.feedback } : m
+          );
+          return { ...c, messages: msgs };
+        }
+        return c;
+      });
+      try { localStorage.setItem('bridge_conversations_v2', JSON.stringify(updatedConvs)); } catch (e) {}
+      return { ...state, conversations: updatedConvs };
+    }
+
+    // ─── Knowledge Chunks & Audit Logs ───
+    case 'INDEX_DOCUMENT_CHUNKS': {
+      const filtered = state.knowledgeChunks.filter(kc => kc.documentId !== action.docId);
+      const updatedChunks = [...action.chunks, ...filtered];
+      try { localStorage.setItem('bridge_knowledge_chunks_v2', JSON.stringify(updatedChunks)); } catch (e) {}
+      return { ...state, knowledgeChunks: updatedChunks };
+    }
+
+    case 'REMOVE_DOCUMENT_CHUNKS': {
+      const updatedChunks = state.knowledgeChunks.filter(kc => kc.documentId !== action.docId);
+      try { localStorage.setItem('bridge_knowledge_chunks_v2', JSON.stringify(updatedChunks)); } catch (e) {}
+      return { ...state, knowledgeChunks: updatedChunks };
+    }
+
+    case 'ADD_AUDIT_LOG': {
+      const updatedLogs = [action.log, ...state.auditLogs];
+      try { localStorage.setItem('bridge_audit_logs_v2', JSON.stringify(updatedLogs)); } catch (e) {}
+      return { ...state, auditLogs: updatedLogs };
+    }
 
     // ─── Briefs Workflow ───
     case 'ADD_BRIEF': {
@@ -618,6 +929,114 @@ export function AppProvider({ children }) {
         });
         unsubs.push(unsubNotif);
 
+        // 7. Documents Listener
+        const docsCol = collection(db, 'documents');
+        const unsubDocs = onSnapshot(docsCol, async (snapshot) => {
+          if (snapshot.empty && !isInitializedRef.current) {
+            for (const docItem of INITIAL_DOCUMENTS) {
+              await setDoc(doc(db, 'documents', docItem.id), docItem);
+            }
+          } else {
+            const list = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
+            if (list.length > 0) {
+              dispatch({ type: 'SYNC_DOCUMENTS', documents: list });
+            }
+          }
+        }, (err) => {
+          handleFirestoreError(err, OperationType.LIST, 'documents');
+        });
+        unsubs.push(unsubDocs);
+
+        // 8. Agents Listener
+        const agentsCol = collection(db, 'agents');
+        const unsubAgents = onSnapshot(agentsCol, async (snapshot) => {
+          if (snapshot.empty && !isInitializedRef.current) {
+            for (const agent of INITIAL_AGENTS) {
+              await setDoc(doc(db, 'agents', agent.id), agent);
+            }
+          } else {
+            const list = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
+            if (list.length > 0) {
+              dispatch({ type: 'SYNC_AGENTS', agents: list });
+            }
+          }
+        }, (err) => {
+          handleFirestoreError(err, OperationType.LIST, 'agents');
+        });
+        unsubs.push(unsubAgents);
+
+        // 9. Prompts Listener
+        const promptsCol = collection(db, 'prompts');
+        const unsubPrompts = onSnapshot(promptsCol, async (snapshot) => {
+          if (snapshot.empty && !isInitializedRef.current) {
+            for (const pr of INITIAL_PROMPT_TEMPLATES) {
+              await setDoc(doc(db, 'prompts', pr.id), pr);
+            }
+          } else {
+            const list = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
+            if (list.length > 0) {
+              dispatch({ type: 'SYNC_PROMPTS', prompts: list });
+            }
+          }
+        }, (err) => {
+          handleFirestoreError(err, OperationType.LIST, 'prompts');
+        });
+        unsubs.push(unsubPrompts);
+
+        // 10. AI Conversations Listener
+        const convCol = collection(db, 'ai_conversations');
+        const unsubConv = onSnapshot(convCol, async (snapshot) => {
+          if (snapshot.empty && !isInitializedRef.current) {
+            for (const c of INITIAL_CONVERSATIONS) {
+              await setDoc(doc(db, 'ai_conversations', c.id), c);
+            }
+          } else {
+            const list = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
+            if (list.length > 0) {
+              dispatch({ type: 'SYNC_CONVERSATIONS', conversations: list });
+            }
+          }
+        }, (err) => {
+          handleFirestoreError(err, OperationType.LIST, 'ai_conversations');
+        });
+        unsubs.push(unsubConv);
+
+        // 11. Knowledge Chunks Listener
+        const chunksCol = collection(db, 'knowledge_chunks');
+        const unsubChunks = onSnapshot(chunksCol, async (snapshot) => {
+          if (snapshot.empty && !isInitializedRef.current) {
+            for (const chunk of INITIAL_KNOWLEDGE_CHUNKS) {
+              await setDoc(doc(db, 'knowledge_chunks', chunk.id), chunk);
+            }
+          } else {
+            const list = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
+            if (list.length > 0) {
+              dispatch({ type: 'SYNC_KNOWLEDGE_CHUNKS', knowledgeChunks: list });
+            }
+          }
+        }, (err) => {
+          handleFirestoreError(err, OperationType.LIST, 'knowledge_chunks');
+        });
+        unsubs.push(unsubChunks);
+
+        // 12. Audit Logs Listener
+        const logsCol = collection(db, 'audit_logs');
+        const unsubLogs = onSnapshot(logsCol, async (snapshot) => {
+          if (snapshot.empty && !isInitializedRef.current) {
+            for (const l of INITIAL_AUDIT_LOGS) {
+              await setDoc(doc(db, 'audit_logs', l.id), l);
+            }
+          } else {
+            const list = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
+            if (list.length > 0) {
+              dispatch({ type: 'SYNC_AUDIT_LOGS', auditLogs: list });
+            }
+          }
+        }, (err) => {
+          handleFirestoreError(err, OperationType.LIST, 'audit_logs');
+        });
+        unsubs.push(unsubLogs);
+
         isInitializedRef.current = true;
       } catch (e) {
         console.warn('Firestore initial sync error:', e);
@@ -1072,6 +1491,308 @@ export function AppProvider({ children }) {
     }
   }, []);
 
+  // ─── AI Context & Helpers ───
+  const setActiveAIContext = useCallback((contextUpdates) => {
+    dispatch({ type: 'SET_ACTIVE_AI_CONTEXT', context: contextUpdates });
+  }, []);
+
+  const logAudit = useCallback(async (action, resourceType, resourceId, resourceName, metadata = {}) => {
+    const logItem = {
+      id: `log-${Date.now()}`,
+      action,
+      resourceType,
+      resourceId,
+      resourceName,
+      metadata,
+      timestamp: new Date().toISOString(),
+      userId: 'usr_current',
+      userName: 'Utilisateur Connecté'
+    };
+    dispatch({ type: 'ADD_AUDIT_LOG', log: logItem });
+    try {
+      await setDoc(doc(db, 'audit_logs', logItem.id), logItem);
+    } catch (e) {}
+  }, []);
+
+  // ─── Documents Actions ───
+  const addDocument = useCallback(async (document) => {
+    dispatch({ type: 'ADD_DOCUMENT', document });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Document importé : ${document.title || document.name}`, notifType: 'success' });
+    logAudit('UPLOAD_DOCUMENT', 'document', document.id, document.title || document.name, { category: document.category });
+
+    try {
+      await setDoc(doc(db, 'documents', document.id), document);
+    } catch (e) {
+      handleFirestoreError(e, OperationType.CREATE, `documents/${document.id}`);
+    }
+  }, [logAudit]);
+
+  const updateDocument = useCallback(async (id, updates) => {
+    dispatch({ type: 'UPDATE_DOCUMENT', id, updates });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Document mis à jour : ${id}`, notifType: 'info' });
+    logAudit('UPDATE_DOCUMENT', 'document', id, updates.title || id, updates);
+
+    try {
+      await updateDoc(doc(db, 'documents', id), {
+        ...updates,
+        updatedAt: new Date().toISOString()
+      });
+    } catch (e) {
+      handleFirestoreError(e, OperationType.UPDATE, `documents/${id}`);
+    }
+  }, [logAudit]);
+
+  const deleteDocument = useCallback(async (id, name = '') => {
+    dispatch({ type: 'DELETE_DOCUMENT', id });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Document archivé : ${name || id}`, notifType: 'warning' });
+    logAudit('DELETE_DOCUMENT', 'document', id, name || id);
+
+    try {
+      await deleteDoc(doc(db, 'documents', id));
+    } catch (e) {
+      handleFirestoreError(e, OperationType.DELETE, `documents/${id}`);
+    }
+  }, [logAudit]);
+
+  const addDocumentVersion = useCallback(async (id, version) => {
+    dispatch({ type: 'ADD_DOCUMENT_VERSION', id, version });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Nouvelle version ${version.version} ajoutée`, notifType: 'success' });
+    logAudit('ADD_VERSION', 'document', id, version.version, { comment: version.comment });
+
+    try {
+      const docItem = state.documents.find(d => d.id === id);
+      const versions = docItem?.versions || [];
+      await updateDoc(doc(db, 'documents', id), {
+        currentVersion: version.version,
+        versions: [version, ...versions],
+        updatedAt: new Date().toISOString()
+      });
+    } catch (e) {
+      handleFirestoreError(e, OperationType.UPDATE, `documents/${id}`);
+    }
+  }, [state.documents, logAudit]);
+
+  const restoreDocumentVersion = useCallback(async (id, targetVersion) => {
+    dispatch({ type: 'RESTORE_DOCUMENT_VERSION', id, targetVersion });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Document restauré à la version ${targetVersion}`, notifType: 'info' });
+    logAudit('RESTORE_VERSION', 'document', id, targetVersion);
+
+    try {
+      await updateDoc(doc(db, 'documents', id), {
+        currentVersion: targetVersion,
+        updatedAt: new Date().toISOString()
+      });
+    } catch (e) {
+      handleFirestoreError(e, OperationType.UPDATE, `documents/${id}`);
+    }
+  }, [logAudit]);
+
+  const addDocumentComment = useCallback(async (id, comment) => {
+    dispatch({ type: 'ADD_DOCUMENT_COMMENT', id, comment });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Commentaire ajouté sur le document`, notifType: 'info' });
+
+    try {
+      const docItem = state.documents.find(d => d.id === id);
+      const comments = docItem?.comments || [];
+      await updateDoc(doc(db, 'documents', id), {
+        comments: [...comments, comment],
+        updatedAt: new Date().toISOString()
+      });
+    } catch (e) {
+      handleFirestoreError(e, OperationType.UPDATE, `documents/${id}`);
+    }
+  }, [state.documents]);
+
+  const toggleKnowledgeBase = useCallback(async (id) => {
+    const docItem = state.documents.find(d => d.id === id);
+    const newStatus = !docItem?.inKnowledgeBase;
+    dispatch({ type: 'TOGGLE_KNOWLEDGE_BASE', id });
+    dispatch({ 
+      type: 'ADD_NOTIFICATION', 
+      text: newStatus ? `Document indexé dans le RAG / Base de connaissances` : `Document retiré du RAG`, 
+      notifType: newStatus ? 'success' : 'warning' 
+    });
+    logAudit(newStatus ? 'ENABLE_KNOWLEDGE_BASE' : 'DISABLE_KNOWLEDGE_BASE', 'document', id, docItem?.title || id);
+
+    try {
+      await updateDoc(doc(db, 'documents', id), {
+        inKnowledgeBase: newStatus,
+        updatedAt: new Date().toISOString()
+      });
+    } catch (e) {
+      handleFirestoreError(e, OperationType.UPDATE, `documents/${id}`);
+    }
+  }, [state.documents, logAudit]);
+
+  const sendDocToAI = useCallback((docItem) => {
+    dispatch({
+      type: 'SET_ACTIVE_AI_CONTEXT',
+      context: {
+        client: docItem.client || 'Orange Cameroun',
+        brand: docItem.brand || 'Orange (Telco & Data)',
+        project: docItem.project || 'Campagne Ramadan 2026',
+        documents: [docItem.id],
+      }
+    });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Document sélectionné pour l'Assistant IA : ${docItem.title || docItem.name}`, notifType: 'info' });
+  }, []);
+
+  // ─── AI Agents Actions ───
+  const addAgent = useCallback(async (agent) => {
+    dispatch({ type: 'ADD_AGENT', agent });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Agent IA créé : ${agent.name}`, notifType: 'success' });
+    logAudit('CREATE_AGENT', 'agent', agent.id, agent.name);
+
+    try {
+      await setDoc(doc(db, 'agents', agent.id), agent);
+    } catch (e) {
+      handleFirestoreError(e, OperationType.CREATE, `agents/${agent.id}`);
+    }
+  }, [logAudit]);
+
+  const updateAgent = useCallback(async (id, updates) => {
+    dispatch({ type: 'UPDATE_AGENT', id, updates });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Agent IA configuré : ${id}`, notifType: 'info' });
+    logAudit('UPDATE_AGENT', 'agent', id, updates.name || id, updates);
+
+    try {
+      await updateDoc(doc(db, 'agents', id), updates);
+    } catch (e) {
+      handleFirestoreError(e, OperationType.UPDATE, `agents/${id}`);
+    }
+  }, [logAudit]);
+
+  const deleteAgent = useCallback(async (id, name = '') => {
+    dispatch({ type: 'DELETE_AGENT', id });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Agent supprimé : ${name || id}`, notifType: 'warning' });
+    logAudit('DELETE_AGENT', 'agent', id, name || id);
+
+    try {
+      await deleteDoc(doc(db, 'agents', id));
+    } catch (e) {
+      handleFirestoreError(e, OperationType.DELETE, `agents/${id}`);
+    }
+  }, [logAudit]);
+
+  // ─── Prompts Library Actions ───
+  const addPrompt = useCallback(async (prompt) => {
+    dispatch({ type: 'ADD_PROMPT', prompt });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Template de prompt ajouté : ${prompt.title}`, notifType: 'success' });
+    logAudit('CREATE_PROMPT', 'prompt', prompt.id, prompt.title);
+
+    try {
+      await setDoc(doc(db, 'prompts', prompt.id), prompt);
+    } catch (e) {
+      handleFirestoreError(e, OperationType.CREATE, `prompts/${prompt.id}`);
+    }
+  }, [logAudit]);
+
+  const updatePrompt = useCallback(async (id, updates) => {
+    dispatch({ type: 'UPDATE_PROMPT', id, updates });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Prompt mis à jour : ${updates.title || id}`, notifType: 'info' });
+
+    try {
+      await updateDoc(doc(db, 'prompts', id), updates);
+    } catch (e) {
+      handleFirestoreError(e, OperationType.UPDATE, `prompts/${id}`);
+    }
+  }, []);
+
+  const deletePrompt = useCallback(async (id, title = '') => {
+    dispatch({ type: 'DELETE_PROMPT', id });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Prompt supprimé : ${title || id}`, notifType: 'warning' });
+
+    try {
+      await deleteDoc(doc(db, 'prompts', id));
+    } catch (e) {
+      handleFirestoreError(e, OperationType.DELETE, `prompts/${id}`);
+    }
+  }, []);
+
+  const toggleFavoritePrompt = useCallback(async (id) => {
+    dispatch({ type: 'TOGGLE_FAVORITE_PROMPT', id });
+    try {
+      const pr = state.prompts.find(p => p.id === id);
+      await updateDoc(doc(db, 'prompts', id), {
+        favorite: !pr?.favorite
+      });
+    } catch (e) {
+      handleFirestoreError(e, OperationType.UPDATE, `prompts/${id}`);
+    }
+  }, [state.prompts]);
+
+  // ─── AI Conversations Actions ───
+  const createConversation = useCallback(async (conv) => {
+    dispatch({ type: 'CREATE_CONVERSATION', conversation: conv });
+    try {
+      await setDoc(doc(db, 'ai_conversations', conv.id), conv);
+    } catch (e) {
+      handleFirestoreError(e, OperationType.CREATE, `ai_conversations/${conv.id}`);
+    }
+  }, []);
+
+  const addMessageToConversation = useCallback(async (convId, message) => {
+    dispatch({ type: 'ADD_MESSAGE_TO_CONVERSATION', convId, message });
+    try {
+      const conv = state.conversations.find(c => c.id === convId);
+      const messages = conv?.messages || [];
+      await updateDoc(doc(db, 'ai_conversations', convId), {
+        messages: [...messages, message],
+        updatedAt: new Date().toISOString()
+      });
+    } catch (e) {
+      handleFirestoreError(e, OperationType.UPDATE, `ai_conversations/${convId}`);
+    }
+  }, [state.conversations]);
+
+  const updateConversation = useCallback(async (id, updates) => {
+    dispatch({ type: 'UPDATE_CONVERSATION', id, updates });
+    try {
+      await updateDoc(doc(db, 'ai_conversations', id), {
+        ...updates,
+        updatedAt: new Date().toISOString()
+      });
+    } catch (e) {
+      handleFirestoreError(e, OperationType.UPDATE, `ai_conversations/${id}`);
+    }
+  }, []);
+
+  const deleteConversation = useCallback(async (id) => {
+    dispatch({ type: 'DELETE_CONVERSATION', id });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Session de discussion supprimée`, notifType: 'info' });
+    try {
+      await deleteDoc(doc(db, 'ai_conversations', id));
+    } catch (e) {
+      handleFirestoreError(e, OperationType.DELETE, `ai_conversations/${id}`);
+    }
+  }, []);
+
+  const setMessageFeedback = useCallback(async (convId, messageId, feedback) => {
+    dispatch({ type: 'SET_MESSAGE_FEEDBACK', convId, messageId, feedback });
+    dispatch({ type: 'ADD_NOTIFICATION', text: feedback === 'positive' ? 'Merci pour votre retour positif !' : 'Merci, retour enregistré pour affiner les réponses.', notifType: 'info' });
+  }, []);
+
+  // ─── Knowledge Base Chunks ───
+  const indexDocumentChunks = useCallback(async (docId, chunks) => {
+    dispatch({ type: 'INDEX_DOCUMENT_CHUNKS', docId, chunks });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `${chunks.length} sections documentaires vectorisées dans le RAG`, notifType: 'success' });
+    for (const chunk of chunks) {
+      try {
+        await setDoc(doc(db, 'knowledge_chunks', chunk.id), chunk);
+      } catch (e) {}
+    }
+  }, []);
+
+  const removeDocumentChunks = useCallback(async (docId) => {
+    dispatch({ type: 'REMOVE_DOCUMENT_CHUNKS', docId });
+    try {
+      const chunksToDelete = state.knowledgeChunks.filter(kc => kc.documentId === docId);
+      for (const chunk of chunksToDelete) {
+        await deleteDoc(doc(db, 'knowledge_chunks', chunk.id));
+      }
+    } catch (e) {}
+  }, [state.knowledgeChunks]);
+
   return (
     <AppContext.Provider value={{
       ...state, 
@@ -1103,6 +1824,31 @@ export function AppProvider({ children }) {
       addReportSpeech, 
       updateReportData, 
       deleteReport,
+      // AI & Documents actions
+      setActiveAIContext,
+      logAudit,
+      addDocument,
+      updateDocument,
+      deleteDocument,
+      addDocumentVersion,
+      restoreDocumentVersion,
+      addDocumentComment,
+      toggleKnowledgeBase,
+      sendDocToAI,
+      addAgent,
+      updateAgent,
+      deleteAgent,
+      addPrompt,
+      updatePrompt,
+      deletePrompt,
+      toggleFavoritePrompt,
+      createConversation,
+      addMessageToConversation,
+      updateConversation,
+      deleteConversation,
+      setMessageFeedback,
+      indexDocumentChunks,
+      removeDocumentChunks,
     }}>
       {children}
     </AppContext.Provider>

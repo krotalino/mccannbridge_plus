@@ -17,6 +17,9 @@ import ReportsPage from './pages/Reports/ReportsPage';
 import DocumentsPage from './pages/Documents/DocumentsPage';
 import TasksPage from './pages/Tasks/TasksPage';
 import GrowthPage from './pages/Growth/GrowthPage';
+import AssistantIAPage from './pages/AssistantIA/AssistantIAPage';
+import PromptLibraryPage from './pages/PromptLibrary/PromptLibraryPage';
+import AdminIAPage from './pages/AdminIA/AdminIAPage';
 function ProtectedRoutes() {
   const { isAuthenticated, isAgency } = useAuth();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
@@ -26,6 +29,8 @@ function ProtectedRoutes() {
       <Routes>
         <Route element={<DashboardLayout />}>
           {isAgency && <Route path="/traffic" element={<TrafficIAPage />} />}
+          <Route path="/assistant-ia" element={<AssistantIAPage />} />
+          <Route path="/prompts" element={<PromptLibraryPage />} />
           <Route path="/briefs" element={<BriefsPage />} />
           <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/validation" element={<ValidationPage />} />
@@ -34,6 +39,7 @@ function ProtectedRoutes() {
           <Route path="/finance" element={<FinancePage />} />
 
           {isAgency && <Route path="/users" element={<UsersPage />} />}
+          {isAgency && <Route path="/admin-ia" element={<AdminIAPage />} />}
 
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/documents" element={<DocumentsPage />} />

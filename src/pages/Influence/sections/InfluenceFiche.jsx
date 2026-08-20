@@ -2,13 +2,33 @@ import { useState } from 'react';
 import { getStatusColor } from '../../../utils/helpers';
 
 const SOCIAL_ICONS = {
+  youtube: { label: 'YouTube', icon: '▶️', color: '#FF0000' },
+  xtwitter: { label: 'X (Twitter)', icon: '𝕏', color: '#000000' },
+  facebook: { label: 'Facebook', icon: '📘', color: '#1877F2' },
+  linkedin: { label: 'LinkedIn', icon: '💼', color: '#0A66C2' },
   instagram: { label: 'Instagram', icon: '📷', color: '#E1306C' },
   tiktok: { label: 'TikTok', icon: '🎵', color: '#000000' },
-  youtube: { label: 'YouTube', icon: '▶️', color: '#FF0000' },
-  facebook: { label: 'Facebook', icon: '📘', color: '#1877F2' },
-  xtwitter: { label: 'X/Twitter', icon: '𝕏', color: '#000000' },
-  linkedin: { label: 'LinkedIn', icon: '💼', color: '#0A66C2' },
 };
+
+export const CAMEROON_REGIONS = [
+  'Centre',
+  'Littoral',
+  'Ouest',
+  'Sud-Ouest',
+  'Nord-Ouest',
+  'Est',
+  'Nord',
+  'Extrême-Nord',
+  'Adamaoua',
+  'Sud',
+];
+
+export const INFLUENCER_SIZES = [
+  { id: 'Méga', label: 'Méga (1M+ abonnés)' },
+  { id: 'Macro', label: 'Macro (100K - 1M)' },
+  { id: 'Micro', label: 'Micro (10K - 100K)' },
+  { id: 'Nano', label: 'Nano (< 10K)' },
+];
 
 function formatFollowers(n) {
   if (!n || n === 0) return '—';
@@ -53,11 +73,11 @@ function MiniSparkline({ data, width = 80, height = 24 }) {
 
 export default function InfluenceFiche({ influencers, onViewProfile, onEdit, onDelete, onAdd, filters, setFilters }) {
   const niches = [...new Set(influencers.flatMap(i => i.categories || [i.niche]).filter(Boolean))];
-  const regions = [...new Set(influencers.map(i => i.region).filter(Boolean))];
+  const regions = Array.from(new Set([...CAMEROON_REGIONS, ...influencers.map(i => i.region).filter(Boolean)]));
   const platforms = [...new Set(influencers.map(i => i.platform).filter(Boolean))];
 
   const filtered = influencers.filter(inf => {
-    if (filters.text && !inf.name.toLowerCase().includes(filters.text.toLowerCase()) && !(inf.handle || '').toLowerCase().includes(filters.text.toLowerCase()) && !inf.realName.toLowerCase().includes(filters.text.toLowerCase())) return false;
+    if (filters.text && !inf.name.toLowerCase().includes(filters.text.toLowerCase()) && !(inf.handle || '').toLowerCase().includes(filters.text.toLowerCase()) && !(inf.realName || '').toLowerCase().includes(filters.text.toLowerCase()) && !(inf.pseudo || '').toLowerCase().includes(filters.text.toLowerCase())) return false;
     if (filters.niche && !(inf.categories || []).includes(filters.niche) && inf.niche !== filters.niche) return false;
     if (filters.platform && inf.platform !== filters.platform) return false;
     if (filters.type && inf.type !== filters.type) return false;
@@ -91,12 +111,18 @@ export default function InfluenceFiche({ influencers, onViewProfile, onEdit, onD
             <option value="">Toutes plateformes</option>{platforms.map(p => <option key={p}>{p}</option>)}
           </select>
           <select className="form-input" value={filters.type} onChange={e => setFilters(f => ({ ...f, type: e.target.value }))}>
-            <option value="">Toutes tailles</option><option>Macro</option><option>Micro</option><option>Nano</option>
+            <option value="">Toutes tailles</option>
+            {INFLUENCER_SIZES.map(s => (
+              <option key={s.id} value={s.id}>{s.label}</option>
+            ))}
           </select>
         </div>
         <div className="inf-search-row">
           <select className="form-input" value={filters.region} onChange={e => setFilters(f => ({ ...f, region: e.target.value }))}>
-            <option value="">Toutes régions</option>{regions.map(r => <option key={r}>{r}</option>)}
+            <option value="">Toutes régions</option>
+            {regions.map(r => (
+              <option key={r} value={r}>{r}</option>
+            ))}
           </select>
           <select className="form-input" value={filters.engagement} onChange={e => setFilters(f => ({ ...f, engagement: e.target.value }))}>
             <option value="">Tout engagement</option><option value="high">&gt; 8%</option><option value="mid">4-8%</option><option value="low">&lt; 4%</option>
@@ -114,7 +140,6 @@ export default function InfluenceFiche({ influencers, onViewProfile, onEdit, onD
       <div className="grid grid-auto">
         {filtered.map(inf => {
           const sc = getStatusColor(inf.status);
-          const activeSocials = Object.entries(inf.socialLinks || {}).filter(([, v]) => v.url);
           return (
             <div key={inf.id} className="card" style={{ borderLeft: `4px solid ${sc}` }}>
               {/* Header */}
@@ -122,12 +147,15 @@ export default function InfluenceFiche({ influencers, onViewProfile, onEdit, onD
                 <div className="flex items-center gap-10">
                   {inf.photo
                     ? <img src={inf.photo} style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover' }} alt="" />
-                    : <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--orange)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 18 }}>{inf.name.charAt(0)}</div>
+                    : <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--orange)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 18 }}>{(inf.pseudo || inf.name || '?').charAt(0)}</div>
                   }
                   <div>
-                    <div className="text-md font-bold text-dark">@{inf.pseudo || inf.name}</div>
+                    <div className="flex items-center gap-6">
+                      <div className="text-md font-bold text-dark">@{inf.pseudo || inf.name}</div>
+                      <span className="tag tag-orange text-xs" style={{ fontSize: 9, padding: '1px 6px' }}>{inf.type || 'Micro'}</span>
+                    </div>
                     <div className="text-sm text-muted">{inf.prenom || ''} {inf.nom || inf.realName}</div>
-                    <div className="text-xs text-muted mt-2">{inf.city} • {inf.region}</div>
+                    <div className="text-xs text-muted mt-2">📍 {inf.city ? `${inf.city} • ` : ''}{inf.region || 'Cameroun'}</div>
                   </div>
                 </div>
                 <span className="tag" style={{ background: sc + '22', color: sc }}>{inf.status === 'active' ? 'Actif' : inf.status === 'warning' ? 'Alerte' : 'Nouveau'}</span>
@@ -144,11 +172,11 @@ export default function InfluenceFiche({ influencers, onViewProfile, onEdit, onD
               <div style={{ background: '#f9f9f9', borderRadius: 6, padding: 8, marginBottom: 10, fontSize: 11 }}>
                 <div className="flex items-center gap-6 mb-4">
                   <span>📧</span>
-                  <span className="text-muted" style={{ wordBreak: 'break-all' }}>{inf.email}</span>
+                  <span className="text-muted" style={{ wordBreak: 'break-all' }}>{inf.email || 'Email non renseigné'}</span>
                 </div>
                 <div className="flex items-center gap-6 mb-4">
                   <span>📱</span>
-                  <span className="text-muted">{inf.phone}</span>
+                  <span className="text-muted">{inf.phone || 'Non renseigné'}</span>
                   {inf.telephone2 && <span className="text-muted">/ {inf.telephone2}</span>}
                 </div>
                 {inf.adresse && (
@@ -161,20 +189,23 @@ export default function InfluenceFiche({ influencers, onViewProfile, onEdit, onD
 
               {/* Réseaux sociaux */}
               <div style={{ background: '#f4f7fb', borderRadius: 6, padding: 8, marginBottom: 10 }}>
-                <div className="text-xs font-semibold text-dark mb-6">Réseaux sociaux</div>
+                <div className="text-xs font-semibold text-dark mb-6 flex justify-between items-center">
+                  <span>Réseaux sociaux</span>
+                  <span className="text-muted" style={{ fontSize: 10 }}>YouTube, X, FB, LinkedIn...</span>
+                </div>
                 <div className="flex flex-wrap gap-4">
-                  {Object.entries(inf.socialLinks || {}).map(([key, val]) => {
-                    const social = SOCIAL_ICONS[key];
-                    if (!social) return null;
-                    const hasAccount = val && val.url;
+                  {Object.entries(SOCIAL_ICONS).map(([key, social]) => {
+                    const val = (inf.socialLinks || {})[key];
+                    const hasAccount = Boolean(val && (val.url || val.username || val.followers > 0));
                     return (
                       <div key={key} style={{
                         display: 'flex', alignItems: 'center', gap: 4,
                         padding: '3px 8px', borderRadius: 4, fontSize: 10,
-                        background: hasAccount ? social.color + '12' : '#eee',
-                        color: hasAccount ? social.color : '#bbb',
-                        opacity: hasAccount ? 1 : 0.5,
-                      }}>
+                        background: hasAccount ? social.color + '14' : '#eee',
+                        color: hasAccount ? (social.color === '#000000' ? '#111' : social.color) : '#999',
+                        opacity: hasAccount ? 1 : 0.45,
+                        border: hasAccount ? `1px solid ${social.color}33` : '1px solid transparent',
+                      }} title={`${social.label}: ${hasAccount ? (val.username ? `@${val.username} (${formatFollowers(val.followers)})` : formatFollowers(val.followers)) : 'Non renseigné'}`}>
                         <span>{social.icon}</span>
                         <span className="font-semibold">{hasAccount ? formatFollowers(val.followers) : '—'}</span>
                       </div>
@@ -194,7 +225,7 @@ export default function InfluenceFiche({ influencers, onViewProfile, onEdit, onD
                   <div className="text-xs text-muted">Engagement</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-base font-bold text-orange">{inf.scorePerformance || inf.score}/5</div>
+                  <div className="text-base font-bold text-orange">{inf.scorePerformance || inf.score || 4.0}/5</div>
                   <div className="text-xs text-muted">Score</div>
                 </div>
               </div>
@@ -210,8 +241,8 @@ export default function InfluenceFiche({ influencers, onViewProfile, onEdit, onD
               {/* Actions */}
               <div className="flex gap-6">
                 <button onClick={() => onViewProfile(inf)} className="btn btn-orange btn-sm" style={{ flex: 1 }}>Voir fiche</button>
-                <button onClick={() => onEdit(inf)} className="btn btn-ghost btn-sm">✏️</button>
-                <button onClick={() => onDelete(inf.id)} className="btn btn-ghost btn-sm" style={{ color: 'var(--red)' }}>🗑</button>
+                <button onClick={() => onEdit(inf)} className="btn btn-ghost btn-sm" title="Modifier">✏️</button>
+                <button onClick={() => onDelete(inf.id)} className="btn btn-ghost btn-sm" title="Supprimer" style={{ color: 'var(--red)' }}>🗑</button>
               </div>
             </div>
           );
