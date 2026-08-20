@@ -791,6 +791,51 @@ function appReducer(state, action) {
         ),
       };
 
+    case 'ADD_CALENDAR_POST': {
+      const post = {
+        ...action.payload,
+        id: String(action.payload.id || nextCalPostId++),
+        createdAt: action.payload.createdAt || new Date().toISOString(),
+      };
+      return { ...state, calendarPosts: [post, ...state.calendarPosts] };
+    }
+
+    case 'UPDATE_CALENDAR_POST': {
+      return {
+        ...state,
+        calendarPosts: state.calendarPosts.map(p =>
+          String(p.id) === String(action.id)
+            ? { ...p, ...action.updates, updatedAt: new Date().toISOString() }
+            : p
+        ),
+      };
+    }
+
+    case 'DELETE_CALENDAR_POST': {
+      return {
+        ...state,
+        calendarPosts: state.calendarPosts.filter(p => String(p.id) !== String(action.id)),
+      };
+    }
+
+    case 'UPDATE_PUBLICATION': {
+      return {
+        ...state,
+        publications: state.publications.map(p =>
+          String(p.id) === String(action.id)
+            ? { ...p, ...action.updates, updatedAt: new Date().toISOString() }
+            : p
+        ),
+      };
+    }
+
+    case 'DELETE_PUBLICATION': {
+      return {
+        ...state,
+        publications: state.publications.filter(p => String(p.id) !== String(action.id)),
+      };
+    }
+
     case 'ADD_NOTIFICATION': {
       const notif = { 
         id: String(Date.now()), 
@@ -1353,6 +1398,87 @@ export function AppProvider({ children }) {
     }
   }, []);
 
+  const updatePublication = useCallback(async (id, updates) => {
+    dispatch({ type: 'UPDATE_PUBLICATION', id, updates });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Publication mise à jour`, notifType: 'info' });
+
+    try {
+      await updateDoc(doc(db, 'publications', String(id)), {
+        ...updates,
+        updatedAt: new Date().toISOString()
+      });
+    } catch (e) {
+      handleFirestoreError(e, OperationType.UPDATE, `publications/${id}`);
+    }
+  }, []);
+
+  const deletePublication = useCallback(async (id) => {
+    dispatch({ type: 'DELETE_PUBLICATION', id });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Publication supprimée`, notifType: 'warning' });
+
+    try {
+      await deleteDoc(doc(db, 'publications', String(id)));
+    } catch (e) {
+      handleFirestoreError(e, OperationType.DELETE, `publications/${id}`);
+    }
+  }, []);
+
+  // ─── Advanced Calendar CRUD Actions ───
+  const addCalendarPost = useCallback(async (payload) => {
+    const id = String(payload.id || nextCalPostId++);
+    const newPost = {
+      id,
+      client: payload.client || 'Orange Telco',
+      canal: payload.canal || 'Facebook',
+      type: payload.type || 'Feed',
+      format: payload.format || 'Paysage',
+      time: payload.time || '10:00',
+      status: payload.status || 'PENDING',
+      title: payload.title || 'Nouvelle publication',
+      generation: payload.generation || 'Manual',
+      desc: payload.desc || payload.description || '',
+      day: payload.day || (payload.date ? parseInt(payload.date.split('-')[2], 10) : 19),
+      date: payload.date || `2026-05-${String(payload.day || 19).padStart(2, '0')}`,
+      image: payload.image || null,
+      campaign: payload.campaign || '',
+      createdAt: new Date().toISOString(),
+    };
+    dispatch({ type: 'ADD_CALENDAR_POST', payload: newPost });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Publication planifiée : ${newPost.title}`, notifType: 'success' });
+
+    try {
+      await setDoc(doc(db, 'calendarPosts', id), newPost);
+    } catch (e) {
+      handleFirestoreError(e, OperationType.CREATE, `calendarPosts/${id}`);
+    }
+    return newPost;
+  }, []);
+
+  const updateCalendarPost = useCallback(async (id, updates) => {
+    dispatch({ type: 'UPDATE_CALENDAR_POST', id, updates });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Publication mise à jour : ${updates.title || id}`, notifType: 'info' });
+
+    try {
+      await updateDoc(doc(db, 'calendarPosts', String(id)), {
+        ...updates,
+        updatedAt: new Date().toISOString()
+      });
+    } catch (e) {
+      handleFirestoreError(e, OperationType.UPDATE, `calendarPosts/${id}`);
+    }
+  }, []);
+
+  const deleteCalendarPost = useCallback(async (id) => {
+    dispatch({ type: 'DELETE_CALENDAR_POST', id });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Publication supprimée du calendrier`, notifType: 'warning' });
+
+    try {
+      await deleteDoc(doc(db, 'calendarPosts', String(id)));
+    } catch (e) {
+      handleFirestoreError(e, OperationType.DELETE, `calendarPosts/${id}`);
+    }
+  }, []);
+
   // ─── Reporting & Insights workflow actions ───
   const addReport = useCallback(async (report) => {
     dispatch({ type: 'ADD_REPORT', report });
@@ -1805,11 +1931,16 @@ export function AppProvider({ children }) {
       publishCalendarItem, 
       addNotification,
       addPublication, 
+      updatePublication,
+      deletePublication,
       submitForValidation, 
       validatePublication,
       rejectPublication, 
       schedulePublication, 
       publishPublication,
+      addCalendarPost,
+      updateCalendarPost,
+      deleteCalendarPost,
       addBrief, 
       updateBrief, 
       updateBriefStatus, 
