@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { INFLUENCERS as INITIAL_INF } from '../../data/influencers';
+import { useApp } from '../../context/AppContext';
 import { ProfileModal, EditModal } from './InfluenceModals';
 
 // Nouveaux composants de rubriques métier
@@ -12,7 +12,7 @@ import InfluenceFinance from './sections/InfluenceFinance';
 
 export default function InfluencePage() {
   const [tab, setTab] = useState('fiche');
-  const [influencers, setInfluencers] = useState(INITIAL_INF);
+  const { influencers = [], addInfluencer, updateInfluencer, deleteInfluencer } = useApp();
   const [profileInf, setProfileInf] = useState(null);
   const [editInf, setEditInf] = useState(null);
   const [showAdd, setShowAdd] = useState(false);
@@ -29,21 +29,44 @@ export default function InfluencePage() {
     { id: 'finance', label: '6. Budgets & Paiements' },
   ];
 
-  const handleSave = (form) => {
+  const handleSave = async (form) => {
     if (form.id) {
-      setInfluencers(prev => prev.map(i => i.id === form.id ? { ...i, ...form } : i));
+      await updateInfluencer(form.id, form);
     } else {
-      const newId = Math.max(...influencers.map(i => i.id), 0) + 1;
-      setInfluencers(prev => [...prev, { ...form, id: newId }]);
+      const newId = `INF-${Date.now().toString().slice(-6)}`;
+      await addInfluencer({ ...form, id: newId });
     }
     setEditInf(null);
     setShowAdd(false);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (confirm('Supprimer cet influenceur ?')) {
-      setInfluencers(prev => prev.filter(i => i.id !== id));
+      await deleteInfluencer(id);
       setProfileInf(null);
+    }
+  };
+
+  const handleSetInfluencers = async (updaterOrList) => {
+    if (typeof updaterOrList === 'function') {
+      const updatedList = updaterOrList(influencers);
+      for (const inf of updatedList) {
+        const old = influencers.find(i => String(i.id) === String(inf.id));
+        if (!old) {
+          await addInfluencer(inf);
+        } else if (JSON.stringify(old) !== JSON.stringify(inf)) {
+          await updateInfluencer(inf.id, inf);
+        }
+      }
+      for (const old of influencers) {
+        if (!updatedList.some(i => String(i.id) === String(old.id))) {
+          await deleteInfluencer(old.id);
+        }
+      }
+    } else if (Array.isArray(updaterOrList)) {
+      for (const inf of updaterOrList) {
+        await updateInfluencer(inf.id, inf);
+      }
     }
   };
 
@@ -79,35 +102,35 @@ export default function InfluencePage() {
       {tab === 'contrats' && (
         <InfluenceContrats
           influencers={influencers}
-          setInfluencers={setInfluencers}
+          setInfluencers={handleSetInfluencers}
         />
       )}
 
       {tab === 'cahier' && (
         <InfluenceCahierCharges
           influencers={influencers}
-          setInfluencers={setInfluencers}
+          setInfluencers={handleSetInfluencers}
         />
       )}
 
       {tab === 'performance' && (
         <InfluencePerformance
           influencers={influencers}
-          setInfluencers={setInfluencers}
+          setInfluencers={handleSetInfluencers}
         />
       )}
 
       {tab === 'historique' && (
         <InfluenceHistorique
           influencers={influencers}
-          setInfluencers={setInfluencers}
+          setInfluencers={handleSetInfluencers}
         />
       )}
 
       {tab === 'finance' && (
         <InfluenceFinance
           influencers={influencers}
-          setInfluencers={setInfluencers}
+          setInfluencers={handleSetInfluencers}
         />
       )}
 

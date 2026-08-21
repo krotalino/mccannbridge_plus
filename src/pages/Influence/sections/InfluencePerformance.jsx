@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { formatNumber } from '../../../utils/helpers';
 
 export default function InfluencePerformance({ influencers, setInfluencers }) {
-  const [selectedInfId, setSelectedInfId] = useState(influencers[0]?.id || 1);
+  const [selectedInfId, setSelectedInfId] = useState(influencers[0]?.id || '');
   const [activeSubTab, setActiveSubTab] = useState('publications'); // 'publications' | 'benchmark' | 'evolution'
   const [showAddPubModal, setShowAddPubModal] = useState(false);
   const [newPub, setNewPub] = useState({
@@ -19,7 +19,19 @@ export default function InfluencePerformance({ influencers, setInfluencers }) {
 
   const fileInputRef = useRef(null);
 
-  const selectedInf = influencers.find(i => i.id === parseInt(selectedInfId)) || influencers[0];
+  const selectedInf = (influencers || []).find(i => String(i.id) === String(selectedInfId)) || influencers[0];
+
+  if (!influencers || influencers.length === 0) {
+    return (
+      <div className="card text-center py-40" style={{ background: '#fff', border: '1px dashed #d0d7de', borderRadius: 12 }}>
+        <div style={{ fontSize: 44, marginBottom: 12 }}>📊</div>
+        <h3 className="text-lg font-bold text-dark mb-4">Aucune donnée de performance</h3>
+        <p className="text-sm text-muted mb-20 max-w-md mx-auto">
+          Aucun influenceur n'est encore enregistré dans la base de données. Créez un premier profil dans l'onglet "1. Fiche Influence" pour suivre ses performances et publications.
+        </p>
+      </div>
+    );
+  }
 
   // Calcul du taux d'engagement global de l'influenceur sélectionné
   const pubStats = selectedInf?.publicationStats || [];
@@ -163,7 +175,7 @@ export default function InfluencePerformance({ influencers, setInfluencers }) {
           >
             {influencers.map(inf => (
               <option key={inf.id} value={inf.id}>
-                @{inf.name} ({inf.realName}) — {inf.followers} abonnés
+                @{inf.pseudo || inf.name} ({inf.realName || `${inf.prenom || ''} ${inf.nom || ''}`.trim()}) — {inf.followers || '0'} abonnés
               </option>
             ))}
           </select>

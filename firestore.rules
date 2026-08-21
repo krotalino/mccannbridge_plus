@@ -100,6 +100,19 @@ service cloud.firestore {
       allow delete: if isSignedIn() && isValidId(pubId);
     }
 
+    // ─── Influencers Collection ───
+    function isValidInfluencer(data) {
+      return data.id != null
+        && data.name is string && data.name.size() <= 300;
+    }
+
+    match /influencers/{influencerId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(influencerId) && isValidInfluencer(incoming());
+      allow update: if isSignedIn() && isValidId(influencerId) && isValidInfluencer(incoming());
+      allow delete: if isSignedIn() && isValidId(influencerId);
+    }
+
     // ─── User Profiles ───
     function isValidUserProfile(data) {
       return data.uid is string && data.uid.size() <= 128

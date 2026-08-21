@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { formatNumber } from '../../../utils/helpers';
 
 export default function InfluenceHistorique({ influencers, setInfluencers }) {
-  const [selectedInfId, setSelectedInfId] = useState(influencers[0]?.id || 1);
+  const [selectedInfId, setSelectedInfId] = useState(influencers[0]?.id || '');
   const [showAddNoteModal, setShowAddNoteModal] = useState(false);
   const [selectedCampaignForNote, setSelectedCampaignForNote] = useState(null);
 
@@ -13,7 +13,19 @@ export default function InfluenceHistorique({ influencers, setInfluencers }) {
     commentaire: '',
   });
 
-  const selectedInf = influencers.find(i => i.id === parseInt(selectedInfId)) || influencers[0];
+  const selectedInf = (influencers || []).find(i => String(i.id) === String(selectedInfId)) || influencers[0];
+
+  if (!influencers || influencers.length === 0) {
+    return (
+      <div className="card text-center py-40" style={{ background: '#fff', border: '1px dashed #d0d7de', borderRadius: 12 }}>
+        <div style={{ fontSize: 44, marginBottom: 12 }}>📜</div>
+        <h3 className="text-lg font-bold text-dark mb-4">Aucun historique de campagne</h3>
+        <p className="text-sm text-muted mb-20 max-w-md mx-auto">
+          Aucun influenceur n'est encore enregistré dans la base de données. Créez un profil dans l'onglet "1. Fiche Influence" pour consigner l'historique de ses collaborations.
+        </p>
+      </div>
+    );
+  }
   const history = selectedInf?.performanceHistory || [];
 
   const handleOpenNoteModal = (camp) => {
@@ -73,7 +85,7 @@ export default function InfluenceHistorique({ influencers, setInfluencers }) {
           >
             {influencers.map(inf => (
               <option key={inf.id} value={inf.id}>
-                @{inf.name} ({inf.realName}) — {inf.performanceHistory?.length || 0} campagne(s)
+                @{inf.pseudo || inf.name} ({inf.realName || `${inf.prenom || ''} ${inf.nom || ''}`.trim()}) — {inf.performanceHistory?.length || 0} campagne(s)
               </option>
             ))}
           </select>

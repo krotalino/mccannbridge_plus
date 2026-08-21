@@ -137,117 +137,138 @@ export default function InfluenceFiche({ influencers, onViewProfile, onEdit, onD
       </div>
 
       {/* Grille des fiches */}
-      <div className="grid grid-auto">
-        {filtered.map(inf => {
-          const sc = getStatusColor(inf.status);
-          return (
-            <div key={inf.id} className="card" style={{ borderLeft: `4px solid ${sc}` }}>
-              {/* Header */}
-              <div className="flex justify-between items-start mb-8">
-                <div className="flex items-center gap-10">
-                  {inf.photo
-                    ? <img src={inf.photo} style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover' }} alt="" />
-                    : <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--orange)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 18 }}>{(inf.pseudo || inf.name || '?').charAt(0)}</div>
-                  }
-                  <div>
-                    <div className="flex items-center gap-6">
-                      <div className="text-md font-bold text-dark">@{inf.pseudo || inf.name}</div>
-                      <span className="tag tag-orange text-xs" style={{ fontSize: 9, padding: '1px 6px' }}>{inf.type || 'Micro'}</span>
+      {filtered.length === 0 ? (
+        <div className="card text-center py-40" style={{ background: '#fff', border: '1px dashed #d0d7de', borderRadius: 12 }}>
+          <div style={{ fontSize: 44, marginBottom: 12 }}>👥</div>
+          <h3 className="text-lg font-bold text-dark mb-4">
+            {influencers.length === 0 ? 'Aucun influenceur enregistré en base de données' : 'Aucun influenceur ne correspond à vos filtres'}
+          </h3>
+          <p className="text-sm text-muted mb-20 max-w-md mx-auto">
+            {influencers.length === 0 
+              ? 'La base de données est actuellement vide de données démo. Cliquez sur "Ajouter un influenceur" pour enregistrer votre premier talent.'
+              : 'Essayez de modifier ou réinitialiser vos filtres de recherche pour afficher des résultats.'}
+          </p>
+          {influencers.length === 0 ? (
+            <button className="btn btn-orange" onClick={onAdd}>+ Ajouter un influenceur</button>
+          ) : (
+            <button className="btn btn-ghost border" onClick={() => setFilters({ text: '', niche: '', platform: '', type: '', region: '', engagement: '', disponibilite: '', status: '' })}>
+              🔄 Réinitialiser les filtres
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="grid grid-auto">
+          {filtered.map(inf => {
+            const sc = getStatusColor(inf.status);
+            return (
+              <div key={inf.id} className="card" style={{ borderLeft: `4px solid ${sc}` }}>
+                {/* Header */}
+                <div className="flex justify-between items-start mb-8">
+                  <div className="flex items-center gap-10">
+                    {inf.photo
+                      ? <img src={inf.photo} style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover' }} alt="" />
+                      : <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--orange)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 18 }}>{(inf.pseudo || inf.name || '?').charAt(0)}</div>
+                    }
+                    <div>
+                      <div className="flex items-center gap-6">
+                        <div className="text-md font-bold text-dark">@{inf.pseudo || inf.name}</div>
+                        <span className="tag tag-orange text-xs" style={{ fontSize: 9, padding: '1px 6px' }}>{inf.type || 'Micro'}</span>
+                      </div>
+                      <div className="text-sm text-muted">{inf.prenom || ''} {inf.nom || inf.realName}</div>
+                      <div className="text-xs text-muted mt-2">📍 {inf.city ? `${inf.city} • ` : ''}{inf.region || 'Cameroun'}</div>
                     </div>
-                    <div className="text-sm text-muted">{inf.prenom || ''} {inf.nom || inf.realName}</div>
-                    <div className="text-xs text-muted mt-2">📍 {inf.city ? `${inf.city} • ` : ''}{inf.region || 'Cameroun'}</div>
+                  </div>
+                  <span className="tag" style={{ background: sc + '22', color: sc }}>{inf.status === 'active' ? 'Actif' : inf.status === 'warning' ? 'Alerte' : 'Nouveau'}</span>
+                </div>
+
+                {/* Catégories */}
+                <div className="flex gap-4 flex-wrap mb-8">
+                  {(inf.categories || [inf.niche]).filter(Boolean).map((cat, i) => (
+                    <span key={i} className="tag" style={{ background: 'rgba(255,121,0,0.1)', color: 'var(--orange)', fontSize: 10 }}>{cat}</span>
+                  ))}
+                </div>
+
+                {/* Coordonnées */}
+                <div style={{ background: '#f9f9f9', borderRadius: 6, padding: 8, marginBottom: 10, fontSize: 11 }}>
+                  <div className="flex items-center gap-6 mb-4">
+                    <span>📧</span>
+                    <span className="text-muted" style={{ wordBreak: 'break-all' }}>{inf.email || 'Email non renseigné'}</span>
+                  </div>
+                  <div className="flex items-center gap-6 mb-4">
+                    <span>📱</span>
+                    <span className="text-muted">{inf.phone || 'Non renseigné'}</span>
+                    {inf.telephone2 && <span className="text-muted">/ {inf.telephone2}</span>}
+                  </div>
+                  {inf.adresse && (
+                    <div className="flex items-center gap-6">
+                      <span>📍</span>
+                      <span className="text-muted">{inf.adresse}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Réseaux sociaux */}
+                <div style={{ background: '#f4f7fb', borderRadius: 6, padding: 8, marginBottom: 10 }}>
+                  <div className="text-xs font-semibold text-dark mb-6 flex justify-between items-center">
+                    <span>Réseaux sociaux</span>
+                    <span className="text-muted" style={{ fontSize: 10 }}>YouTube, X, FB, LinkedIn...</span>
+                  </div>
+                  <div className="flex flex-wrap gap-4">
+                    {Object.entries(SOCIAL_ICONS).map(([key, social]) => {
+                      const val = (inf.socialLinks || {})[key];
+                      const hasAccount = Boolean(val && (val.url || val.username || val.followers > 0));
+                      return (
+                        <div key={key} style={{
+                          display: 'flex', alignItems: 'center', gap: 4,
+                          padding: '3px 8px', borderRadius: 4, fontSize: 10,
+                          background: hasAccount ? social.color + '14' : '#eee',
+                          color: hasAccount ? (social.color === '#000000' ? '#111' : social.color) : '#999',
+                          opacity: hasAccount ? 1 : 0.45,
+                          border: hasAccount ? `1px solid ${social.color}33` : '1px solid transparent',
+                        }} title={`${social.label}: ${hasAccount ? (val.username ? `@${val.username} (${formatFollowers(val.followers)})` : formatFollowers(val.followers)) : 'Non renseigné'}`}>
+                          <span>{social.icon}</span>
+                          <span className="font-semibold">{hasAccount ? formatFollowers(val.followers) : '—'}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
-                <span className="tag" style={{ background: sc + '22', color: sc }}>{inf.status === 'active' ? 'Actif' : inf.status === 'warning' ? 'Alerte' : 'Nouveau'}</span>
-              </div>
 
-              {/* Catégories */}
-              <div className="flex gap-4 flex-wrap mb-8">
-                {(inf.categories || [inf.niche]).map((cat, i) => (
-                  <span key={i} className="tag" style={{ background: 'rgba(255,121,0,0.1)', color: 'var(--orange)', fontSize: 10 }}>{cat}</span>
-                ))}
-              </div>
+                {/* KPIs rapides */}
+                <div className="grid grid-3 gap-8 mb-8 text-sm">
+                  <div className="text-center" style={{ borderRight: '1px solid #eee' }}>
+                    <div className="text-base font-bold text-dark">{inf.followers || '0'}</div>
+                    <div className="text-xs text-muted">Abonnés</div>
+                  </div>
+                  <div className="text-center" style={{ borderRight: '1px solid #eee' }}>
+                    <div className="text-base font-bold text-blue">{inf.engagement || '0%'}</div>
+                    <div className="text-xs text-muted">Engagement</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-base font-bold text-orange">{inf.scorePerformance || inf.score || 4.0}/5</div>
+                    <div className="text-xs text-muted">Score</div>
+                  </div>
+                </div>
 
-              {/* Coordonnées */}
-              <div style={{ background: '#f9f9f9', borderRadius: 6, padding: 8, marginBottom: 10, fontSize: 11 }}>
-                <div className="flex items-center gap-6 mb-4">
-                  <span>📧</span>
-                  <span className="text-muted" style={{ wordBreak: 'break-all' }}>{inf.email || 'Email non renseigné'}</span>
-                </div>
-                <div className="flex items-center gap-6 mb-4">
-                  <span>📱</span>
-                  <span className="text-muted">{inf.phone || 'Non renseigné'}</span>
-                  {inf.telephone2 && <span className="text-muted">/ {inf.telephone2}</span>}
-                </div>
-                {inf.adresse && (
-                  <div className="flex items-center gap-6">
-                    <span>📍</span>
-                    <span className="text-muted">{inf.adresse}</span>
+                {/* Evolution abonnés */}
+                {inf.followersHistory && inf.followersHistory.length >= 2 && (
+                  <div className="flex items-center justify-between mb-8" style={{ background: '#f9f9f9', borderRadius: 6, padding: '6px 10px' }}>
+                    <span className="text-xs text-muted">Évolution abonnés</span>
+                    <MiniSparkline data={inf.followersHistory} />
                   </div>
                 )}
-              </div>
 
-              {/* Réseaux sociaux */}
-              <div style={{ background: '#f4f7fb', borderRadius: 6, padding: 8, marginBottom: 10 }}>
-                <div className="text-xs font-semibold text-dark mb-6 flex justify-between items-center">
-                  <span>Réseaux sociaux</span>
-                  <span className="text-muted" style={{ fontSize: 10 }}>YouTube, X, FB, LinkedIn...</span>
-                </div>
-                <div className="flex flex-wrap gap-4">
-                  {Object.entries(SOCIAL_ICONS).map(([key, social]) => {
-                    const val = (inf.socialLinks || {})[key];
-                    const hasAccount = Boolean(val && (val.url || val.username || val.followers > 0));
-                    return (
-                      <div key={key} style={{
-                        display: 'flex', alignItems: 'center', gap: 4,
-                        padding: '3px 8px', borderRadius: 4, fontSize: 10,
-                        background: hasAccount ? social.color + '14' : '#eee',
-                        color: hasAccount ? (social.color === '#000000' ? '#111' : social.color) : '#999',
-                        opacity: hasAccount ? 1 : 0.45,
-                        border: hasAccount ? `1px solid ${social.color}33` : '1px solid transparent',
-                      }} title={`${social.label}: ${hasAccount ? (val.username ? `@${val.username} (${formatFollowers(val.followers)})` : formatFollowers(val.followers)) : 'Non renseigné'}`}>
-                        <span>{social.icon}</span>
-                        <span className="font-semibold">{hasAccount ? formatFollowers(val.followers) : '—'}</span>
-                      </div>
-                    );
-                  })}
+                {/* Actions */}
+                <div className="flex gap-6">
+                  <button onClick={() => onViewProfile(inf)} className="btn btn-orange btn-sm" style={{ flex: 1 }}>Voir fiche</button>
+                  <button onClick={() => onEdit(inf)} className="btn btn-ghost btn-sm" title="Modifier">✏️</button>
+                  <button onClick={() => onDelete(inf.id)} className="btn btn-ghost btn-sm" title="Supprimer" style={{ color: 'var(--red)' }}>🗑</button>
                 </div>
               </div>
-
-              {/* KPIs rapides */}
-              <div className="grid grid-3 gap-8 mb-8 text-sm">
-                <div className="text-center" style={{ borderRight: '1px solid #eee' }}>
-                  <div className="text-base font-bold text-dark">{inf.followers}</div>
-                  <div className="text-xs text-muted">Abonnés</div>
-                </div>
-                <div className="text-center" style={{ borderRight: '1px solid #eee' }}>
-                  <div className="text-base font-bold text-blue">{inf.engagement}</div>
-                  <div className="text-xs text-muted">Engagement</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-base font-bold text-orange">{inf.scorePerformance || inf.score || 4.0}/5</div>
-                  <div className="text-xs text-muted">Score</div>
-                </div>
-              </div>
-
-              {/* Evolution abonnés */}
-              {inf.followersHistory && inf.followersHistory.length >= 2 && (
-                <div className="flex items-center justify-between mb-8" style={{ background: '#f9f9f9', borderRadius: 6, padding: '6px 10px' }}>
-                  <span className="text-xs text-muted">Évolution abonnés</span>
-                  <MiniSparkline data={inf.followersHistory} />
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="flex gap-6">
-                <button onClick={() => onViewProfile(inf)} className="btn btn-orange btn-sm" style={{ flex: 1 }}>Voir fiche</button>
-                <button onClick={() => onEdit(inf)} className="btn btn-ghost btn-sm" title="Modifier">✏️</button>
-                <button onClick={() => onDelete(inf.id)} className="btn btn-ghost btn-sm" title="Supprimer" style={{ color: 'var(--red)' }}>🗑</button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

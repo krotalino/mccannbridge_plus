@@ -23,19 +23,19 @@ export default function InfluenceCahierCharges({ influencers, setInfluencers }) 
   const [showGuidelinesModal, setShowGuidelinesModal] = useState(null);
 
   // Rassembler tous les cahiers des charges
-  const allCdc = influencers.flatMap(inf =>
+  const allCdc = (influencers || []).flatMap(inf =>
     (inf.cahierDesCharges || []).map(cdc => ({
       ...cdc,
       influencerId: inf.id,
-      influencerName: inf.name,
-      influencerRealName: inf.realName,
+      influencerName: inf.pseudo || inf.name,
+      influencerRealName: inf.realName || `${inf.prenom || ''} ${inf.nom || ''}`.trim(),
     }))
   );
 
   const filteredCdc = allCdc.filter(cdc => {
-    if (filterInf && cdc.influencerId !== parseInt(filterInf)) return false;
+    if (filterInf && String(cdc.influencerId) !== String(filterInf)) return false;
     if (filterStatut) {
-      const hasStatut = cdc.livrables.some(l => l.statut === filterStatut);
+      const hasStatut = (cdc.livrables || []).some(l => l.statut === filterStatut);
       if (!hasStatut) return false;
     }
     return true;

@@ -2,16 +2,28 @@ import { useState } from 'react';
 import { formatCurrency } from '../../../utils/helpers';
 
 export default function InfluenceFinance({ influencers, setInfluencers }) {
-  const [selectedInfId, setSelectedInfId] = useState(influencers[0]?.id || 1);
+  const [selectedInfId, setSelectedInfId] = useState(influencers[0]?.id || '');
   const [activeSubTab, setActiveSubTab] = useState('payments'); // 'payments' | 'documents' | 'scores'
   const [showUploadDocModal, setShowUploadDocModal] = useState(false);
   const [docTypeToUpload, setDocTypeToUpload] = useState('pieceIdentite');
 
-  const selectedInf = influencers.find(i => i.id === parseInt(selectedInfId)) || influencers[0];
+  const selectedInf = (influencers || []).find(i => String(i.id) === String(selectedInfId)) || influencers[0];
+
+  if (!influencers || influencers.length === 0) {
+    return (
+      <div className="card text-center py-40" style={{ background: '#fff', border: '1px dashed #d0d7de', borderRadius: 12 }}>
+        <div style={{ fontSize: 44, marginBottom: 12 }}>💳</div>
+        <h3 className="text-lg font-bold text-dark mb-4">Aucune donnée financière</h3>
+        <p className="text-sm text-muted mb-20 max-w-md mx-auto">
+          Aucun influenceur n'est encore enregistré dans la base de données. Créez un profil dans l'onglet "1. Fiche Influence" pour gérer les paiements, devis et documents légaux.
+        </p>
+      </div>
+    );
+  }
 
   // Calcul du montant total payé et en attente à l'échelle de tous les influenceurs
-  const allPaiements = influencers.flatMap(inf =>
-    (inf.paiements || []).map(p => ({ ...p, influencerName: inf.name, influencerId: inf.id }))
+  const allPaiements = (influencers || []).flatMap(inf =>
+    (inf.paiements || []).map(p => ({ ...p, influencerName: inf.pseudo || inf.name, influencerId: inf.id }))
   );
 
   const totalPaye = allPaiements
@@ -189,7 +201,7 @@ export default function InfluenceFinance({ influencers, setInfluencers }) {
               >
                 {influencers.map(inf => (
                   <option key={inf.id} value={inf.id}>
-                    @{inf.name} ({inf.realName})
+                    @{inf.pseudo || inf.name} ({inf.realName || `${inf.prenom || ''} ${inf.nom || ''}`.trim()})
                   </option>
                 ))}
               </select>
@@ -201,7 +213,7 @@ export default function InfluenceFinance({ influencers, setInfluencers }) {
           </div>
 
           <h3 className="text-md font-bold text-dark mb-16">
-            Dossier Administratif et Légale pour @{selectedInf.name}
+            Dossier Administratif et Légale pour @{selectedInf?.pseudo || selectedInf?.name}
           </h3>
 
           <div className="grid grid-2 gap-16 mb-20">

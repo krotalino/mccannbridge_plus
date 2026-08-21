@@ -44,12 +44,12 @@ export default function InfluenceContrats({ influencers, setInfluencers }) {
   const [editInfId, setEditInfId] = useState(null);
 
   // Rassembler tous les contrats de tous les influenceurs
-  const allContracts = influencers.flatMap(inf =>
-    (inf.contracts || []).map(c => ({ ...c, influencerName: inf.name, influencerRealName: inf.realName, influencerId: inf.id }))
+  const allContracts = (influencers || []).flatMap(inf =>
+    (inf.contracts || []).map(c => ({ ...c, influencerName: inf.pseudo || inf.name, influencerRealName: inf.realName || `${inf.prenom || ''} ${inf.nom || ''}`.trim(), influencerId: inf.id }))
   );
 
   const filtered = allContracts.filter(c => {
-    if (filterInf && c.influencerId !== parseInt(filterInf)) return false;
+    if (filterInf && String(c.influencerId) !== String(filterInf)) return false;
     if (filterStatut && c.statut !== filterStatut) return false;
     if (filterType && c.type !== filterType) return false;
     return true;

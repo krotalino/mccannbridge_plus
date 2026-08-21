@@ -131,11 +131,22 @@ const loadSavedAuditLogs = () => {
   }
 };
 
+// Load registered influencers from localStorage fallback (empty by default)
+const loadSavedInfluencers = () => {
+  try {
+    const saved = localStorage.getItem('bridge_influencers_v2');
+    return saved ? JSON.parse(saved) : [];
+  } catch (e) {
+    return [];
+  }
+};
+
 const initialState = {
   tickets: INITIAL_TICKETS,
   calendar: INITIAL_CALENDAR,
   publications: INITIAL_PUBLICATIONS,
   calendarPosts: INITIAL_CALENDAR_POSTS,
+  influencers: loadSavedInfluencers(),
   briefs: loadSavedBriefs(),
   reports: loadSavedReports(),
   documents: loadSavedDocuments(),
@@ -194,6 +205,11 @@ function appReducer(state, action) {
 
     case 'SYNC_AUDIT_LOGS':
       return { ...state, auditLogs: action.auditLogs, firestoreReady: true };
+
+    case 'SYNC_INFLUENCERS': {
+      try { localStorage.setItem('bridge_influencers_v2', JSON.stringify(action.influencers)); } catch (e) {}
+      return { ...state, influencers: action.influencers, firestoreReady: true };
+    }
 
     // ─── Active AI Context ───
     case 'SET_ACTIVE_AI_CONTEXT':
@@ -403,6 +419,27 @@ function appReducer(state, action) {
       const updatedLogs = [action.log, ...state.auditLogs];
       try { localStorage.setItem('bridge_audit_logs_v2', JSON.stringify(updatedLogs)); } catch (e) {}
       return { ...state, auditLogs: updatedLogs };
+    }
+
+    // ─── Influencers Management ───
+    case 'ADD_INFLUENCER': {
+      const updatedInf = [action.influencer, ...state.influencers.filter(i => String(i.id) !== String(action.influencer.id))];
+      try { localStorage.setItem('bridge_influencers_v2', JSON.stringify(updatedInf)); } catch (e) {}
+      return { ...state, influencers: updatedInf };
+    }
+
+    case 'UPDATE_INFLUENCER': {
+      const updatedInf = state.influencers.map(i =>
+        String(i.id) === String(action.id) ? { ...i, ...action.updates, updatedAt: new Date().toISOString() } : i
+      );
+      try { localStorage.setItem('bridge_influencers_v2', JSON.stringify(updatedInf)); } catch (e) {}
+      return { ...state, influencers: updatedInf };
+    }
+
+    case 'DELETE_INFLUENCER': {
+      const updatedInf = state.influencers.filter(i => String(i.id) !== String(action.id));
+      try { localStorage.setItem('bridge_influencers_v2', JSON.stringify(updatedInf)); } catch (e) {}
+      return { ...state, influencers: updatedInf };
     }
 
     // ─── Briefs Workflow ───
@@ -1081,6 +1118,16 @@ export function AppProvider({ children }) {
           handleFirestoreError(err, OperationType.LIST, 'audit_logs');
         });
         unsubs.push(unsubLogs);
+
+        // 13. Influencers Listener (Live Firestore only, no demo seeding)
+        const infCol = collection(db, 'influencers');
+        const unsubInf = onSnapshot(infCol, (snapshot) => {
+          const list = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
+          dispatch({ type: 'SYNC_INFLUENCERS', influencers: list });
+        }, (err) => {
+          handleFirestoreError(err, OperationType.LIST, 'influencers');
+        });
+        unsubs.push(unsubInf);
 
         isInitializedRef.current = true;
       } catch (e) {
@@ -1919,9 +1966,56 @@ export function AppProvider({ children }) {
     } catch (e) {}
   }, [state.knowledgeChunks]);
 
+  // ─── Influencers Management ───
+  const addInfluencer = useCallback(async (influencerData) => {
+    const id = influencerData.id ? String(influencerData.id) : `INF-${Date.now().toString().slice(-6)}`;
+    const newInf = {
+      ...influencerData,
+      id,
+      createdAt: influencerData.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    dispatch({ type: 'ADD_INFLUENCER', influencer: newInf });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Influenceur @${newInf.pseudo || newInf.name} enregistré`, notifType: 'success' });
+    try {
+      await setDoc(doc(db, 'influencers', id), newInf);
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, `influencers/${id}`);
+    }
+    return newInf;
+  }, []);
+
+  const updateInfluencer = useCallback(async (id, updates) => {
+    const stringId = String(id);
+    const updatedFields = {
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    };
+    dispatch({ type: 'UPDATE_INFLUENCER', id: stringId, updates: updatedFields });
+    try {
+      await setDoc(doc(db, 'influencers', stringId), updatedFields, { merge: true });
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, `influencers/${stringId}`);
+    }
+  }, []);
+
+  const deleteInfluencer = useCallback(async (id) => {
+    const stringId = String(id);
+    dispatch({ type: 'DELETE_INFLUENCER', id: stringId });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Influenceur supprimé`, notifType: 'info' });
+    try {
+      await deleteDoc(doc(db, 'influencers', stringId));
+    } catch (err) {
+      handleFirestoreError(err, OperationType.DELETE, `influencers/${stringId}`);
+    }
+  }, []);
+
   return (
     <AppContext.Provider value={{
       ...state, 
+      addInfluencer,
+      updateInfluencer,
+      deleteInfluencer,
       updateTicketStatus, 
       reassignTicket, 
       addTicket,

@@ -139,9 +139,37 @@
         "createdAt": { "type": "string", "description": "Timestamp ISO" }
       },
       "required": ["id", "text"]
+    },
+    "Influencer": {
+      "title": "Influencer",
+      "description": "Fiche influenceur, réseaux sociaux, contrats, livrables et statistiques",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Identifiant unique de l'influenceur" },
+        "name": { "type": "string", "description": "Nom ou handle principal de l'influenceur" },
+        "realName": { "type": "string", "description": "Nom complet / état civil" },
+        "pseudo": { "type": "string", "description": "Pseudo public" },
+        "region": { "type": "string", "description": "Région du Cameroun" },
+        "type": { "type": "string", "description": "Taille de l'influenceur (Méga, Macro, Micro, Nano)" },
+        "followers": { "type": "string", "description": "Nombre global d'abonnés" },
+        "engagement": { "type": "string", "description": "Taux d'engagement moyen" },
+        "status": { "type": "string", "description": "Statut (active, warning, new)" },
+        "socialLinks": { "type": "object", "description": "Liens et statistiques par réseau social (YouTube, X, FB, LinkedIn, IG, TikTok)" },
+        "contracts": { "type": "array", "description": "Liste des contrats associés" },
+        "cahierDesCharges": { "type": "array", "description": "Livrables et cahiers des charges" },
+        "paiements": { "type": "array", "description": "Historique des paiements et honoraires" },
+        "performanceHistory": { "type": "array", "description": "Historique des performances de campagnes" },
+        "createdAt": { "type": "string", "description": "Date de création ISO" },
+        "updatedAt": { "type": "string", "description": "Date de mise à jour ISO" }
+      },
+      "required": ["id", "name"]
     }
   },
   "firestore": {
+    "/influencers/{influencerId}": {
+      "schema": "Influencer",
+      "description": "Collection des fiches d'influenceurs enregistrés en base de données"
+    },
     "/briefs/{briefId}": {
       "schema": "Brief",
       "description": "Collection des briefs de campagnes créatives et 360"
