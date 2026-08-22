@@ -238,6 +238,7 @@ export default function BriefsPage() {
             briefs={filteredBriefs}
             onSelectBrief={setSelectedBrief}
             perspective={perspective}
+            onNewBrief={() => { setEditingBrief(null); setIsCreateOpen(true); }}
           />
         )}
 
@@ -255,6 +256,7 @@ export default function BriefsPage() {
             onSelectBrief={setSelectedBrief}
             onStatusChange={updateBriefStatus}
             onEditBrief={handleEditBrief}
+            onNewBrief={() => { setEditingBrief(null); setIsCreateOpen(true); }}
           />
         )}
       </div>

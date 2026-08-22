@@ -838,8 +838,8 @@ function AdsTab() {
   return <CmSponsoring />;
 }
 
-function BriefsTab() {
-  return <CmBriefs />;
+function BriefsTab({ onNavigate }) {
+  return <CmBriefs onNavigate={onNavigate} />;
 }
 
 function RapportsTab() {

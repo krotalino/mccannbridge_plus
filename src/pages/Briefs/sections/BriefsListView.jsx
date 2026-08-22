@@ -1,7 +1,7 @@
 import { BRIEF_STATUSES } from '../../../data/briefs';
 import { formatCurrency } from '../../../utils/helpers';
 
-export default function BriefsListView({ briefs, onSelectBrief, onStatusChange, onEditBrief }) {
+export default function BriefsListView({ briefs, onSelectBrief, onStatusChange, onEditBrief, onNewBrief }) {
   return (
     <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
       <div className="table-wrapper">
@@ -21,8 +21,17 @@ export default function BriefsListView({ briefs, onSelectBrief, onStatusChange, 
           <tbody>
             {briefs.length === 0 ? (
               <tr>
-                <td colSpan={8} style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--muted)' }}>
-                  Aucun brief ne correspond aux critères de recherche.
+                <td colSpan={8} style={{ textAlign: 'center', padding: '50px 20px', color: 'var(--muted)' }}>
+                  <div style={{ fontSize: 32, marginBottom: 8 }}>📋</div>
+                  <div style={{ fontWeight: 600, color: 'var(--dark)', marginBottom: 6 }}>Aucun brief trouvé</div>
+                  <div style={{ fontSize: 13, marginBottom: onNewBrief ? 16 : 0 }}>
+                    Les briefs créés seront listés ici et synchronisés avec Firestore.
+                  </div>
+                  {onNewBrief && (
+                    <button className="btn btn-primary btn-sm" onClick={onNewBrief}>
+                      + Créer un nouveau brief
+                    </button>
+                  )}
                 </td>
               </tr>
             ) : (

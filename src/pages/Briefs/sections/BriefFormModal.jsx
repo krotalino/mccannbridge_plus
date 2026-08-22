@@ -174,6 +174,7 @@ export default function BriefFormModal({ isOpen, onClose, editingBrief = null })
       const newBriefId = `BR-2026-${String(Math.floor(Math.random() * 900) + 100).padStart(3, '0')}`;
       const newBrief = {
         id: newBriefId,
+        brand: formData.brand || 'Orange Cameroun',
         ...formData,
         status: 'submitted',
         subStatus: 'Soumis pour Analyse',

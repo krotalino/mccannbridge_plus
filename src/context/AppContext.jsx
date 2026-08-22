@@ -59,9 +59,13 @@ let nextCalPostId = 100;
 const loadSavedBriefs = () => {
   try {
     const saved = localStorage.getItem('bridge_briefs_v2');
-    return saved ? JSON.parse(saved) : INITIAL_BRIEFS;
+    if (!saved) return [];
+    const parsed = JSON.parse(saved);
+    const demoIds = ['BR-2026-001', 'BR-2026-002', 'BR-2026-003', 'BR-2026-004', 'BR-2026-005', 'BR-2026-006'];
+    const cleaned = Array.isArray(parsed) ? parsed.filter(b => b && b.id && !demoIds.includes(b.id)) : [];
+    return cleaned;
   } catch (e) {
-    return INITIAL_BRIEFS;
+    return [];
   }
 };
 
@@ -911,20 +915,23 @@ export function AppProvider({ children }) {
       }
 
       try {
-        // 1. Briefs Listener
+        // 1. Briefs Listener (purely Firestore-driven)
         const briefsCol = collection(db, 'briefs');
         const unsubBriefs = onSnapshot(briefsCol, async (snapshot) => {
-          if (snapshot.empty && !isInitializedRef.current) {
-            // Seed initial briefs if Firestore is completely empty
-            for (const brief of INITIAL_BRIEFS) {
-              await setDoc(doc(db, 'briefs', brief.id), brief);
-            }
-          } else {
-            const list = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
-            if (list.length > 0) {
-              dispatch({ type: 'SYNC_BRIEFS', briefs: list });
+          const demoIds = ['BR-2026-001', 'BR-2026-002', 'BR-2026-003', 'BR-2026-004', 'BR-2026-005', 'BR-2026-006'];
+          for (const d of snapshot.docs) {
+            if (demoIds.includes(d.id)) {
+              try {
+                await deleteDoc(doc(db, 'briefs', d.id));
+              } catch (e) {
+                // Ignore cleanup errors
+              }
             }
           }
+          const list = snapshot.docs
+            .filter(d => !demoIds.includes(d.id))
+            .map(d => ({ ...d.data(), id: d.id }));
+          dispatch({ type: 'SYNC_BRIEFS', briefs: list });
         }, (err) => {
           handleFirestoreError(err, OperationType.LIST, 'briefs');
         });

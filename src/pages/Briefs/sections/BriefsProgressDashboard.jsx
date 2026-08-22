@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { BRIEF_STATUSES } from '../../../data/briefs';
 import { formatCurrency } from '../../../utils/helpers';
 
-export default function BriefsProgressDashboard({ briefs, onSelectBrief, perspective = 'client' }) {
+export default function BriefsProgressDashboard({ briefs, onSelectBrief, perspective = 'client', onNewBrief }) {
   const [selectedBriefId, setSelectedBriefId] = useState(briefs[0]?.id || null);
 
   const activeBrief = briefs.find(b => b.id === selectedBriefId) || briefs[0];
@@ -16,6 +16,45 @@ export default function BriefsProgressDashboard({ briefs, onSelectBrief, perspec
       return { ...b, daysToGoLive: days };
     })
     .sort((a, b) => a.daysToGoLive - b.daysToGoLive);
+
+  if (briefs.length === 0) {
+    return (
+      <div className="briefs-dashboard-container animate-fade">
+        <div className={`perspective-banner ${perspective === 'client' ? 'client-mode' : 'agency-mode'}`}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div className="perspective-icon">{perspective === 'client' ? '🟠' : '🏢'}</div>
+            <div>
+              <div style={{ fontWeight: 800, fontSize: 14 }}>
+                {perspective === 'client'
+                  ? 'Vue Client (Orange Cameroun) — Suivi de l’avancement modulaire & des livrables'
+                  : 'Vue Agence (McCann Douala) — Pilotage des alertes Go-Live, charges créa & dev'}
+              </div>
+              <div style={{ fontSize: 12, opacity: 0.9 }}>
+                {perspective === 'client'
+                  ? 'Contrôlez en temps réel la progression des sous-modules (Audio, UX, Recette) et validez les étapes clés.'
+                  : 'Surveillez les échéances critiques de lancement (J-X), le respect des rétro-plannings et la conformité des livrables.'}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="card" style={{ textAlign: 'center', padding: '60px 20px', margin: '20px 0', borderRadius: 12 }}>
+          <div style={{ fontSize: 44, marginBottom: 12 }}>📋</div>
+          <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: 'var(--dark)' }}>
+            Aucun brief enregistré
+          </h3>
+          <p style={{ color: 'var(--muted)', fontSize: 14, maxWidth: 480, margin: '0 auto 20px', lineHeight: 1.5 }}>
+            Les briefs créés sont synchronisés directement dans la base de données Firestore et leur progression s'affichera ici en temps réel.
+          </p>
+          {onNewBrief && (
+            <button className="btn btn-primary" onClick={onNewBrief} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+              <span>+</span> Créer un nouveau brief
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="briefs-dashboard-container animate-fade">
