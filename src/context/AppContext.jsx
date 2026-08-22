@@ -32,21 +32,25 @@ import {
 
 const AppContext = createContext(null);
 
-// Build initial publications from CM_DATA.posts with unique IDs
-const INITIAL_PUBLICATIONS = CM_DATA.posts.map(p => ({
-  ...p,
-  description: '',
-  dateTarget: '',
-  heureTarget: '',
-  createdAt: null,
-  submittedAt: null,
-  validatedAt: null,
-  scheduledAt: null,
-  publishedAt: null,
-}));
+// Load publications from localStorage fallback (empty by default)
+const loadSavedPublications = () => {
+  try {
+    const saved = localStorage.getItem('bridge_publications_v2');
+    return saved ? JSON.parse(saved) : [];
+  } catch (e) {
+    return [];
+  }
+};
 
-// Build initial calendar posts from CM_DATA.advancedCalendar.posts
-const INITIAL_CALENDAR_POSTS = CM_DATA.advancedCalendar.posts.map(p => ({ ...p }));
+// Load calendar posts from localStorage fallback (empty by default)
+const loadSavedCalendarPosts = () => {
+  try {
+    const saved = localStorage.getItem('bridge_calendar_posts_v2');
+    return saved ? JSON.parse(saved) : [];
+  } catch (e) {
+    return [];
+  }
+};
 
 let nextPubId = 100;
 let nextCalPostId = 100;
@@ -144,8 +148,8 @@ const loadSavedInfluencers = () => {
 const initialState = {
   tickets: INITIAL_TICKETS,
   calendar: INITIAL_CALENDAR,
-  publications: INITIAL_PUBLICATIONS,
-  calendarPosts: INITIAL_CALENDAR_POSTS,
+  publications: loadSavedPublications(),
+  calendarPosts: loadSavedCalendarPosts(),
   influencers: loadSavedInfluencers(),
   briefs: loadSavedBriefs(),
   reports: loadSavedReports(),
@@ -963,37 +967,21 @@ export function AppProvider({ children }) {
         });
         unsubs.push(unsubTickets);
 
-        // 4. Calendar Posts Listener
+        // 4. Calendar Posts Listener (Sync real database documents only)
         const calCol = collection(db, 'calendarPosts');
-        const unsubCal = onSnapshot(calCol, async (snapshot) => {
-          if (snapshot.empty && !isInitializedRef.current) {
-            for (const item of INITIAL_CALENDAR_POSTS) {
-              await setDoc(doc(db, 'calendarPosts', String(item.id)), { ...item, id: String(item.id) });
-            }
-          } else {
-            const list = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
-            if (list.length > 0) {
-              dispatch({ type: 'SYNC_CALENDAR_POSTS', calendarPosts: list });
-            }
-          }
+        const unsubCal = onSnapshot(calCol, (snapshot) => {
+          const list = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
+          dispatch({ type: 'SYNC_CALENDAR_POSTS', calendarPosts: list });
         }, (err) => {
           handleFirestoreError(err, OperationType.LIST, 'calendarPosts');
         });
         unsubs.push(unsubCal);
 
-        // 5. Publications Listener
+        // 5. Publications Listener (Sync real database documents only)
         const pubCol = collection(db, 'publications');
-        const unsubPub = onSnapshot(pubCol, async (snapshot) => {
-          if (snapshot.empty && !isInitializedRef.current) {
-            for (const item of INITIAL_PUBLICATIONS) {
-              await setDoc(doc(db, 'publications', String(item.id)), { ...item, id: String(item.id) });
-            }
-          } else {
-            const list = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
-            if (list.length > 0) {
-              dispatch({ type: 'SYNC_PUBLICATIONS', publications: list });
-            }
-          }
+        const unsubPub = onSnapshot(pubCol, (snapshot) => {
+          const list = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
+          dispatch({ type: 'SYNC_PUBLICATIONS', publications: list });
         }, (err) => {
           handleFirestoreError(err, OperationType.LIST, 'publications');
         });
@@ -1472,7 +1460,11 @@ export function AppProvider({ children }) {
 
   // ─── Advanced Calendar CRUD Actions ───
   const addCalendarPost = useCallback(async (payload) => {
-    const id = String(payload.id || nextCalPostId++);
+    const id = payload.id ? String(payload.id) : `CAL-${Date.now().toString().slice(-6)}`;
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+    const targetDate = payload.date || todayStr;
+    const dayParsed = payload.day || parseInt(targetDate.split('-')[2], 10) || now.getDate();
     const newPost = {
       id,
       client: payload.client || 'Orange Telco',
@@ -1484,8 +1476,8 @@ export function AppProvider({ children }) {
       title: payload.title || 'Nouvelle publication',
       generation: payload.generation || 'Manual',
       desc: payload.desc || payload.description || '',
-      day: payload.day || (payload.date ? parseInt(payload.date.split('-')[2], 10) : 19),
-      date: payload.date || `2026-05-${String(payload.day || 19).padStart(2, '0')}`,
+      day: dayParsed,
+      date: targetDate,
       image: payload.image || null,
       campaign: payload.campaign || '',
       createdAt: new Date().toISOString(),

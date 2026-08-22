@@ -16,7 +16,7 @@ export default function AdvancedCalendar({ onOpenArchive }) {
   // ─── State Management ───
   const [viewMode, setViewMode] = useState('week'); // 'month' | 'week' | 'day'
   const [activeNav, setActiveNav] = useState('calendar'); // 'calendar' | 'queue' | 'drafts' | 'campaigns'
-  const [currentDate, setCurrentDate] = useState(new Date('2026-05-19T10:00:00')); // Reference default May 19, 2026
+  const [currentDate, setCurrentDate] = useState(new Date());
   
   // Filters
   const [filterClient, setFilterClient] = useState('All');
@@ -42,8 +42,12 @@ export default function AdvancedCalendar({ onOpenArchive }) {
   // Helper date parsing and formatting
   const getPostDateStr = (post) => {
     if (post.date) return post.date;
-    if (post.day) return `2026-05-${String(post.day).padStart(2, '0')}`;
-    return '2026-05-19';
+    if (post.day) {
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+      return `${year}-${month}-${String(post.day).padStart(2, '0')}`;
+    }
+    return formatDateToYMD(currentDate);
   };
 
   const formatDateToYMD = (d) => {
