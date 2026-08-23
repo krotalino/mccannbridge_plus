@@ -40,21 +40,82 @@ export function getStatusLabel(status) {
 }
 
 export function calcScore(ticket) {
-  const deadlineScore = Math.max(0, 1 - (ticket.daysLeft / 14)) * 35;
-  const priorityMap = { critique: 25, urgente: 17.5, normale: 7.5 };
-  const priorityScore = priorityMap[ticket.priority] || 7.5;
-  const budgetScore = Math.min(20, (ticket.budget / 2000000) * 20);
+  if (!ticket) return 0;
+  // Days left calculation
+  let daysLeft = ticket.daysLeft;
+  if (daysLeft === undefined && ticket.deadline) {
+    const diff = new Date(ticket.deadline) - new Date();
+    daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
+  }
+  if (daysLeft === undefined) daysLeft = 3;
+
+  const deadlineScore = Math.max(0, 1 - (daysLeft / 14)) * 35;
+  
+  const priorityMap = { 
+    p0_urgent: 30, 
+    critique: 30, 
+    p1_strategic: 20, 
+    urgente: 20, 
+    haute: 20, 
+    p2_recurrent: 10, 
+    normale: 10 
+  };
+  const priorityScore = priorityMap[ticket.priority] || 10;
+  const budgetScore = Math.min(15, ((ticket.budget || 0) / 2000000) * 15);
   const blockScore = ticket.blocksCalendar ? 10 : 0;
-  const lateScore = ticket.daysLeft <= 0 ? 10 : (ticket.daysLeft <= 1 ? 5 : 0);
-  return Math.round(deadlineScore + priorityScore + budgetScore + blockScore + lateScore);
+  const blockageActiveScore = ticket.blockage?.isBlocked ? 10 : 0;
+  const revisionScore = Math.min(10, (ticket.revisionCount || 0) * 5);
+  const lateScore = daysLeft <= 0 ? 10 : (daysLeft <= 1 ? 5 : 0);
+
+  return Math.min(100, Math.round(deadlineScore + priorityScore + budgetScore + blockScore + blockageActiveScore + revisionScore + lateScore));
 }
 
-export function getCreativeLoad(creativeId, tickets, team) {
-  const assigned = tickets.filter(t => t.assignee === creativeId && t.status !== 'livre');
-  const creative = team.find(c => c.id === creativeId);
-  const maxCap = creative?.capacity || 100;
-  const load = assigned.reduce((sum, t) => sum + (100 - t.progress) * 0.5, 0);
-  return Math.min(100, Math.round((load / maxCap) * 100));
+export function getCreativeLoad(creativeId, tickets = [], team = []) {
+  const activeTickets = tickets.filter(t => t.assignee === creativeId && t.status !== 'delivered' && t.status !== 'livre');
+  const allMembers = [
+    ...(team.creatives || []),
+    ...(team.cdp || []),
+    ...(team.cm || []),
+    ...(team.specialists || []),
+    ...(team.directors || []),
+    ...(team.finance || []),
+    ...(Array.isArray(team) ? team : []),
+  ];
+  const member = allMembers.find(c => c.id === creativeId);
+  const maxCap = member?.capacity || 100;
+  
+  // Calculate based on remaining hours and progress
+  let totalHoursWorkload = 0;
+  activeTickets.forEach(t => {
+    const estimated = t.estimatedHours || 8;
+    const progress = t.progress || 0;
+    const remainingHours = estimated * ((100 - progress) / 100);
+    totalHoursWorkload += Math.max(1, remainingHours);
+  });
+
+  // Base standard week is 35 hours
+  const standardCapHours = (maxCap / 100) * 35;
+  const loadPercentage = Math.round((totalHoursWorkload / standardCapHours) * 100);
+  return Math.min(130, Math.max(0, loadPercentage));
+}
+
+export function getSlaCountdown(deadlineISO) {
+  if (!deadlineISO) return { text: 'N/A', isPassed: false, hours: 0, minutes: 0 };
+  const target = new Date(deadlineISO);
+  const now = new Date();
+  const diff = target - now;
+  const isPassed = diff <= 0;
+  const absDiff = Math.abs(diff);
+
+  const hours = Math.floor(absDiff / (1000 * 60 * 60));
+  const minutes = Math.floor((absDiff % (1000 * 60 * 60)) / (1000 * 60));
+
+  return {
+    isPassed,
+    hours,
+    minutes,
+    text: isPassed ? `Dépassé de ${hours}h ${minutes}m` : `${hours}h ${minutes}m restants`,
+  };
 }
 
 export function getLoadColor(load) {

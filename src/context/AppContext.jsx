@@ -668,26 +668,66 @@ function appReducer(state, action) {
       return { ...state, reports: updatedReports };
     }
 
-    case 'UPDATE_TICKET_STATUS':
+    case 'UPDATE_TICKET':
+      return {
+        ...state,
+        tickets: state.tickets.map(t =>
+          t.id === action.ticketId ? { ...t, ...action.updates, lastUpdated: new Date().toISOString() } : t
+        ),
+      };
+
+    case 'UPDATE_TICKET_STATUS': {
+      const getAutoProgress = (status, currentProgress = 0) => {
+        switch (status) {
+          case 'delivered': case 'livre': return 100;
+          case 'client_review': case 'validation': return 95;
+          case 'internal_review': return 85;
+          case 'revisions': return Math.max(60, currentProgress - 15);
+          case 'production': return currentProgress > 0 ? currentProgress : 35;
+          case 'ready': return 0;
+          case 'cadrage': return 15;
+          case 'backlog': return 0;
+          default: return currentProgress;
+        }
+      };
+
       return {
         ...state,
         tickets: state.tickets.map(t =>
           t.id === action.ticketId
-            ? { ...t, status: action.status, progress: action.status === 'livre' ? 100 : action.status === 'validation' ? 90 : t.progress }
+            ? {
+                ...t,
+                status: action.status,
+                progress: action.progress !== undefined ? action.progress : getAutoProgress(action.status, t.progress),
+                ...(action.extraData || {}),
+                lastUpdated: new Date().toISOString(),
+              }
             : t
         ),
       };
+    }
 
     case 'REASSIGN_TICKET':
       return {
         ...state,
         tickets: state.tickets.map(t =>
-          t.id === action.ticketId ? { ...t, assignee: action.assignee } : t
+          t.id === action.ticketId
+            ? {
+                ...t,
+                assignee: action.assignee,
+                assigneeRole: action.assigneeRole || t.assigneeRole,
+                backupId: action.backupId !== undefined ? action.backupId : t.backupId,
+                lastUpdated: new Date().toISOString(),
+              }
+            : t
         ),
       };
 
     case 'ADD_TICKET':
-      return { ...state, tickets: [...state.tickets, action.ticket] };
+      return { ...state, tickets: [action.ticket, ...state.tickets] };
+
+    case 'DELETE_TICKET':
+      return { ...state, tickets: state.tickets.filter(t => t.id !== action.ticketId) };
 
     case 'VALIDATE_CALENDAR':
       return {
@@ -1138,15 +1178,25 @@ export function AppProvider({ children }) {
 
   // ─── Action Handlers with Firestore Writes ───
 
-  const updateTicketStatus = useCallback(async (ticketId, status) => {
-    dispatch({ type: 'UPDATE_TICKET_STATUS', ticketId, status });
-    dispatch({ type: 'ADD_NOTIFICATION', text: `Ticket ${ticketId} → ${status.toUpperCase()}`, notifType: 'info' });
+  const updateTicketStatus = useCallback(async (ticketId, status, extraData = {}) => {
+    dispatch({ type: 'UPDATE_TICKET_STATUS', ticketId, status, extraData });
+    const statusLabels = {
+      backlog: 'À qualifier (Backlog)',
+      cadrage: 'Cadrage & Estimation',
+      ready: 'Prêt à produire',
+      production: 'En Production',
+      internal_review: 'Contrôle Qualité Interne',
+      client_review: 'Validation Client',
+      revisions: 'Révisions demandées',
+      delivered: 'Validé & Livré',
+    };
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Ticket ${ticketId} → ${statusLabels[status] || status.toUpperCase()}`, notifType: status === 'delivered' ? 'success' : status === 'revisions' ? 'warning' : 'info' });
 
     try {
       const ticketRef = doc(db, 'tickets', ticketId);
       await updateDoc(ticketRef, {
         status,
-        progress: status === 'livre' ? 100 : status === 'validation' ? 90 : 50,
+        ...extraData,
         updatedAt: new Date().toISOString()
       });
     } catch (e) {
@@ -1154,14 +1204,28 @@ export function AppProvider({ children }) {
     }
   }, []);
 
-  const reassignTicket = useCallback(async (ticketId, assignee, assigneeName) => {
-    dispatch({ type: 'REASSIGN_TICKET', ticketId, assignee });
-    dispatch({ type: 'ADD_NOTIFICATION', text: `IA Traffic : ${ticketId} réassigné à ${assigneeName}`, notifType: 'success' });
+  const updateTicket = useCallback(async (ticketId, updates) => {
+    dispatch({ type: 'UPDATE_TICKET', ticketId, updates });
+    try {
+      const ticketRef = doc(db, 'tickets', ticketId);
+      await updateDoc(ticketRef, {
+        ...updates,
+        updatedAt: new Date().toISOString()
+      });
+    } catch (e) {
+      handleFirestoreError(e, OperationType.UPDATE, `tickets/${ticketId}`);
+    }
+  }, []);
+
+  const reassignTicket = useCallback(async (ticketId, assignee, assigneeName, extraFields = {}) => {
+    dispatch({ type: 'REASSIGN_TICKET', ticketId, assignee, ...extraFields });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Traffic Manager : ${ticketId} réassigné à ${assigneeName}`, notifType: 'success' });
 
     try {
       const ticketRef = doc(db, 'tickets', ticketId);
       await updateDoc(ticketRef, {
         assignee,
+        ...extraFields,
         updatedAt: new Date().toISOString()
       });
     } catch (e) {
@@ -1171,7 +1235,7 @@ export function AppProvider({ children }) {
 
   const addTicket = useCallback(async (ticket) => {
     dispatch({ type: 'ADD_TICKET', ticket });
-    dispatch({ type: 'ADD_NOTIFICATION', text: `Brief soumis : ${ticket.title}`, notifType: 'success' });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Nouveau ticket créé : ${ticket.title}`, notifType: 'success' });
 
     try {
       const ticketRef = doc(db, 'tickets', ticket.id);
@@ -1181,6 +1245,78 @@ export function AppProvider({ children }) {
       });
     } catch (e) {
       handleFirestoreError(e, OperationType.CREATE, `tickets/${ticket.id}`);
+    }
+  }, []);
+
+  const deleteTicket = useCallback(async (ticketId) => {
+    dispatch({ type: 'DELETE_TICKET', ticketId });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Ticket ${ticketId} archivé`, notifType: 'info' });
+
+    try {
+      const ticketRef = doc(db, 'tickets', ticketId);
+      await deleteDoc(ticketRef);
+    } catch (e) {
+      handleFirestoreError(e, OperationType.DELETE, `tickets/${ticketId}`);
+    }
+  }, []);
+
+  const reportTicketBlockage = useCallback(async (ticketId, reason, reporterName) => {
+    const blockageData = {
+      isBlocked: true,
+      reason,
+      reporter: reporterName,
+      date: new Date().toISOString(),
+      resolved: false,
+    };
+    dispatch({ type: 'UPDATE_TICKET', ticketId, updates: { blockage: blockageData } });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `🚨 Blocage signalé sur ${ticketId} : ${reason}`, notifType: 'error' });
+
+    try {
+      const ticketRef = doc(db, 'tickets', ticketId);
+      await updateDoc(ticketRef, {
+        blockage: blockageData,
+        updatedAt: new Date().toISOString()
+      });
+    } catch (e) {
+      handleFirestoreError(e, OperationType.UPDATE, `tickets/${ticketId}`);
+    }
+  }, []);
+
+  const resolveTicketBlockage = useCallback(async (ticketId) => {
+    const blockageData = {
+      isBlocked: false,
+      reason: '',
+      reporter: '',
+      date: '',
+      resolved: true,
+    };
+    dispatch({ type: 'UPDATE_TICKET', ticketId, updates: { blockage: blockageData } });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `✅ Blocage résolu sur ${ticketId}`, notifType: 'success' });
+
+    try {
+      const ticketRef = doc(db, 'tickets', ticketId);
+      await updateDoc(ticketRef, {
+        blockage: blockageData,
+        updatedAt: new Date().toISOString()
+      });
+    } catch (e) {
+      handleFirestoreError(e, OperationType.UPDATE, `tickets/${ticketId}`);
+    }
+  }, []);
+
+  const logTicketHours = useCallback(async (ticketId, additionalHours, currentLogged = 0) => {
+    const newLogged = Math.round((currentLogged + additionalHours) * 10) / 10;
+    dispatch({ type: 'UPDATE_TICKET', ticketId, updates: { loggedHours: newLogged } });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `+${additionalHours}h enregistrées sur ${ticketId} (Total: ${newLogged}h)`, notifType: 'info' });
+
+    try {
+      const ticketRef = doc(db, 'tickets', ticketId);
+      await updateDoc(ticketRef, {
+        loggedHours: newLogged,
+        updatedAt: new Date().toISOString()
+      });
+    } catch (e) {
+      handleFirestoreError(e, OperationType.UPDATE, `tickets/${ticketId}`);
     }
   }, []);
 
@@ -2016,8 +2152,13 @@ export function AppProvider({ children }) {
       updateInfluencer,
       deleteInfluencer,
       updateTicketStatus, 
+      updateTicket,
       reassignTicket, 
       addTicket,
+      deleteTicket,
+      reportTicketBlockage,
+      resolveTicketBlockage,
+      logTicketHours,
       validateCalendarItem, 
       rejectCalendarItem, 
       submitCalendarItem,

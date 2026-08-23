@@ -28,7 +28,7 @@ function ProtectedRoutes() {
     <AppProvider>
       <Routes>
         <Route element={<DashboardLayout />}>
-          {isAgency && <Route path="/traffic" element={<TrafficIAPage />} />}
+          <Route path="/traffic" element={<TrafficIAPage />} />
           <Route path="/assistant-ia" element={<AssistantIAPage />} />
           <Route path="/prompts" element={<PromptLibraryPage />} />
           <Route path="/briefs" element={<BriefsPage />} />

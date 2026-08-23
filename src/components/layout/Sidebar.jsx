@@ -11,7 +11,9 @@ export default function Sidebar({ isOpen, onClose }) {
   const sections = isAgency ? AGENCE_SECTIONS : CLIENT_SECTIONS;
 
   const getBadge = (id) => {
-    if (id === 'traffic-ia') return tickets.filter(t => calcScore(t) >= 80).length;
+    if (id === 'traffic-manager' || id === 'traffic-ia') {
+      return tickets.filter(t => t.priority === 'p0_urgent' || t.status === 'backlog' || t.blockage?.isBlocked || calcScore(t) >= 80).length;
+    }
     if (id === 'validation') return calendar.filter(c => c.status === 'pending').length;
     return 0;
   };
