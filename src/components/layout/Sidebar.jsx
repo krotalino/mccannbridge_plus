@@ -25,24 +25,28 @@ export default function Sidebar({ isOpen, onClose }) {
   };
 
   return (
-    <aside className={`sidebar ${isOpen ? 'sidebar-open' : ''}`}>
+    <aside 
+      id="appSidebar"
+      className={`sidebar ${isOpen ? 'sidebar-open' : ''}`}
+      aria-label="Navigation principale"
+    >
       <div className="sidebar-header">
         <div className="sidebar-header-top">
           <div>
             <div className="sidebar-logo">BRIDGE</div>
             <div className="sidebar-subtitle">McCann × Orange Cameroun</div>
           </div>
-          {/* Mobile Close Button */}
+          {/* Mobile & Tablet Close Button */}
           <button 
             className="sidebar-mobile-close" 
             onClick={onClose}
-            aria-label="Fermer le menu"
+            aria-label="Fermer le menu de navigation"
           >
             ✕
           </button>
         </div>
         <div className="sidebar-cloud-badge">
-          <span className="sidebar-cloud-dot"></span>
+          <span className="sidebar-cloud-dot" aria-hidden="true"></span>
           <span>Firebase Firestore Connecté</span>
         </div>
       </div>
