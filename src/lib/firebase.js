@@ -1,6 +1,7 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInAnonymously } from 'firebase/auth';
 import { 
+  initializeFirestore,
   getFirestore, 
   doc, 
   getDocFromServer, 
@@ -18,8 +19,17 @@ import firebaseConfig from '../../firebase-applet-config.json';
 // Initialize Firebase safely (preventing duplicate app initialization on module reloads)
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
-// CRITICAL: Initialize Firestore using the custom database ID provided in config
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+// CRITICAL: Initialize Firestore using the custom database ID provided in config with long-polling resilience
+let firestoreDb;
+try {
+  firestoreDb = initializeFirestore(app, {
+    experimentalAutoDetectLongPolling: true,
+  }, firebaseConfig.firestoreDatabaseId);
+} catch (e) {
+  firestoreDb = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+}
+
+export const db = firestoreDb;
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
@@ -36,8 +46,20 @@ export const OperationType = {
  * Standardized Firestore error handler
  */
 export function handleFirestoreError(error, operationType, path = null) {
+  const errMsg = error instanceof Error ? error.message : String(error);
+  // Log offline/timeout warnings cleanly without unhandled crashes
+  if (errMsg.includes('the client is offline') || errMsg.includes("Backend didn't respond")) {
+    console.info(`[Firestore Sync] Operating in offline/cached mode for ${operationType} on ${path || 'unknown'}`);
+    return {
+      error: errMsg,
+      operationType,
+      path,
+      isOffline: true,
+    };
+  }
+
   const errInfo = {
-    error: error instanceof Error ? error.message : String(error),
+    error: errMsg,
     operationType,
     path,
     authInfo: {
@@ -56,20 +78,19 @@ export function handleFirestoreError(error, operationType, path = null) {
 }
 
 /**
- * Test Firestore server connection
+ * Test Firestore server connection safely
  */
 export async function testConnection() {
   try {
-    await getDocFromServer(doc(db, '_connection_test', 'ping'));
+    if (!auth.currentUser) return true;
+    await getDocFromServer(doc(db, 'users', auth.currentUser.uid));
     console.log('Firebase Firestore connection verified.');
     return true;
   } catch (error) {
-    if (error instanceof Error && error.message.includes('the client is offline')) {
-      console.warn('Firebase client is offline, check connection/credentials.');
+    if (error instanceof Error && (error.message.includes('the client is offline') || error.message.includes("Backend didn't respond"))) {
+      console.warn('Firebase client is offline, continuing with local persistence.');
     }
     return false;
   }
 }
 
-// Quick connection test on initialization
-testConnection();

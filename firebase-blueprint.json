@@ -163,6 +163,81 @@
         "updatedAt": { "type": "string", "description": "Date de mise à jour ISO" }
       },
       "required": ["id", "name"]
+    },
+    "Document": {
+      "title": "Document",
+      "description": "Documents stratégiques, briefs, chartes et présentations de marque",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Identifiant unique du document" },
+        "title": { "type": "string", "description": "Titre du document", "maxLength": 300 },
+        "client": { "type": "string", "description": "Client ou marque" },
+        "category": { "type": "string", "description": "Catégorie documentaire" },
+        "status": { "type": "string", "description": "Statut (draft, reviewed, approved, archived)" },
+        "inKnowledgeBase": { "type": "boolean", "description": "Indexé dans le RAG de l'IA" },
+        "createdAt": { "type": "string", "description": "Date de création ISO" },
+        "updatedAt": { "type": "string", "description": "Date de mise à jour ISO" }
+      },
+      "required": ["id", "title"]
+    },
+    "Agent": {
+      "title": "Agent",
+      "description": "Agents d'intelligence artificielle configurés pour McCann Bridge",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Identifiant de l'agent" },
+        "name": { "type": "string", "description": "Nom de l'agent", "maxLength": 100 },
+        "role": { "type": "string", "description": "Rôle métier de l'agent" },
+        "status": { "type": "string", "description": "Statut actif ou inactif" },
+        "systemPrompt": { "type": "string", "description": "Prompt système de l'agent" }
+      },
+      "required": ["id", "name"]
+    },
+    "Prompt": {
+      "title": "Prompt",
+      "description": "Bibliothèque de prompts pour les équipes créatives et stratégiques",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Identifiant du prompt template" },
+        "title": { "type": "string", "description": "Titre du prompt", "maxLength": 200 },
+        "category": { "type": "string", "description": "Catégorie d'utilisation" },
+        "prompt": { "type": "string", "description": "Contenu du prompt" }
+      },
+      "required": ["id", "title"]
+    },
+    "Conversation": {
+      "title": "Conversation",
+      "description": "Historique des conversations et sessions de travail avec les agents IA",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Identifiant de la conversation" },
+        "agentId": { "type": "string", "description": "Agent IA concerné" },
+        "messages": { "type": "array", "description": "Historique des messages" },
+        "updatedAt": { "type": "string", "description": "Dernière interaction" }
+      },
+      "required": ["id"]
+    },
+    "KnowledgeChunk": {
+      "title": "KnowledgeChunk",
+      "description": "Segments de connaissances documentaires indexés pour le RAG",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Identifiant du chunk" },
+        "documentId": { "type": "string", "description": "ID du document source" },
+        "content": { "type": "string", "description": "Contenu textuel" }
+      },
+      "required": ["id", "content"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Journal d'audit des actions critiques et générations IA",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Identifiant du log" },
+        "action": { "type": "string", "description": "Action effectuée" },
+        "timestamp": { "type": "string", "description": "Date et heure ISO" }
+      },
+      "required": ["id", "action"]
     }
   },
   "firestore": {
@@ -189,6 +264,30 @@
     "/publications/{pubId}": {
       "schema": "Publication",
       "description": "Collection du pipeline de validation des publications"
+    },
+    "/documents/{docId}": {
+      "schema": "Document",
+      "description": "Collection des documents de marque et briefs"
+    },
+    "/agents/{agentId}": {
+      "schema": "Agent",
+      "description": "Collection des agents IA configurés"
+    },
+    "/prompts/{promptId}": {
+      "schema": "Prompt",
+      "description": "Collection des modèles de prompts"
+    },
+    "/ai_conversations/{convId}": {
+      "schema": "Conversation",
+      "description": "Collection des sessions de dialogue IA"
+    },
+    "/knowledge_chunks/{chunkId}": {
+      "schema": "KnowledgeChunk",
+      "description": "Collection des chunks de connaissances pour le RAG"
+    },
+    "/audit_logs/{logId}": {
+      "schema": "AuditLog",
+      "description": "Collection des logs d'audit système"
     },
     "/users/{userId}": {
       "schema": "UserProfile",

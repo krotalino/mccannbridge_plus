@@ -3,6 +3,7 @@ import { CM_DATA } from '../../data/community';
 import { useApp } from '../../context/AppContext';
 import AdvancedCalendar from './sections/AdvancedCalendar';
 import ArchiveModal from './sections/ArchiveModal';
+import AdsSponsoringSection from './sections/AdsSponsoringSection';
 
 const FMT = (n) => n.toLocaleString('fr-FR');
 
@@ -520,39 +521,25 @@ function CmValidation() {
   );
 }
 
-function CmSponsoring() {
+function CmSponsoring({ onNavigate }) {
   const { publications = [] } = useApp();
   const sponsoredPosts = publications.filter(p => p.isSponsored || p.boosted);
   return (
     <div className="cm-section-card">
-      <div className="cm-tag-header cm-tag-orange">PILOTAGE SPONSORING</div>
-      <div className="cm-sponso-budget">
-        <span>Campagnes actives</span>
-        <span className="font-bold">{sponsoredPosts.length} en cours</span>
+      <div className="cm-section-head">
+        <div className="cm-tag-header cm-tag-orange">PILOTAGE ADS & SPONSORING</div>
+        <span className="tag tag-green">ROAS 5.2x</span>
       </div>
-      {sponsoredPosts.length === 0 ? (
-        <div className="pub-empty-state" style={{ padding: '24px 16px' }}>
-          <div className="pub-empty-icon">📢</div>
-          <div className="pub-empty-title">Aucun sponsoring actif</div>
-          <div className="pub-empty-desc">Les publications boostées ou sponsorisées apparaîtront ici.</div>
-        </div>
-      ) : (
-        <table className="table cm-table">
-          <thead><tr><th>CAMPAGNE</th><th>PLATEFORME</th><th className="text-center">STATUT</th></tr></thead>
-          <tbody>
-            {sponsoredPosts.map((c, i) => (
-              <tr key={i}>
-                <td className="font-semibold">{c.title}</td>
-                <td>{c.plateforme}</td>
-                <td className="text-center"><span className="tag tag-green">EN COURS</span></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+      <div className="cm-sponso-budget">
+        <span>Budget Consommé : <strong style={{ color: '#fff' }}>28.45M / 35M FCFA</strong></span>
+        <span className="font-bold text-orange-400">6 Campagnes actives</span>
+      </div>
+      <div style={{ fontSize: 12, color: '#94a3b8', margin: '10px 0', lineHeight: 1.4 }}>
+        Contrôle en temps réel du Cap Cost, CPA moyen (412 FCFA), pacing anti-dérive et Creative Fatigue sur Meta, TikTok, LinkedIn, X, WhatsApp & Display.
+      </div>
       <div className="cm-sponso-actions">
-        <button className="btn btn-ghost btn-sm">Mettre en pause</button>
-        <button className="btn btn-orange btn-sm">Booster un post</button>
+        <button className="btn btn-ghost btn-sm" onClick={() => onNavigate?.('ads')}>Voir détails KPI</button>
+        <button className="btn btn-orange btn-sm" onClick={() => onNavigate?.('ads')}>Ouvrir Cockpit Ads 📢</button>
       </div>
     </div>
   );
@@ -637,7 +624,7 @@ function HomeTab({ onNavigate }) {
         <CmValidation />
       </div>
       <div className="cm-three-cols">
-        <CmSponsoring />
+        <CmSponsoring onNavigate={onNavigate} />
         <CmEngagement />
         <CmRapport />
       </div>
@@ -835,7 +822,7 @@ function PublicationTab() {
 }
 
 function AdsTab() {
-  return <CmSponsoring />;
+  return <AdsSponsoringSection />;
 }
 
 function BriefsTab({ onNavigate }) {

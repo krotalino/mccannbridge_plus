@@ -125,6 +125,48 @@ service cloud.firestore {
       allow delete: if isSignedIn() && isOwner(userId);
     }
 
+    // ─── Documents Collection ───
+    match /documents/{docId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(docId);
+      allow delete: if isSignedIn() && isValidId(docId);
+    }
+
+    // ─── Agents Collection ───
+    match /agents/{agentId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(agentId);
+      allow delete: if isSignedIn() && isValidId(agentId);
+    }
+
+    // ─── Prompts Collection ───
+    match /prompts/{promptId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(promptId);
+      allow delete: if isSignedIn() && isValidId(promptId);
+    }
+
+    // ─── AI Conversations Collection ───
+    match /ai_conversations/{convId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(convId);
+      allow delete: if isSignedIn() && isValidId(convId);
+    }
+
+    // ─── Knowledge Chunks Collection ───
+    match /knowledge_chunks/{chunkId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(chunkId);
+      allow delete: if isSignedIn() && isValidId(chunkId);
+    }
+
+    // ─── Audit Logs Collection ───
+    match /audit_logs/{logId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(logId);
+      allow delete: if isSignedIn() && isValidId(logId);
+    }
+
     // ─── Notifications ───
     match /notifications/{notificationId} {
       allow read: if isSignedIn();
