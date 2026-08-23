@@ -29,8 +29,8 @@ function ProtectedRoutes() {
       <Routes>
         <Route element={<DashboardLayout />}>
           <Route path="/traffic" element={<TrafficIAPage />} />
-          <Route path="/assistant-ia" element={<AssistantIAPage />} />
-          <Route path="/prompts" element={<PromptLibraryPage />} />
+          {isAgency && <Route path="/assistant-ia" element={<AssistantIAPage />} />}
+          {isAgency && <Route path="/prompts" element={<PromptLibraryPage />} />}
           <Route path="/briefs" element={<BriefsPage />} />
           <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/validation" element={<ValidationPage />} />
@@ -42,7 +42,7 @@ function ProtectedRoutes() {
           {isAgency && <Route path="/admin-ia" element={<AdminIAPage />} />}
 
           <Route path="/reports" element={<ReportsPage />} />
-          <Route path="/documents" element={<DocumentsPage />} />
+          {isAgency && <Route path="/documents" element={<DocumentsPage />} />}
           <Route path="/tasks" element={<TasksPage />} />
           {isAgency && <Route path="/growth" element={<GrowthPage />} />}
           <Route path="*" element={<Navigate to={isAgency ? "/traffic" : "/briefs"} replace />} />

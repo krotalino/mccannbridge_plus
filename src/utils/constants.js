@@ -34,9 +34,6 @@ export const AGENCE_SECTIONS = [
 ];
 
 export const CLIENT_SECTIONS = [
-  { id: 'assistant-ia', label: 'Assistant IA', icon: '✨', path: '/assistant-ia' },
-  { id: 'documents', label: 'Documents & Ressources', icon: '📁', path: '/documents' },
-  { id: 'prompts', label: 'Prompt Library', icon: '💡', path: '/prompts' },
   { id: 'briefs', label: 'Briefs & Demandes', icon: '📋', path: '/briefs' },
   { id: 'traffic-manager', label: 'Traffic Manager', icon: '🚦', path: '/traffic' },
   { id: 'calendar', label: 'Community Managers', icon: '👩‍💻', path: '/calendar' },
