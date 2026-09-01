@@ -238,9 +238,41 @@
         "timestamp": { "type": "string", "description": "Date et heure ISO" }
       },
       "required": ["id", "action"]
+    },
+    "FinancialDocument": {
+      "title": "FinancialDocument",
+      "description": "Bons de commandes, factures (client & fournisseur), reçus, devis et factures pro-forma",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Identifiant unique du document" },
+        "type": { "type": "string", "description": "Type de document: BC, FAF, FC, RC, DEV, PRO" },
+        "reference": { "type": "string", "description": "Référence séquentielle normalisée" },
+        "client": { "type": "string", "description": "Nom du tiers / Client / Fournisseur" },
+        "campagne": { "type": "string", "description": "Campagne ou projet associé" },
+        "dateEmission": { "type": "string", "description": "Date d'émission" },
+        "dateEcheance": { "type": "string", "description": "Date d'échéance" },
+        "statut": { "type": "string", "description": "Statut (Brouillon, En validation, Validée, Réconcilié, Encaissée / Payée, Impayée)" },
+        "items": { "type": "array", "description": "Lignes de prestations et articles" },
+        "montantHT": { "type": "number", "description": "Montant sous-total HT" },
+        "montantRemise": { "type": "number", "description": "Total des remises" },
+        "montantTVA": { "type": "number", "description": "Total TVA" },
+        "montantTTC": { "type": "number", "description": "Montant Total Net TTC" },
+        "modeReglement": { "type": "string", "description": "Mode de règlement préconisé" },
+        "etablissementBancaire": { "type": "string", "description": "Banque" },
+        "rib": { "type": "string", "description": "RIB ou IBAN" },
+        "notes": { "type": "string", "description": "Notes et instructions spéciales" },
+        "pieces": { "type": "array", "description": "Pièces jointes et justificatifs" },
+        "createdAt": { "type": "string", "description": "Date de création ISO" },
+        "updatedAt": { "type": "string", "description": "Date de mise à jour ISO" }
+      },
+      "required": ["id", "type", "reference", "client", "montantTTC"]
     }
   },
   "firestore": {
+    "/financial_documents/{docId}": {
+      "schema": "FinancialDocument",
+      "description": "Collection des pièces et documents financiers (BC, Factures, Devis, Reçus, Pro-forma)"
+    },
     "/influencers/{influencerId}": {
       "schema": "Influencer",
       "description": "Collection des fiches d'influenceurs enregistrés en base de données"

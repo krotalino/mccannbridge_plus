@@ -29,6 +29,7 @@ import {
   INITIAL_AUDIT_LOGS,
   INITIAL_CLIENTS_HIERARCHY
 } from '../data/aiAndDocsData';
+import { INITIAL_FINANCIAL_DOCUMENTS } from '../utils/financialUtils';
 
 const AppContext = createContext(null);
 
@@ -149,12 +150,23 @@ const loadSavedInfluencers = () => {
   }
 };
 
+// Load financial documents from localStorage fallback
+const loadSavedFinancialDocuments = () => {
+  try {
+    const saved = localStorage.getItem('bridge_financial_docs_v2');
+    return saved ? JSON.parse(saved) : INITIAL_FINANCIAL_DOCUMENTS;
+  } catch (e) {
+    return INITIAL_FINANCIAL_DOCUMENTS;
+  }
+};
+
 const initialState = {
   tickets: INITIAL_TICKETS,
   calendar: INITIAL_CALENDAR,
   publications: loadSavedPublications(),
   calendarPosts: loadSavedCalendarPosts(),
   influencers: loadSavedInfluencers(),
+  financialDocuments: loadSavedFinancialDocuments(),
   briefs: loadSavedBriefs(),
   reports: loadSavedReports(),
   documents: loadSavedDocuments(),
@@ -217,6 +229,31 @@ function appReducer(state, action) {
     case 'SYNC_INFLUENCERS': {
       try { localStorage.setItem('bridge_influencers_v2', JSON.stringify(action.influencers)); } catch (e) {}
       return { ...state, influencers: action.influencers, firestoreReady: true };
+    }
+
+    case 'SYNC_FINANCIAL_DOCUMENTS': {
+      try { localStorage.setItem('bridge_financial_docs_v2', JSON.stringify(action.documents)); } catch (e) {}
+      return { ...state, financialDocuments: action.documents, firestoreReady: true };
+    }
+
+    case 'ADD_FINANCIAL_DOCUMENT': {
+      const updatedDocs = [action.document, ...state.financialDocuments.filter(d => d.id !== action.document.id)];
+      try { localStorage.setItem('bridge_financial_docs_v2', JSON.stringify(updatedDocs)); } catch (e) {}
+      return { ...state, financialDocuments: updatedDocs };
+    }
+
+    case 'UPDATE_FINANCIAL_DOCUMENT': {
+      const updatedDocs = state.financialDocuments.map(d =>
+        d.id === action.id ? { ...d, ...action.updates, updatedAt: new Date().toISOString() } : d
+      );
+      try { localStorage.setItem('bridge_financial_docs_v2', JSON.stringify(updatedDocs)); } catch (e) {}
+      return { ...state, financialDocuments: updatedDocs };
+    }
+
+    case 'DELETE_FINANCIAL_DOCUMENT': {
+      const updatedDocs = state.financialDocuments.filter(d => d.id !== action.id);
+      try { localStorage.setItem('bridge_financial_docs_v2', JSON.stringify(updatedDocs)); } catch (e) {}
+      return { ...state, financialDocuments: updatedDocs };
     }
 
     // ─── Active AI Context ───
@@ -1163,6 +1200,24 @@ export function AppProvider({ children }) {
           handleFirestoreError(err, OperationType.LIST, 'influencers');
         });
         unsubs.push(unsubInf);
+
+        // 14. Financial Documents Listener (BC, Factures, Devis, Reçus, Proforma)
+        const finDocsCol = collection(db, 'financial_documents');
+        const unsubFinDocs = onSnapshot(finDocsCol, async (snapshot) => {
+          if (snapshot.empty && !isInitializedRef.current) {
+            for (const fd of INITIAL_FINANCIAL_DOCUMENTS) {
+              await setDoc(doc(db, 'financial_documents', fd.id), fd);
+            }
+          } else {
+            const list = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
+            if (list.length > 0) {
+              dispatch({ type: 'SYNC_FINANCIAL_DOCUMENTS', documents: list });
+            }
+          }
+        }, (err) => {
+          handleFirestoreError(err, OperationType.LIST, 'financial_documents');
+        });
+        unsubs.push(unsubFinDocs);
 
         isInitializedRef.current = true;
       } catch (e) {
@@ -2145,12 +2200,128 @@ export function AppProvider({ children }) {
     }
   }, []);
 
+  // ─── Financial Documents Management Handlers ───
+  const addFinancialDocument = useCallback(async (docData) => {
+    const newDoc = {
+      ...docData,
+      id: docData.id || `fin-${Date.now()}`,
+      createdAt: docData.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    dispatch({ type: 'ADD_FINANCIAL_DOCUMENT', document: newDoc });
+    dispatch({
+      type: 'ADD_NOTIFICATION',
+      text: `Document enregistré : ${newDoc.reference} (${newDoc.typeLabel || newDoc.type})`,
+      notifType: 'success'
+    });
+
+    // Automatically record in audit log
+    const auditEntry = {
+      id: `audit-${Date.now()}`,
+      date: new Date().toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+      user: 'Directeur Financier',
+      action: `Création ${newDoc.typeLabel || newDoc.type}`,
+      detail: `${newDoc.reference} — ${newDoc.client} — ${(newDoc.montantTTC || 0).toLocaleString('fr-FR')} FCFA`,
+      level: 'info',
+      timestamp: new Date().toISOString(),
+    };
+    dispatch({ type: 'ADD_AUDIT_LOG', log: auditEntry });
+
+    try {
+      const docRef = doc(db, 'financial_documents', newDoc.id);
+      await setDoc(docRef, newDoc);
+
+      const auditRef = doc(db, 'audit_logs', auditEntry.id);
+      await setDoc(auditRef, auditEntry);
+    } catch (e) {
+      handleFirestoreError(e, OperationType.CREATE, `financial_documents/${newDoc.id}`);
+    }
+
+    return newDoc;
+  }, []);
+
+  const updateFinancialDocument = useCallback(async (id, updates) => {
+    dispatch({ type: 'UPDATE_FINANCIAL_DOCUMENT', id, updates });
+    dispatch({
+      type: 'ADD_NOTIFICATION',
+      text: `Document mis à jour : ${updates.reference || id}`,
+      notifType: 'info'
+    });
+
+    try {
+      const docRef = doc(db, 'financial_documents', id);
+      await updateDoc(docRef, {
+        ...updates,
+        updatedAt: new Date().toISOString()
+      });
+    } catch (e) {
+      handleFirestoreError(e, OperationType.UPDATE, `financial_documents/${id}`);
+    }
+  }, []);
+
+  const deleteFinancialDocument = useCallback(async (id, reference) => {
+    dispatch({ type: 'DELETE_FINANCIAL_DOCUMENT', id });
+    dispatch({
+      type: 'ADD_NOTIFICATION',
+      text: `Document supprimé : ${reference || id}`,
+      notifType: 'warning'
+    });
+
+    try {
+      const docRef = doc(db, 'financial_documents', id);
+      await deleteDoc(docRef);
+    } catch (e) {
+      handleFirestoreError(e, OperationType.DELETE, `financial_documents/${id}`);
+    }
+  }, []);
+
+  const approveFinancialDocument = useCallback(async (id, newStatut = 'Validée') => {
+    dispatch({
+      type: 'UPDATE_FINANCIAL_DOCUMENT',
+      id,
+      updates: { statut: newStatut }
+    });
+    dispatch({
+      type: 'ADD_NOTIFICATION',
+      text: `Statut validé avec succès (${newStatut})`,
+      notifType: 'success'
+    });
+
+    const auditEntry = {
+      id: `audit-${Date.now()}`,
+      date: new Date().toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+      user: 'Contrôleur de Gestion',
+      action: `Validation ${newStatut}`,
+      detail: `Document ${id} validé et prêt pour ordonnancement`,
+      level: 'success',
+      timestamp: new Date().toISOString(),
+    };
+    dispatch({ type: 'ADD_AUDIT_LOG', log: auditEntry });
+
+    try {
+      const docRef = doc(db, 'financial_documents', id);
+      await updateDoc(docRef, {
+        statut: newStatut,
+        updatedAt: new Date().toISOString()
+      });
+      const auditRef = doc(db, 'audit_logs', auditEntry.id);
+      await setDoc(auditRef, auditEntry);
+    } catch (e) {
+      handleFirestoreError(e, OperationType.UPDATE, `financial_documents/${id}`);
+    }
+  }, []);
+
   return (
     <AppContext.Provider value={{
       ...state, 
       addInfluencer,
       updateInfluencer,
       deleteInfluencer,
+      addFinancialDocument,
+      updateFinancialDocument,
+      deleteFinancialDocument,
+      approveFinancialDocument,
       updateTicketStatus, 
       updateTicket,
       reassignTicket, 

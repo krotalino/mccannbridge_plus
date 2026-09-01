@@ -160,6 +160,13 @@ service cloud.firestore {
       allow delete: if isSignedIn() && isValidId(chunkId);
     }
 
+    // ─── Financial Documents Collection ───
+    match /financial_documents/{docId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(docId);
+      allow delete: if isSignedIn() && isValidId(docId);
+    }
+
     // ─── Audit Logs Collection ───
     match /audit_logs/{logId} {
       allow read: if isSignedIn();

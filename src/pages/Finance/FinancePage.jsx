@@ -1,11 +1,15 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useApp } from '../../context/AppContext';
 import { FINANCIAL_DATA } from '../../data/financial';
+import { DOCUMENT_TYPES, DOCUMENT_STATUSES } from '../../utils/financialUtils';
+import FinancialDocumentModal from './modals/FinancialDocumentModal';
+import OcrImportModal from './modals/OcrImportModal';
 
-const FMT = (n) => n.toLocaleString('fr-FR');
+const FMT = (n) => (n !== undefined && n !== null ? Number(n).toLocaleString('fr-FR') : '0');
 
 const FINANCE_SECTIONS = [
   { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-  { id: 'operations', label: 'Opérations (BC / Factures / Reçus)', icon: '📄' },
+  { id: 'operations', label: 'Opérations (BC / Factures / Devis)', icon: '📄' },
   { id: 'facturation', label: 'Facturation Client', icon: '🧾' },
   { id: 'tresorerie', label: 'Trésorerie & Alertes', icon: '💰' },
   { id: 'rapprochements', label: 'Rapprochements & Approbations', icon: '🔗' },
@@ -118,58 +122,401 @@ function WorkflowPanel() {
 }
 
 function OperationsRegister() {
-  const ops = FINANCIAL_DATA.operations;
-  const getStatutClass = (s) => {
-    if (s === 'En validation') return 'tag-yellow';
-    if (s === 'Validée') return 'tag-green';
-    if (s === 'Réconcilié') return 'tag-blue';
-    if (s === 'À réconcilier') return 'tag-purple';
-    return 'tag-muted';
+  const { 
+    financialDocuments = [], 
+    addFinancialDocument, 
+    updateFinancialDocument, 
+    deleteFinancialDocument, 
+    approveFinancialDocument 
+  } = useApp();
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTypeFilter, setSelectedTypeFilter] = useState('ALL');
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState('ALL');
+  const [isDocModalOpen, setIsDocModalOpen] = useState(false);
+  const [isOcrModalOpen, setIsOcrModalOpen] = useState(false);
+  const [editingDoc, setEditingDoc] = useState(null);
+  const [defaultDocType, setDefaultDocType] = useState('BC');
+
+  // Filtered documents
+  const filteredDocs = useMemo(() => {
+    return (financialDocuments || []).filter(doc => {
+      const matchSearch = !searchQuery || 
+        (doc.reference && doc.reference.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (doc.client && doc.client.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (doc.campagne && doc.campagne.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (doc.notes && doc.notes.toLowerCase().includes(searchQuery.toLowerCase()));
+
+      const matchType = selectedTypeFilter === 'ALL' || doc.type === selectedTypeFilter;
+      const matchStatus = selectedStatusFilter === 'ALL' || doc.statut === selectedStatusFilter;
+
+      return matchSearch && matchType && matchStatus;
+    });
+  }, [financialDocuments, searchQuery, selectedTypeFilter, selectedStatusFilter]);
+
+  const handleOpenCreateModal = (type = 'BC') => {
+    setEditingDoc(null);
+    setDefaultDocType(type);
+    setIsDocModalOpen(true);
   };
-  const getActionClass = (a) => {
-    if (a === 'Approuver') return 'btn-orange';
-    if (a === 'Réconcilier') return 'btn-green';
-    return 'btn-ghost';
+
+  const handleOpenEditModal = (doc) => {
+    setEditingDoc(doc);
+    setDefaultDocType(doc.type || 'BC');
+    setIsDocModalOpen(true);
+  };
+
+  const handleSaveDocument = (docData) => {
+    if (editingDoc) {
+      updateFinancialDocument(editingDoc.id, docData);
+    } else {
+      addFinancialDocument(docData);
+    }
+  };
+
+  const handleOcrImport = (parsedDoc) => {
+    setEditingDoc(parsedDoc);
+    setDefaultDocType(parsedDoc.type || 'BC');
+    setIsDocModalOpen(true);
+  };
+
+  const handleDelete = (id, ref) => {
+    if (window.confirm(`Êtes-vous sûr de vouloir supprimer définitivement le document ${ref || id} ?`)) {
+      deleteFinancialDocument(id, ref);
+    }
+  };
+
+  const getDocTypeConfig = (type) => {
+    return DOCUMENT_TYPES.find(t => t.id === type || t.label === type) || DOCUMENT_TYPES[0];
+  };
+
+  const getStatutBadge = (statut) => {
+    const sObj = DOCUMENT_STATUSES.find(s => s.id === statut) || { badgeClass: 'tag-muted' };
+    return sObj.badgeClass;
   };
 
   return (
-    <div className="fin-section-card">
-      <h3 className="fin-section-title">REGISTRE DES OPÉRATIONS — BC · FACTURES · REÇUS</h3>
-      <div className="fin-ops-actions">
-        <button className="btn btn-green btn-sm">+ Bon de Commande</button>
-        <button className="btn btn-green btn-sm">+ Facture</button>
-        <button className="btn btn-orange btn-sm">+ Reçu</button>
-        <button className="btn btn-ghost btn-sm">Rapprochement Bancaire</button>
-        <button className="btn btn-ghost btn-sm">Import Automatique (OCR)</button>
+    <div className="fin-section-card" style={{ marginBottom: 24 }}>
+      {/* Title & Quick Actions Row */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 16 }}>
+        <div>
+          <h3 className="fin-section-title" style={{ margin: 0 }}>
+            REGISTRE DES OPÉRATIONS & DOCUMENTS FINANCIERS (6 TYPES)
+          </h3>
+          <div style={{ fontSize: 12, color: 'var(--gray)', marginTop: 4 }}>
+            Bons de Commande, Factures (Fournisseur & Client), Reçus, Devis et Pro-forma avec calcul TVA & OCR
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          <button 
+            type="button" 
+            onClick={() => setIsOcrModalOpen(true)}
+            className="btn btn-ghost btn-sm"
+            style={{ display: 'flex', alignItems: 'center', gap: 6, border: '1px solid var(--orange)', color: 'var(--orange)' }}
+          >
+            <span>🔍</span> Import Reconnaissance OCR
+          </button>
+          
+          <div style={{ position: 'relative', display: 'inline-block' }}>
+            <button 
+              type="button" 
+              onClick={() => handleOpenCreateModal('BC')}
+              className="btn btn-orange btn-sm"
+              style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700 }}
+            >
+              <span>+</span> Créer un Document
+            </button>
+          </div>
+        </div>
       </div>
-      <table className="table fin-ops-table">
-        <thead>
-          <tr>
-            <th>TYPE</th>
-            <th>RÉFÉRENCE</th>
-            <th>CLIENT / CAMPAGNE</th>
-            <th className="text-right">MONTANT</th>
-            <th>DATE</th>
-            <th className="text-center">STATUT</th>
-            <th>PIÈCES</th>
-            <th className="text-center">ACTION RAPIDE</th>
-          </tr>
-        </thead>
-        <tbody>
-          {ops.map(op => (
-            <tr key={op.id}>
-              <td><span className={`fin-op-type ${op.type.includes('Bon') ? 'type-bc' : op.type.includes('Facture') ? 'type-fa' : 'type-rc'}`}>{op.type}</span></td>
-              <td className="font-semibold">{op.reference}</td>
-              <td>{op.client}</td>
-              <td className="text-right font-semibold">{FMT(op.montant)} FCFA</td>
-              <td>{op.date}</td>
-              <td className="text-center"><span className={`tag ${getStatutClass(op.statut)}`}>{op.statut}</span></td>
-              <td className="text-muted">{op.pieces}</td>
-              <td className="text-center"><button className={`btn btn-sm ${getActionClass(op.action)}`}>{op.action}</button></td>
+
+      {/* 6 Document Type Fast Creation Buttons Bar */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+        gap: 8,
+        marginBottom: 16,
+        padding: '12px',
+        background: '#f8fafc',
+        borderRadius: 10,
+        border: '1px solid #e2e8f0'
+      }}>
+        {DOCUMENT_TYPES.map(t => {
+          const count = (financialDocuments || []).filter(d => d.type === t.id).length;
+          return (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => handleOpenCreateModal(t.id)}
+              style={{
+                background: '#ffffff',
+                border: '1px solid #cbd5e1',
+                borderRadius: 8,
+                padding: '8px 10px',
+                textAlign: 'left',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = t.color;
+                e.currentTarget.style.background = '#fff7ed';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = '#cbd5e1';
+                e.currentTarget.style.background = '#ffffff';
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 15 }}>{t.icon}</span>
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: '#0f172a' }}>+ {t.id}</div>
+                  <div style={{ fontSize: 9, color: '#64748b', whiteSpace: 'nowrap' }}>{t.label.slice(0, 16)}</div>
+                </div>
+              </div>
+              <span style={{
+                fontSize: 10,
+                fontWeight: 700,
+                background: '#f1f5f9',
+                color: t.color,
+                padding: '2px 6px',
+                borderRadius: 10
+              }}>
+                {count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Filter and Search Bar */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: 12,
+        marginBottom: 16
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 260 }}>
+          <div style={{ position: 'relative', width: '100%', maxWidth: 360 }}>
+            <input
+              type="text"
+              placeholder="Rechercher par réf, client, campagne..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="form-input"
+              style={{ paddingLeft: 32, fontSize: 13, height: 36 }}
+            />
+            <span style={{ position: 'absolute', left: 10, top: 9, color: '#94a3b8', fontSize: 14 }}>🔍</span>
+          </div>
+
+          <select
+            value={selectedTypeFilter}
+            onChange={(e) => setSelectedTypeFilter(e.target.value)}
+            className="form-input form-select"
+            style={{ width: 170, fontSize: 13, height: 36 }}
+          >
+            <option value="ALL">Tous les types ({financialDocuments.length})</option>
+            {DOCUMENT_TYPES.map(t => (
+              <option key={t.id} value={t.id}>{t.label} ({t.id})</option>
+            ))}
+          </select>
+
+          <select
+            value={selectedStatusFilter}
+            onChange={(e) => setSelectedStatusFilter(e.target.value)}
+            className="form-input form-select"
+            style={{ width: 170, fontSize: 13, height: 36 }}
+          >
+            <option value="ALL">Tous les statuts</option>
+            {DOCUMENT_STATUSES.map(s => (
+              <option key={s.id} value={s.id}>{s.label}</option>
+            ))}
+          </select>
+        </div>
+
+        <div style={{ fontSize: 12, color: 'var(--gray)', fontWeight: 600 }}>
+          {filteredDocs.length} document(s) affiché(s)
+        </div>
+      </div>
+
+      {/* Interactive Financial Documents Table */}
+      <div style={{ overflowX: 'auto', border: '1px solid #e2e8f0', borderRadius: 8 }}>
+        <table className="table fin-ops-table" style={{ margin: 0 }}>
+          <thead>
+            <tr>
+              <th style={{ width: 85 }}>TYPE</th>
+              <th>RÉFÉRENCE</th>
+              <th>CLIENT / FOURNISSEUR</th>
+              <th>CAMPAGNE</th>
+              <th className="text-right">MONTANT TTC</th>
+              <th>ÉMISSION</th>
+              <th className="text-center">STATUT</th>
+              <th>PIÈCES</th>
+              <th className="text-center" style={{ minWidth: 160 }}>ACTIONS</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filteredDocs.length === 0 ? (
+              <tr>
+                <td colSpan={9} style={{ textAlign: 'center', padding: '36px 20px', color: '#64748b' }}>
+                  <div style={{ fontSize: 28, marginBottom: 8 }}>📑</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#1e293b' }}>Aucun document financier trouvé</div>
+                  <div style={{ fontSize: 12, marginTop: 4 }}>
+                    Cliquez sur « + Créer un Document » ou « Import Reconnaissance OCR » pour en ajouter un.
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              filteredDocs.map(doc => {
+                const typeCfg = getDocTypeConfig(doc.type);
+                const piecesCount = Array.isArray(doc.pieces) ? doc.pieces.length : (doc.pieces && doc.pieces !== '—' ? 1 : 0);
+
+                return (
+                  <tr key={doc.id} style={{ transition: 'background 0.2s' }}>
+                    <td>
+                      <span 
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          fontSize: 11,
+                          fontWeight: 800,
+                          padding: '3px 8px',
+                          borderRadius: 4,
+                          background: `${typeCfg.color}15`,
+                          color: typeCfg.color,
+                          border: `1px solid ${typeCfg.color}40`,
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        <span>{typeCfg.icon}</span> {doc.type}
+                      </span>
+                    </td>
+                    <td className="font-semibold" style={{ color: '#0f172a' }}>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEditModal(doc)}
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          color: '#0f172a',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          textDecoration: 'underline',
+                          padding: 0,
+                          fontSize: 13
+                        }}
+                        title="Cliquer pour voir et éditer"
+                      >
+                        {doc.reference}
+                      </button>
+                    </td>
+                    <td>
+                      <div style={{ fontWeight: 600, color: '#1e293b' }}>{doc.thirdParty?.name || doc.client || '—'}</div>
+                      {doc.thirdParty?.rccm && (
+                        <div style={{ fontSize: 10, color: '#64748b' }}>{doc.thirdParty.rccm.slice(0, 24)}...</div>
+                      )}
+                    </td>
+                    <td style={{ color: '#475569', fontSize: 12 }}>{doc.campagne || '—'}</td>
+                    <td className="text-right font-semibold" style={{ color: '#0f172a', whiteSpace: 'nowrap' }}>
+                      {FMT(doc.montantTTC || doc.montant || 0)} FCFA
+                    </td>
+                    <td style={{ fontSize: 12, color: '#64748b', whiteSpace: 'nowrap' }}>
+                      {doc.dateEmission || doc.date || '—'}
+                    </td>
+                    <td className="text-center">
+                      <span className={`tag ${getStatutBadge(doc.statut)}`}>
+                        {doc.statut}
+                      </span>
+                    </td>
+                    <td className="text-muted" style={{ fontSize: 12 }}>
+                      {piecesCount > 0 ? (
+                        <span title={Array.isArray(doc.pieces) ? doc.pieces.join(', ') : doc.pieces} style={{ cursor: 'pointer', color: 'var(--blue)' }}>
+                          📎 {piecesCount} doc(s)
+                        </span>
+                      ) : (
+                        '—'
+                      )}
+                    </td>
+                    <td className="text-center">
+                      <div style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEditModal(doc)}
+                          className="btn btn-ghost btn-sm"
+                          style={{ padding: '3px 8px', fontSize: 12 }}
+                          title="Prévisualiser et modifier"
+                        >
+                          👁️ Fiche
+                        </button>
+                        
+                        {doc.statut !== 'Validée' && doc.statut !== 'Réconcilié' && doc.statut !== 'Encaissée / Payée' ? (
+                          <button
+                            type="button"
+                            onClick={() => approveFinancialDocument(doc.id, 'Validée')}
+                            className="btn btn-orange btn-sm"
+                            style={{ padding: '3px 8px', fontSize: 12 }}
+                            title="Valider ce document"
+                          >
+                            ✓ Valider
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => approveFinancialDocument(doc.id, 'Réconcilié')}
+                            className="btn btn-green btn-sm"
+                            style={{ padding: '3px 8px', fontSize: 12 }}
+                            title="Marquer réconcilié"
+                          >
+                            ✓ Réconcilier
+                          </button>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(doc.id, doc.reference)}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: '#94a3b8',
+                            cursor: 'pointer',
+                            padding: '3px 6px',
+                            fontSize: 14
+                          }}
+                          title="Supprimer définitivement"
+                        >
+                          🗑
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Financial Modals */}
+      <FinancialDocumentModal
+        isOpen={isDocModalOpen}
+        onClose={() => { setIsDocModalOpen(false); setEditingDoc(null); }}
+        onSave={handleSaveDocument}
+        initialData={editingDoc}
+        defaultType={defaultDocType}
+        existingDocs={financialDocuments}
+      />
+
+      <OcrImportModal
+        isOpen={isOcrModalOpen}
+        onClose={() => setIsOcrModalOpen(false)}
+        onImportParsedDoc={handleOcrImport}
+      />
     </div>
   );
 }
