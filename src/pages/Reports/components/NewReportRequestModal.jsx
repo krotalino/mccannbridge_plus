@@ -276,35 +276,35 @@ export default function NewReportRequestModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55 backdrop-blur-xs animate-fadeIn">
-      <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-gray-100 overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
+      <div className="rounded-2xl max-w-4xl w-full max-h-[92vh] flex flex-col cosmic-glass-card border border-white/20 shadow-[0_16px_48px_rgba(0,0,0,0.6)] overflow-hidden">
         
         {/* Modal Header */}
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/60">
+        <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-black/40">
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-mono font-bold text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-md">
+              <span className="font-mono font-black text-xs bg-[#FF6600]/20 text-[#FF8C00] px-2 py-0.5 rounded-md border border-[#FF6600]/30">
                 {formData.id}
               </span>
-              <h2 className="text-base font-bold text-gray-900">
+              <h2 className="text-base font-black text-white">
                 Nouvelle Demande de Rapport & Insights
               </h2>
             </div>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <p className="text-xs text-slate-400 mt-0.5">
               Formulaire structuré conforme aux normes de gouvernance McCann × Orange Cameroun
             </p>
           </div>
 
           {/* Completeness indicator badge */}
           <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2 bg-white border border-gray-200 px-3 py-1.5 rounded-xl shadow-2xs">
+            <div className="hidden sm:flex items-center gap-2.5 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl">
               <div className="text-right">
-                <div className="text-[10px] text-gray-400 font-semibold uppercase">Complétude brief</div>
-                <div className="text-xs font-bold text-emerald-600">{completenessScore}%</div>
+                <div className="text-[10px] text-slate-400 font-bold uppercase">Complétude brief</div>
+                <div className="text-xs font-black text-emerald-400">{completenessScore}%</div>
               </div>
-              <div className="w-10 bg-gray-100 rounded-full h-2 overflow-hidden">
+              <div className="w-12 bg-white/10 rounded-full h-2 overflow-hidden">
                 <div 
-                  className="bg-emerald-500 h-full rounded-full transition-all duration-300"
+                  className="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full transition-all duration-300"
                   style={{ width: `${completenessScore}%` }}
                 ></div>
               </div>
@@ -312,7 +312,7 @@ export default function NewReportRequestModal({
 
             <button
               onClick={onClose}
-              className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
+              className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
             >
               <X size={20} />
             </button>
@@ -320,44 +320,32 @@ export default function NewReportRequestModal({
         </div>
 
         {/* Multi-step progress navigation */}
-        <div className="px-6 py-2.5 bg-gray-100/70 border-b border-gray-200 flex items-center justify-between">
-          <div className="flex items-center gap-2 sm:gap-6 text-xs">
-            <button
-              type="button"
-              onClick={() => setActiveStep(1)}
-              className={`flex items-center gap-1.5 font-semibold py-1 px-2.5 rounded-lg transition-colors ${
-                activeStep === 1 ? 'bg-orange-600 text-white shadow-2xs' : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              <span className="w-4 h-4 rounded-full bg-black/15 flex items-center justify-center text-[10px]">1</span>
-              <span>Général & Période</span>
-            </button>
-
-            <span className="text-gray-300">→</span>
-
-            <button
-              type="button"
-              onClick={() => setActiveStep(2)}
-              className={`flex items-center gap-1.5 font-semibold py-1 px-2.5 rounded-lg transition-colors ${
-                activeStep === 2 ? 'bg-orange-600 text-white shadow-2xs' : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              <span className="w-4 h-4 rounded-full bg-black/15 flex items-center justify-center text-[10px]">2</span>
-              <span>Contexte & Canaux</span>
-            </button>
-
-            <span className="text-gray-300">→</span>
-
-            <button
-              type="button"
-              onClick={() => setActiveStep(3)}
-              className={`flex items-center gap-1.5 font-semibold py-1 px-2.5 rounded-lg transition-colors ${
-                activeStep === 3 ? 'bg-orange-600 text-white shadow-2xs' : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              <span className="w-4 h-4 rounded-full bg-black/15 flex items-center justify-center text-[10px]">3</span>
-              <span>Rubriques du Rapport</span>
-            </button>
+        <div className="px-6 py-3 bg-black/30 border-b border-white/10 flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-4 text-xs">
+            {[
+              { num: 1, label: 'Général & Période' },
+              { num: 2, label: 'Contexte & Canaux' },
+              { num: 3, label: 'Rubriques du Rapport' }
+            ].map(step => {
+              const isCur = activeStep === step.num;
+              return (
+                <button
+                  key={step.num}
+                  type="button"
+                  onClick={() => setActiveStep(step.num)}
+                  className={`flex items-center gap-2 font-bold py-1.5 px-3 rounded-xl transition-all cursor-pointer ${
+                    isCur 
+                      ? 'cosmic-tab-active shadow-sm' 
+                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-black ${
+                    isCur ? 'bg-black text-white' : 'bg-white/10 text-slate-400'
+                  }`}>{step.num}</span>
+                  <span>{step.label}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -370,10 +358,10 @@ export default function NewReportRequestModal({
               
               {/* Report Type Selector */}
               <div>
-                <label className="block text-xs font-bold text-gray-800 uppercase tracking-wider mb-2">
-                  1. Type de Rapport Souhaité <span className="text-red-500">*</span>
+                <label className="block text-xs font-black text-[#FF8C00] uppercase tracking-wider mb-2">
+                  1. Type de Rapport Souhaité <span className="text-red-400">*</span>
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {REPORT_TYPES.map((type) => {
                     const isSelected = formData.type === type.id;
                     return (
@@ -381,19 +369,19 @@ export default function NewReportRequestModal({
                         key={type.id}
                         type="button"
                         onClick={() => handleTypeChange(type.id)}
-                        className={`p-3 rounded-xl border text-left flex flex-col justify-between transition-all cursor-pointer ${
+                        className={`p-3.5 rounded-2xl border text-left flex flex-col justify-between transition-all cursor-pointer ${
                           isSelected 
-                            ? 'border-orange-500 bg-orange-50/40 ring-1 ring-orange-400 text-orange-950' 
-                            : 'border-gray-200 bg-white hover:border-gray-300 text-gray-700'
+                            ? 'border-[#FF6600] bg-gradient-to-b from-[#FF6600]/25 to-black/60 shadow-[0_0_15px_rgba(255,102,0,0.3)] text-white' 
+                            : 'border-white/10 bg-black/40 hover:border-white/20 text-slate-300'
                         }`}
                       >
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-lg">{type.icon}</span>
-                          <span className="text-[10px] font-semibold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-xl">{type.icon}</span>
+                          <span className="text-[10px] font-bold text-slate-300 bg-white/10 px-2 py-0.5 rounded-full border border-white/10">
                             {type.sla}
                           </span>
                         </div>
-                        <div className="text-xs font-bold mt-1">{type.label}</div>
+                        <div className="text-xs font-black mt-1">{type.label}</div>
                       </button>
                     );
                   })}
@@ -403,8 +391,8 @@ export default function NewReportRequestModal({
               {/* Title & Client */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    Titre du Rapport / Référence explicite <span className="text-red-500">*</span>
+                  <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                    Titre du Rapport / Référence explicite <span className="text-red-400">*</span>
                   </label>
                   <input
                     type="text"
@@ -412,29 +400,29 @@ export default function NewReportRequestModal({
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     placeholder="Ex: Rapport Hebdomadaire S33 — Focus Promo Maxit & Pulse Gaming"
-                    className="w-full text-xs font-medium p-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                    className="w-full text-xs font-semibold p-3 cosmic-glass-input text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    Client <span className="text-red-500">*</span>
+                  <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                    Client <span className="text-red-400">*</span>
                   </label>
                   <input
                     type="text"
                     disabled
                     value={formData.client}
-                    className="w-full text-xs font-bold p-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-700"
+                    className="w-full text-xs font-black p-3 bg-white/5 border border-white/10 rounded-xl text-slate-300"
                   />
                 </div>
               </div>
 
               {/* Brands / BUs Multi-select */}
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                  Marques & Business Units concernées <span className="text-red-500">*</span>
+                <label className="block text-xs font-bold text-slate-300 mb-2">
+                  Marques & Business Units concernées <span className="text-red-400">*</span>
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                   {BRANDS_LIST.map((b) => {
                     const isChecked = formData.brands.includes(b.name);
                     return (
@@ -442,17 +430,17 @@ export default function NewReportRequestModal({
                         key={b.id}
                         type="button"
                         onClick={() => handleToggleBrand(b.name)}
-                        className={`p-2.5 rounded-lg border text-left flex items-center justify-between transition-all cursor-pointer ${
+                        className={`p-3 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
                           isChecked 
-                            ? 'border-orange-500 bg-orange-50/50 text-gray-900 font-bold' 
-                            : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                            ? 'border-[#FF6600] bg-[#FF6600]/20 text-white font-black shadow-[0_0_10px_rgba(255,102,0,0.2)]' 
+                            : 'border-white/10 bg-black/40 text-slate-400 hover:border-white/20'
                         }`}
                       >
                         <div className="flex items-center gap-2">
                           <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: b.color }}></span>
                           <span className="text-xs">{b.name}</span>
                         </div>
-                        {isChecked && <Check size={14} className="text-orange-600" />}
+                        {isChecked && <Check size={14} className="text-[#FF8C00]" />}
                       </button>
                     );
                   })}
@@ -460,42 +448,42 @@ export default function NewReportRequestModal({
               </div>
 
               {/* Priority & Urgency */}
-              <div className="p-3.5 bg-gray-50 border border-gray-200 rounded-xl space-y-3">
+              <div className="p-4 bg-black/40 border border-white/10 rounded-2xl space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">
-                      Niveau de Priorité <span className="text-red-500">*</span>
+                    <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                      Niveau de Priorité <span className="text-red-400">*</span>
                     </label>
                     <select
                       value={formData.priority}
                       onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                      className="w-full text-xs font-medium p-2 bg-white border border-gray-300 rounded-lg"
+                      className="w-full text-xs font-semibold p-2.5 cosmic-glass-input text-white"
                     >
-                      <option value="normale">🟢 Normale (SLA standard)</option>
-                      <option value="haute">🟠 Haute (Livraison prioritaire)</option>
-                      <option value="urgente">🔥 Urgente (SLA exceptionnel &lt; 24h)</option>
+                      <option value="normale" className="bg-[#0A0E27] text-white">🟢 Normale (SLA standard)</option>
+                      <option value="haute" className="bg-[#0A0E27] text-white">🟠 Haute (Livraison prioritaire)</option>
+                      <option value="urgente" className="bg-[#0A0E27] text-white">🔥 Urgente (SLA exceptionnel &lt; 24h)</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">
-                      Date limite souhaitée / Échéance <span className="text-red-500">*</span>
+                    <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                      Date limite souhaitée / Échéance <span className="text-red-400">*</span>
                     </label>
                     <input
                       type="date"
                       required
                       value={formData.dueDate}
                       onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                      className="w-full text-xs font-medium p-2 bg-white border border-gray-300 rounded-lg"
+                      className="w-full text-xs font-semibold p-2.5 cosmic-glass-input text-white"
                     />
                   </div>
                 </div>
 
                 {/* If priority is urgent, require urgent reason */}
                 {formData.priority === 'urgente' && (
-                  <div className="pt-2 border-t border-red-200 animate-fadeIn">
-                    <label className="block text-xs font-bold text-red-700 mb-1 flex items-center gap-1">
-                      <ShieldAlert size={14} />
+                  <div className="pt-3 border-t border-red-500/30 animate-fadeIn">
+                    <label className="block text-xs font-black text-red-400 mb-1.5 flex items-center gap-1.5">
+                      <ShieldAlert size={15} />
                       <span>Motif explicite de l'urgence (Obligatoire) *</span>
                     </label>
                     <textarea
@@ -504,7 +492,7 @@ export default function NewReportRequestModal({
                       value={formData.urgentReason}
                       onChange={(e) => setFormData({ ...formData, urgentReason: e.target.value })}
                       placeholder="Indiquez le contexte exceptionnel justifiant un SLA < 24h (ex: crise, incident technique, comité de crise, bad buzz...)"
-                      className="w-full text-xs p-2 bg-red-50/50 border border-red-300 rounded-lg text-red-950 focus:ring-2 focus:ring-red-400"
+                      className="w-full text-xs p-2.5 bg-red-500/10 border border-red-500/30 rounded-xl text-red-200 focus:ring-2 focus:ring-red-400"
                     />
                   </div>
                 )}
@@ -513,37 +501,36 @@ export default function NewReportRequestModal({
               {/* Period and Comparison */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Date Début Période</label>
+                  <label className="block text-xs font-bold text-slate-300 mb-1.5">Date Début Période</label>
                   <input
                     type="date"
                     value={formData.startDate}
                     onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                    className="w-full text-xs p-2 bg-white border border-gray-300 rounded-lg"
+                    className="w-full text-xs p-2.5 cosmic-glass-input text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Date Fin Période</label>
+                  <label className="block text-xs font-bold text-slate-300 mb-1.5">Date Fin Période</label>
                   <input
                     type="date"
                     value={formData.endDate}
                     onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                    className="w-full text-xs p-2 bg-white border border-gray-300 rounded-lg"
+                    className="w-full text-xs p-2.5 cosmic-glass-input text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Période de Comparaison</label>
+                  <label className="block text-xs font-bold text-slate-300 mb-1.5">Période de Comparaison</label>
                   <select
                     value={formData.comparisonType}
                     onChange={(e) => setFormData({ ...formData, comparisonType: e.target.value })}
-                    className="w-full text-xs p-2 bg-white border border-gray-300 rounded-lg"
+                    className="w-full text-xs p-2.5 cosmic-glass-input text-white"
                   >
-                    <option value="periode_precedente">Période précédente (S-1 / M-1)</option>
-                    <option value="meme_periode_mois_precedent">Même période du mois précédent</option>
-                    <option value="meme_periode_annee_precedente">Même période année précédente (N-1)</option>
-                    <option value="personnalisee">Période personnalisée</option>
-                    <option value="aucune">Aucune comparaison</option>
+                    <option value="periode_precedente" className="bg-[#0A0E27]">Période précédente (S-1 / M-1)</option>
+                    <option value="meme_periode_mois_precedent" className="bg-[#0A0E27]">Même période du mois précédent</option>
+                    <option value="meme_periode_annee_precedente" className="bg-[#0A0E27]">Même période année précédente (N-1)</option>
+                    <option value="aucune" className="bg-[#0A0E27]">Aucune comparaison</option>
                   </select>
                 </div>
               </div>
@@ -557,10 +544,10 @@ export default function NewReportRequestModal({
               
               {/* Channels selector */}
               <div>
-                <label className="block text-xs font-bold text-gray-800 uppercase tracking-wider mb-2">
-                  2. Canaux & Réseaux Sociaux Concernés <span className="text-red-500">*</span>
+                <label className="block text-xs font-black text-[#00D4FF] uppercase tracking-wider mb-2">
+                  2. Canaux & Réseaux Sociaux Concernés <span className="text-red-400">*</span>
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                   {CHANNELS_LIST.map((chan) => {
                     const isChecked = formData.channels.includes(chan.name);
                     return (
@@ -568,17 +555,17 @@ export default function NewReportRequestModal({
                         key={chan.id}
                         type="button"
                         onClick={() => handleToggleChannel(chan.name)}
-                        className={`p-2.5 rounded-lg border text-left flex items-center justify-between transition-all cursor-pointer ${
+                        className={`p-3 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
                           isChecked 
-                            ? 'border-orange-500 bg-orange-50/50 text-gray-900 font-bold' 
-                            : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                            ? 'border-[#00D4FF] bg-[#00D4FF]/20 text-white font-black shadow-[0_0_10px_rgba(0,212,255,0.2)]' 
+                            : 'border-white/10 bg-black/40 text-slate-400 hover:border-white/20'
                         }`}
                       >
                         <div className="flex items-center gap-2">
                           <span>{chan.icon}</span>
                           <span className="text-xs">{chan.name}</span>
                         </div>
-                        {isChecked && <Check size={14} className="text-orange-600" />}
+                        {isChecked && <Check size={14} className="text-[#00D4FF]" />}
                       </button>
                     );
                   })}
@@ -588,29 +575,28 @@ export default function NewReportRequestModal({
               {/* Data Type & Region */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Type de Données Analysées</label>
+                  <label className="block text-xs font-bold text-slate-300 mb-1.5">Type de Données Analysées</label>
                   <select
                     value={formData.dataType}
                     onChange={(e) => setFormData({ ...formData, dataType: e.target.value })}
-                    className="w-full text-xs p-2 bg-white border border-gray-300 rounded-lg"
+                    className="w-full text-xs p-2.5 cosmic-glass-input text-white"
                   >
-                    <option value="mixte">Mixte (Organique + Sponsorisé / Paid)</option>
-                    <option value="organique">Organique uniquement</option>
-                    <option value="sponsorise">Sponsorisé / Paid Media uniquement</option>
-                    <option value="campagne_landing">Campagne & Landing Page</option>
-                    <option value="crm_conversion">CRM & Données de Conversion</option>
-                    <option value="display_programmatique">Display Programmatique</option>
+                    <option value="mixte" className="bg-[#0A0E27]">Mixte (Organique + Sponsorisé / Paid)</option>
+                    <option value="organique" className="bg-[#0A0E27]">Organique uniquement</option>
+                    <option value="sponsorise" className="bg-[#0A0E27]">Sponsorisé / Paid Media uniquement</option>
+                    <option value="campagne_landing" className="bg-[#0A0E27]">Campagne & Landing Page</option>
+                    <option value="crm_conversion" className="bg-[#0A0E27]">CRM & Données de Conversion</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Zone Géographique / Marché</label>
+                  <label className="block text-xs font-bold text-slate-300 mb-1.5">Zone Géographique / Marché</label>
                   <input
                     type="text"
                     value={formData.region}
                     onChange={(e) => setFormData({ ...formData, region: e.target.value })}
                     placeholder="Ex: Cameroun (National), Douala, Yaoundé..."
-                    className="w-full text-xs p-2 bg-white border border-gray-300 rounded-lg"
+                    className="w-full text-xs p-2.5 cosmic-glass-input text-white"
                   />
                 </div>
               </div>
@@ -618,26 +604,25 @@ export default function NewReportRequestModal({
               {/* Marketing Objective & Business Question */}
               <div className="space-y-3 pt-2">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">
+                  <label className="block text-xs font-bold text-slate-300 mb-1.5">
                     Objectif Marketing Principal
                   </label>
                   <select
                     value={formData.marketingObjective}
                     onChange={(e) => setFormData({ ...formData, marketingObjective: e.target.value })}
-                    className="w-full text-xs p-2 bg-white border border-gray-300 rounded-lg"
+                    className="w-full text-xs p-2.5 cosmic-glass-input text-white"
                   >
-                    <option value="Engagement & Conversions Maxit">Engagement & Conversions Maxit</option>
-                    <option value="Notoriété & Visibilité de Marque">Notoriété & Visibilité de Marque</option>
-                    <option value="Génération de Leads B2B">Génération de Leads B2B (Orange Business)</option>
-                    <option value="Trafic Web & Téléchargements Application">Trafic Web & Téléchargements Application</option>
-                    <option value="Adoption Services Financiers (Orange Money)">Adoption Services Financiers (Orange Money)</option>
-                    <option value="Recrutement Jeunes & Gaming (Orange Pulse)">Recrutement Jeunes & Gaming (Orange Pulse)</option>
-                    <option value="Veille & Protection E-Réputation">Veille & Protection E-Réputation</option>
+                    <option value="Engagement & Conversions Maxit" className="bg-[#0A0E27]">Engagement & Conversions Maxit</option>
+                    <option value="Notoriété & Visibilité de Marque" className="bg-[#0A0E27]">Notoriété & Visibilité de Marque</option>
+                    <option value="Génération de Leads B2B" className="bg-[#0A0E27]">Génération de Leads B2B (Orange Business)</option>
+                    <option value="Trafic Web & Téléchargements Application" className="bg-[#0A0E27]">Trafic Web & Téléchargements Application</option>
+                    <option value="Adoption Services Financiers (Orange Money)" className="bg-[#0A0E27]">Adoption Services Financiers (Orange Money)</option>
+                    <option value="Recrutement Jeunes & Gaming (Orange Pulse)" className="bg-[#0A0E27]">Recrutement Jeunes & Gaming (Orange Pulse)</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">
+                  <label className="block text-xs font-bold text-slate-300 mb-1.5">
                     Question Métier à laquelle le rapport doit répondre
                   </label>
                   <textarea
@@ -645,12 +630,12 @@ export default function NewReportRequestModal({
                     value={formData.businessQuestion}
                     onChange={(e) => setFormData({ ...formData, businessQuestion: e.target.value })}
                     placeholder="Ex: Quel a été le format le plus performant pour générer des souscriptions et comment se positionne MTN sur la même période ?"
-                    className="w-full text-xs p-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                    className="w-full text-xs p-3 cosmic-glass-input text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">
+                  <label className="block text-xs font-bold text-slate-300 mb-1.5">
                     Informations sur les Temps Forts (Offres, Événements, Partenariats)
                   </label>
                   <input
@@ -658,7 +643,7 @@ export default function NewReportRequestModal({
                     value={formData.keyMoments}
                     onChange={(e) => setFormData({ ...formData, keyMoments: e.target.value })}
                     placeholder="Ex: Lancement tournoi Orange Pulse Gaming + Promo Maxit 50% data"
-                    className="w-full text-xs p-2 bg-white border border-gray-300 rounded-lg"
+                    className="w-full text-xs p-2.5 cosmic-glass-input text-white"
                   />
                 </div>
               </div>
@@ -670,49 +655,49 @@ export default function NewReportRequestModal({
           {activeStep === 3 && (
             <div className="space-y-5 animate-fadeIn">
               <div className="flex items-center justify-between">
-                <label className="block text-xs font-bold text-gray-800 uppercase tracking-wider">
+                <label className="block text-xs font-black text-white uppercase tracking-wider">
                   3. Rubriques & Blocs de Contenu du Rapport ({formData.selectedSections.length} sélectionnés)
                 </label>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => setFormData({ ...formData, selectedSections: REPORT_SECTIONS_CATALOG.map(s => s.id) })}
-                    className="text-[11px] font-semibold text-orange-600 hover:underline"
+                    className="text-xs font-bold text-[#FF8C00] hover:underline cursor-pointer"
                   >
                     Tout sélectionner
                   </button>
-                  <span className="text-gray-300">|</span>
+                  <span className="text-white/20">|</span>
                   <button
                     type="button"
                     onClick={() => setFormData({ ...formData, selectedSections: ['cover', 'executive_summary'] })}
-                    className="text-[11px] font-semibold text-gray-500 hover:underline"
+                    className="text-xs font-bold text-slate-400 hover:underline cursor-pointer"
                   >
                     Minimal
                   </button>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[340px] overflow-y-auto pr-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[340px] overflow-y-auto pr-1">
                 {REPORT_SECTIONS_CATALOG.map((sec) => {
                   const isChecked = formData.selectedSections.includes(sec.id);
                   return (
                     <div
                       key={sec.id}
                       onClick={() => handleToggleSection(sec.id)}
-                      className={`p-3 rounded-xl border text-left flex items-start gap-2.5 transition-all cursor-pointer ${
+                      className={`p-3.5 rounded-2xl border text-left flex items-start gap-3 transition-all cursor-pointer ${
                         isChecked 
-                          ? 'border-orange-500 bg-orange-50/40 text-gray-900' 
-                          : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'
+                          ? 'border-[#FF6600] bg-[#FF6600]/15 text-white' 
+                          : 'border-white/10 bg-black/40 text-slate-400 hover:border-white/20'
                       }`}
                     >
                       <div className={`mt-0.5 w-4 h-4 rounded flex items-center justify-center shrink-0 ${
-                        isChecked ? 'bg-orange-600 text-white' : 'border border-gray-300 bg-white'
+                        isChecked ? 'bg-[#FF6600] text-white' : 'border border-white/30 bg-white/5'
                       }`}>
                         {isChecked && <Check size={12} />}
                       </div>
                       <div className="flex-1">
-                        <div className="text-xs font-bold">{sec.label}</div>
-                        <div className="text-[11px] text-gray-500 leading-tight mt-0.5">{sec.desc}</div>
+                        <div className="text-xs font-black">{sec.label}</div>
+                        <div className="text-[11px] text-slate-400 leading-tight mt-0.5">{sec.desc}</div>
                       </div>
                     </div>
                   );
@@ -720,11 +705,11 @@ export default function NewReportRequestModal({
               </div>
 
               {/* Summary recap box */}
-              <div className="p-4 bg-emerald-50/80 border border-emerald-200 rounded-xl flex items-start gap-3">
-                <CheckCircle2 size={18} className="text-emerald-600 shrink-0 mt-0.5" />
-                <div className="text-xs text-emerald-950">
-                  <div className="font-bold mb-0.5">Demande prête à être transmise à l'équipe McCann</div>
-                  <p className="text-emerald-800 leading-relaxed">
+              <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl flex items-start gap-3">
+                <CheckCircle2 size={18} className="text-emerald-400 shrink-0 mt-0.5" />
+                <div className="text-xs text-slate-200">
+                  <div className="font-black text-emerald-400 mb-0.5">Demande prête à être transmise à l'équipe McCann</div>
+                  <p className="text-slate-300 leading-relaxed">
                     À la soumission, une notification sera envoyée au Digital Web Analyst (Steve BESSOUBE) pour qualification et planification de la collecte.
                   </p>
                 </div>
@@ -736,24 +721,24 @@ export default function NewReportRequestModal({
         </form>
 
         {/* Modal Footer / Step Controls */}
-        <div className="px-6 py-3.5 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
+        <div className="px-6 py-4 border-t border-white/10 bg-black/40 flex items-center justify-between">
           <div>
             {activeStep > 1 && (
               <button
                 type="button"
                 onClick={() => setActiveStep(activeStep - 1)}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-100 transition-colors"
+                className="px-4 py-2 cosmic-btn-glass rounded-xl text-xs font-bold text-slate-300 hover:text-white transition-colors cursor-pointer"
               >
                 ← Étape précédente
               </button>
             )}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <button
               type="button"
               onClick={onClose}
-              className="px-3.5 py-2 border border-gray-200 rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
+              className="px-4 py-2 cosmic-btn-glass rounded-xl text-xs font-bold text-slate-400 hover:text-white transition-colors cursor-pointer"
             >
               Annuler
             </button>
@@ -762,7 +747,7 @@ export default function NewReportRequestModal({
               <button
                 type="button"
                 onClick={() => setActiveStep(activeStep + 1)}
-                className="flex items-center gap-1.5 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-bold shadow-xs transition-colors"
+                className="flex items-center gap-1.5 px-5 py-2.5 cosmic-btn-primary rounded-xl text-xs font-black shadow-md cursor-pointer transition-all"
               >
                 <span>Étape suivante</span>
                 <ArrowRight size={14} />
@@ -772,10 +757,10 @@ export default function NewReportRequestModal({
                 type="button"
                 onClick={handleSubmit}
                 disabled={!canSubmit}
-                className={`flex items-center gap-1.5 px-5 py-2 rounded-lg text-xs font-bold text-white shadow-sm transition-all ${
+                className={`flex items-center gap-1.5 px-6 py-2.5 rounded-xl text-xs font-black transition-all ${
                   canSubmit 
-                    ? 'bg-emerald-600 hover:bg-emerald-700 cursor-pointer' 
-                    : 'bg-gray-400 cursor-not-allowed opacity-60'
+                    ? 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-black shadow-lg cursor-pointer' 
+                    : 'bg-white/10 text-slate-500 cursor-not-allowed opacity-50'
                 }`}
               >
                 <Check size={15} />

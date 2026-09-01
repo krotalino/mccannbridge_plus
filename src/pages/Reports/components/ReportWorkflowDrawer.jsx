@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { 
   CheckCircle, Clock, AlertTriangle, MessageSquare, Send, 
-  User, ShieldCheck, ArrowRight, CornerDownRight, CheckCircle2, X 
+  User, ShieldCheck, ArrowRight, CornerDownRight, CheckCircle2, X, Sparkles 
 } from 'lucide-react';
 import { REPORT_STATUSES, REPORT_WORKFLOW_STEPS } from '../../../data/reportsData';
 
@@ -51,19 +51,19 @@ export default function ReportWorkflowDrawer({
     <div className="space-y-6">
       
       {/* Workflow Progress Timeline Bar */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-xs">
-        <h3 className="text-base font-bold text-gray-900 mb-1 flex items-center gap-2">
-          <CheckCircle2 size={18} className="text-orange-600" />
+      <div className="p-6 rounded-2xl cosmic-glass-card border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.37)]">
+        <h3 className="text-base font-black text-white mb-1 flex items-center gap-2">
+          <CheckCircle2 size={18} className="text-[#FF6600]" />
           <span>Gouvernance & Jalons du Workflow (8 Étapes)</span>
         </h3>
-        <p className="text-xs text-gray-500 mb-6">
-          Suivi des étapes d'élaboration, qualification, revue interne et validation client.
+        <p className="text-xs text-slate-400 mb-6">
+          Suivi rigoureux des étapes d'élaboration, qualification, revue interne McCann et validation client Orange.
         </p>
 
         {/* Steps track */}
         <div className="relative">
           <div className="hidden md:flex items-center justify-between relative">
-            <div className="absolute top-4 left-0 right-0 h-1 bg-gray-200 -z-0"></div>
+            <div className="absolute top-4 left-0 right-0 h-1 bg-white/10 -z-0"></div>
             
             {REPORT_WORKFLOW_STEPS.map((step, idx) => {
               const isPast = currentStepIndex > idx || report.status === 'delivered';
@@ -71,17 +71,17 @@ export default function ReportWorkflowDrawer({
 
               return (
                 <div key={step.id} className="relative z-10 flex flex-col items-center text-center max-w-[100px]">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all shadow-xs ${
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black transition-all shadow-xs ${
                     isCurrent 
-                      ? 'bg-orange-600 text-white ring-4 ring-orange-200 scale-110'
+                      ? 'bg-gradient-to-r from-[#FF6600] to-[#FF8C00] text-white ring-4 ring-[#FF6600]/30 scale-110 shadow-[0_0_15px_rgba(255,102,0,0.5)]'
                       : isPast
-                      ? 'bg-emerald-600 text-white'
-                      : 'bg-white border-2 border-gray-300 text-gray-400'
+                      ? 'bg-emerald-500 text-black font-black'
+                      : 'bg-black/60 border border-white/20 text-slate-400'
                   }`}>
                     {isPast ? '✓' : idx + 1}
                   </div>
-                  <div className={`text-[11px] font-semibold mt-2 leading-tight ${
-                    isCurrent ? 'text-orange-600 font-bold' : isPast ? 'text-gray-800' : 'text-gray-400'
+                  <div className={`text-[10px] font-bold mt-2 leading-tight ${
+                    isCurrent ? 'text-[#FF8C00] font-black' : isPast ? 'text-slate-200' : 'text-slate-500'
                   }`}>
                     {step.label}
                   </div>
@@ -93,11 +93,11 @@ export default function ReportWorkflowDrawer({
       </div>
 
       {/* Role-Based Action Panel */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-xs">
-        <h3 className="text-base font-bold text-gray-900 mb-3 pb-2 border-b border-gray-100 flex items-center justify-between">
-          <span>Actions Rapides & Transitions Disponibles</span>
-          <span className="text-xs font-semibold px-2.5 py-1 bg-gray-100 text-gray-700 rounded-lg">
-            Rôle : {isAgency ? '🏢 Agence McCann' : '📱 Client Orange'}
+      <div className="p-6 rounded-2xl cosmic-glass-card border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.37)]">
+        <h3 className="text-base font-black text-white mb-3 pb-2 border-b border-white/10 flex items-center justify-between">
+          <span>Actions Rapides & Transitions de Statut</span>
+          <span className="text-xs font-bold px-3 py-1 rounded-xl bg-white/10 text-[#00D4FF] border border-[#00D4FF]/30">
+            Rôle Actif : {isAgency ? '🏢 Agence McCann' : '📱 Client Orange'}
           </span>
         </h3>
 
@@ -108,39 +108,39 @@ export default function ReportWorkflowDrawer({
               {report.status === 'submitted' && (
                 <button
                   onClick={() => handleApplyStatus('qualified', 'Demande qualifiée et assignée')}
-                  className="p-3 bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200 rounded-xl text-left font-bold text-xs transition-colors flex items-center justify-between"
+                  className="p-3.5 bg-[#00D4FF]/10 hover:bg-[#00D4FF]/20 text-white border border-[#00D4FF]/30 rounded-xl text-left font-bold text-xs transition-colors flex items-center justify-between cursor-pointer"
                 >
                   <div>
-                    <div>1. Qualifier la Demande</div>
-                    <div className="text-[10px] font-normal text-blue-700">Assigner à Steve B.</div>
+                    <div className="text-[#00D4FF]">1. Qualifier la Demande</div>
+                    <div className="text-[10px] font-normal text-slate-300">Assigner à Steve B.</div>
                   </div>
-                  <ArrowRight size={15} />
+                  <ArrowRight size={15} className="text-[#00D4FF]" />
                 </button>
               )}
 
               {(report.status === 'qualified' || report.status === 'needs_info') && (
                 <button
                   onClick={() => handleApplyStatus('in_production', 'Données en cours de collecte et analyse')}
-                  className="p-3 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-xl text-left font-bold text-xs transition-colors flex items-center justify-between"
+                  className="p-3.5 bg-[#FF8C00]/10 hover:bg-[#FF8C00]/20 text-white border border-[#FF8C00]/30 rounded-xl text-left font-bold text-xs transition-colors flex items-center justify-between cursor-pointer"
                 >
                   <div>
-                    <div>2. Passer en Production</div>
-                    <div className="text-[10px] font-normal text-amber-700">Collecte des KPI en cours</div>
+                    <div className="text-[#FF8C00]">2. Passer en Production</div>
+                    <div className="text-[10px] font-normal text-slate-300">Collecte des KPI en cours</div>
                   </div>
-                  <ArrowRight size={15} />
+                  <ArrowRight size={15} className="text-[#FF8C00]" />
                 </button>
               )}
 
               {(report.status === 'in_production' || report.status === 'internal_fixes') && (
                 <button
                   onClick={() => handleApplyStatus('internal_review', 'Rapport finalisé, soumis à la revue interne QA')}
-                  className="p-3 bg-yellow-50 hover:bg-yellow-100 text-yellow-900 border border-yellow-200 rounded-xl text-left font-bold text-xs transition-colors flex items-center justify-between"
+                  className="p-3.5 bg-amber-500/10 hover:bg-amber-500/20 text-white border border-amber-500/30 rounded-xl text-left font-bold text-xs transition-colors flex items-center justify-between cursor-pointer"
                 >
                   <div>
-                    <div>3. Soumettre à la Revue Interne</div>
-                    <div className="text-[10px] font-normal text-yellow-700">Contrôle qualité & cohérence</div>
+                    <div className="text-amber-300">3. Soumettre à Revue Interne</div>
+                    <div className="text-[10px] font-normal text-slate-300">Contrôle qualité & cohérence</div>
                   </div>
-                  <ArrowRight size={15} />
+                  <ArrowRight size={15} className="text-amber-300" />
                 </button>
               )}
 
@@ -148,20 +148,20 @@ export default function ReportWorkflowDrawer({
                 <>
                   <button
                     onClick={() => handleApplyStatus('client_review', 'Revue interne validée. Transmis au client pour validation.')}
-                    className="p-3 bg-orange-50 hover:bg-orange-100 text-orange-950 border border-orange-200 rounded-xl text-left font-bold text-xs transition-colors flex items-center justify-between"
+                    className="p-3.5 bg-[#FF6600]/15 hover:bg-[#FF6600]/25 text-white border border-[#FF6600]/40 rounded-xl text-left font-bold text-xs transition-colors flex items-center justify-between cursor-pointer"
                   >
                     <div>
-                      <div>4. Transmettre au Client</div>
-                      <div className="text-[10px] font-normal text-orange-700">Ouvrir la phase de validation</div>
+                      <div className="text-[#FF6600]">4. Transmettre au Client</div>
+                      <div className="text-[10px] font-normal text-slate-300">Ouvrir la validation client</div>
                     </div>
-                    <ArrowRight size={15} />
+                    <ArrowRight size={15} className="text-[#FF6600]" />
                   </button>
 
                   <button
                     onClick={() => handleApplyStatus('internal_fixes', 'Corrections internes requises par le Lead')}
-                    className="p-3 bg-red-50 hover:bg-red-100 text-red-900 border border-red-200 rounded-xl text-left font-bold text-xs transition-colors"
+                    className="p-3.5 bg-red-500/10 hover:bg-red-500/20 text-red-300 border border-red-500/30 rounded-xl text-left font-bold text-xs transition-colors cursor-pointer"
                   >
-                    <div>Rejeter / Demander retouches internes</div>
+                    <div>Demander retouches internes</div>
                   </button>
                 </>
               )}
@@ -169,11 +169,11 @@ export default function ReportWorkflowDrawer({
               {report.status === 'client_fixes' && (
                 <button
                   onClick={() => handleApplyStatus('client_review', 'Modifications client intégrées en v1.2. Transmis pour approbation finale.')}
-                  className="p-3 bg-orange-50 hover:bg-orange-100 text-orange-950 border border-orange-200 rounded-xl text-left font-bold text-xs transition-colors flex items-center justify-between"
+                  className="p-3.5 bg-[#FF6600]/20 hover:bg-[#FF6600]/30 text-white border border-[#FF6600]/40 rounded-xl text-left font-bold text-xs transition-colors flex items-center justify-between cursor-pointer"
                 >
                   <div>
-                    <div>Renvoyer après modifications</div>
-                    <div className="text-[10px] font-normal text-orange-700">Version v1.2 prête</div>
+                    <div className="text-[#FF8C00]">Renvoyer après modifications</div>
+                    <div className="text-[10px] font-normal text-slate-300">Version corrigée prête</div>
                   </div>
                   <ArrowRight size={15} />
                 </button>
@@ -182,13 +182,13 @@ export default function ReportWorkflowDrawer({
               {report.status === 'approved' && (
                 <button
                   onClick={() => handleApplyStatus('delivered', 'Rapport final livré et archivé officiellement (v2.0).')}
-                  className="p-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-950 border border-emerald-300 rounded-xl text-left font-bold text-xs transition-colors flex items-center justify-between"
+                  className="p-3.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-white border border-emerald-500/40 rounded-xl text-left font-bold text-xs transition-colors flex items-center justify-between cursor-pointer"
                 >
                   <div>
-                    <div>5. Clôturer & Livrer (v2.0)</div>
-                    <div className="text-[10px] font-normal text-emerald-700">Archivage et diffusion finale</div>
+                    <div className="text-emerald-400">5. Clôturer & Livrer (v2.0)</div>
+                    <div className="text-[10px] font-normal text-slate-300">Archivage et diffusion finale</div>
                   </div>
-                  <CheckCircle size={15} className="text-emerald-600" />
+                  <CheckCircle size={15} className="text-emerald-400" />
                 </button>
               )}
             </div>
@@ -197,15 +197,15 @@ export default function ReportWorkflowDrawer({
           /* Client actions */
           <div className="space-y-4">
             {report.status === 'client_review' ? (
-              <div className="p-4 bg-orange-50/50 border border-orange-200 rounded-xl space-y-3">
-                <div className="text-xs font-bold text-orange-900">
+              <div className="p-4 rounded-xl bg-black/40 border border-[#FF6600]/30 space-y-3">
+                <div className="text-xs font-bold text-white">
                   Le livrable est actuellement en attente de votre revue et validation :
                 </div>
 
                 <div className="flex flex-wrap gap-3">
                   <button
                     onClick={() => handleApplyStatus('approved', 'Rapport approuvé et validé sans réserve par le client.')}
-                    className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-2"
+                    className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-black font-black text-xs rounded-xl shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
                   >
                     <CheckCircle size={16} />
                     <span>Approuver & Valider le Rapport</span>
@@ -213,15 +213,15 @@ export default function ReportWorkflowDrawer({
 
                   <button
                     onClick={() => handleApplyStatus('client_fixes', 'Demande d’ajustement sur les KPI et recommandations')}
-                    className="px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors"
+                    className="px-4 py-2.5 cosmic-btn-glass text-white font-bold text-xs rounded-xl transition-colors cursor-pointer"
                   >
                     Demander des Ajustements / Corrections
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="text-xs text-gray-500 italic p-3 bg-gray-50 rounded-xl border border-gray-200">
-                Statut actuel : <strong className="text-gray-800">{currentStatusCfg.label}</strong>. Aucune action bloquante requise de votre part pour le moment.
+              <div className="text-xs text-slate-400 italic p-3 bg-black/30 rounded-xl border border-white/10">
+                Statut actuel : <strong className="text-white">{currentStatusCfg.label}</strong>. Aucune action bloquante requise pour le moment.
               </div>
             )}
           </div>
@@ -229,9 +229,9 @@ export default function ReportWorkflowDrawer({
       </div>
 
       {/* Threaded Discussion & Notes */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-xs">
-        <h3 className="text-base font-bold text-gray-900 mb-4 pb-2 border-b border-gray-100 flex items-center gap-2">
-          <MessageSquare size={18} className="text-orange-600" />
+      <div className="p-6 rounded-2xl cosmic-glass-card border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.37)]">
+        <h3 className="text-base font-black text-white mb-4 pb-2 border-b border-white/10 flex items-center gap-2">
+          <MessageSquare size={18} className="text-[#FF6600]" />
           <span>Fil de Discussion & Échanges Horodatés ({report.comments?.length || 0})</span>
         </h3>
 
@@ -242,22 +242,22 @@ export default function ReportWorkflowDrawer({
             return (
               <div 
                 key={comment.id}
-                className={`p-3.5 rounded-xl border text-xs leading-relaxed ${
+                className={`p-4 rounded-xl border text-xs leading-relaxed ${
                   isAg 
-                    ? 'bg-orange-50/40 border-orange-200/80 text-orange-950' 
-                    : 'bg-blue-50/40 border-blue-200/80 text-blue-950'
+                    ? 'bg-[#FF6600]/10 border-[#FF6600]/25 text-slate-200' 
+                    : 'bg-[#00D4FF]/10 border-[#00D4FF]/25 text-slate-200'
                 }`}
               >
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="flex items-center gap-2 font-bold">
-                    <span>{comment.author}</span>
-                    <span className="text-[10px] font-normal text-gray-500 px-1.5 py-0.5 bg-white rounded border border-gray-200">
+                    <span className={isAg ? 'text-[#FF8C00]' : 'text-[#00D4FF]'}>{comment.author}</span>
+                    <span className="text-[10px] font-semibold text-slate-400 px-2 py-0.5 bg-black/40 rounded border border-white/10">
                       {comment.role}
                     </span>
                   </div>
-                  <span className="text-[10px] text-gray-400 font-mono">{comment.date}</span>
+                  <span className="text-[10px] text-slate-400 font-mono">{comment.date}</span>
                 </div>
-                <p>{comment.text}</p>
+                <p className="text-slate-300">{comment.text}</p>
               </div>
             );
           })}
@@ -271,11 +271,11 @@ export default function ReportWorkflowDrawer({
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
             placeholder="Écrire un commentaire, poser une question ou formuler un retour..."
-            className="flex-1 text-xs p-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+            className="flex-1 text-xs p-2.5 rounded-xl cosmic-glass-input text-white"
           />
           <button
             type="submit"
-            className="flex items-center gap-1.5 px-4 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors shrink-0"
+            className="flex items-center gap-1.5 px-5 py-2.5 cosmic-btn-primary rounded-xl text-xs font-black shadow-xs cursor-pointer shrink-0"
           >
             <Send size={14} />
             <span>Envoyer</span>

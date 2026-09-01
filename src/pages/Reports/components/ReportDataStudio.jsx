@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { 
   Plus, Download, Upload, Trash2, Edit2, Search, 
-  ExternalLink, BarChart3, TrendingUp, CheckCircle, Sparkles, X 
+  ExternalLink, BarChart3, TrendingUp, CheckCircle, Sparkles, X,
+  Layers, Flame, Activity
 } from 'lucide-react';
 import { BRANDS_LIST, CHANNELS_LIST } from '../../../data/reportsData';
 
@@ -122,59 +123,59 @@ export default function ReportDataStudio({
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       
       {/* Studio Header & Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs text-center">
-          <div className="text-[10px] text-gray-500 font-semibold uppercase">Total Prises de Parole</div>
-          <div className="text-xl font-extrabold text-gray-900 mt-1">{speeches.length}</div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+        <div className="p-4 rounded-2xl cosmic-glass-card text-center border border-white/10">
+          <div className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">Total Prises de Parole</div>
+          <div className="text-2xl font-black text-white mt-1">{speeches.length}</div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs text-center">
-          <div className="text-[10px] text-gray-500 font-semibold uppercase">Reach Cumulé</div>
-          <div className="text-xl font-extrabold text-gray-900 mt-1 font-mono">
+        <div className="p-4 rounded-2xl cosmic-glass-card text-center border border-white/10">
+          <div className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">Reach Cumulé</div>
+          <div className="text-2xl font-black text-[#00D4FF] mt-1 font-mono">
             {totalReach.toLocaleString('fr-FR')}
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs text-center">
-          <div className="text-[10px] text-gray-500 font-semibold uppercase">Impressions Totales</div>
-          <div className="text-xl font-extrabold text-gray-900 mt-1 font-mono">
+        <div className="p-4 rounded-2xl cosmic-glass-card text-center border border-white/10">
+          <div className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">Impressions Totales</div>
+          <div className="text-2xl font-black text-white mt-1 font-mono">
             {totalImpressions.toLocaleString('fr-FR')}
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs text-center">
-          <div className="text-[10px] text-gray-500 font-semibold uppercase">Taux Eng. Moyen</div>
-          <div className="text-xl font-extrabold text-orange-600 mt-1">
+        <div className="p-4 rounded-2xl cosmic-glass-card text-center border border-[#FF6600]/30 shadow-[0_0_20px_rgba(255,102,0,0.15)]">
+          <div className="text-[10px] text-slate-300 font-extrabold uppercase tracking-wider">Taux Eng. Moyen</div>
+          <div className="text-2xl font-black text-[#FF6600] mt-1">
             {avgEngagementRate}%
           </div>
         </div>
       </div>
 
       {/* Control bar */}
-      <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="p-4 rounded-2xl cosmic-glass-card flex flex-col sm:flex-row items-center justify-between gap-3 border border-white/10">
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <div className="relative flex-1 sm:w-64">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Filtrer les prises de parole..."
-              className="w-full pl-8 pr-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500"
+              className="w-full pl-8 pr-3 py-2 text-xs rounded-xl cosmic-glass-input text-white"
             />
           </div>
 
           <select
             value={filterBrand}
             onChange={(e) => setFilterBrand(e.target.value)}
-            className="text-xs py-1.5 px-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 font-medium"
+            className="text-xs py-2 px-3 rounded-xl cosmic-glass-input cursor-pointer"
           >
-            <option value="all">Toutes les marques</option>
+            <option value="all" className="bg-[#0A0E27] text-white">Toutes les marques</option>
             {BRANDS_LIST.map(b => (
-              <option key={b.id} value={b.name}>{b.name}</option>
+              <option key={b.id} value={b.name} className="bg-[#0A0E27] text-white">{b.name}</option>
             ))}
           </select>
         </div>
@@ -182,7 +183,7 @@ export default function ReportDataStudio({
         <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
           <button
             onClick={handleExportSpeechesCsv}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white cosmic-btn-glass rounded-xl cursor-pointer"
           >
             <Download size={13} />
             <span>Export CSV</span>
@@ -191,73 +192,73 @@ export default function ReportDataStudio({
           {isAgency && (
             <button
               onClick={() => setIsModalOpen(true)}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-orange-600 hover:bg-orange-700 rounded-lg shadow-xs transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 text-xs font-black cosmic-btn-primary rounded-xl shadow-xs cursor-pointer"
             >
               <Plus size={14} />
-              <span>Ajouter une Prise de Parole</span>
+              <span>Ajouter Prise de Parole</span>
             </button>
           )}
         </div>
       </div>
 
       {/* Speeches Table */}
-      <div className="bg-white border border-gray-200 rounded-xl shadow-xs overflow-hidden">
+      <div className="rounded-2xl cosmic-glass-card overflow-hidden border border-white/10">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-gray-50 text-gray-500 font-semibold border-b border-gray-200 uppercase text-[10px]">
-                <th className="py-3 px-3">Prise de Parole</th>
-                <th className="py-3 px-3">Marque & Canal</th>
-                <th className="py-3 px-3">Format</th>
-                <th className="py-3 px-3">Portée</th>
-                <th className="py-3 px-3">Impressions</th>
-                <th className="py-3 px-3">Engagements</th>
-                <th className="py-3 px-3">Taux Eng.</th>
-                <th className="py-3 px-3">Vues Vidéo</th>
-                <th className="py-3 px-3">Conversions</th>
-                <th className="py-3 px-3">Type</th>
+              <tr className="bg-black/40 text-slate-400 font-extrabold border-b border-white/10 uppercase text-[10px]">
+                <th className="py-3.5 px-4">Prise de Parole</th>
+                <th className="py-3.5 px-3">Marque & Canal</th>
+                <th className="py-3.5 px-3">Format</th>
+                <th className="py-3.5 px-3">Portée</th>
+                <th className="py-3.5 px-3">Impressions</th>
+                <th className="py-3.5 px-3">Engagements</th>
+                <th className="py-3.5 px-3">Taux Eng.</th>
+                <th className="py-3.5 px-3">Vues Vidéo</th>
+                <th className="py-3.5 px-3">Conversions</th>
+                <th className="py-3.5 px-3">Type</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 text-gray-700">
+            <tbody className="divide-y divide-white/5 text-slate-300">
               {filteredSpeeches.map((sp) => (
-                <tr key={sp.id} className="hover:bg-orange-50/20">
-                  <td className="py-3 px-3">
-                    <span className="font-mono text-[10px] font-bold text-orange-600 bg-orange-50 px-1 py-0.5 rounded mr-1.5">
+                <tr key={sp.id} className="hover:bg-white/5 transition-colors">
+                  <td className="py-3.5 px-4">
+                    <span className="font-mono text-[10px] font-black text-[#FF6600] bg-[#FF6600]/15 px-1.5 py-0.5 rounded mr-1.5 border border-[#FF6600]/30">
                       {sp.id}
                     </span>
-                    <strong className="text-gray-900">{sp.name}</strong>
+                    <strong className="text-white font-bold">{sp.name}</strong>
                     {sp.insight && (
-                      <p className="text-[11px] text-gray-500 line-clamp-1 mt-0.5">{sp.insight}</p>
+                      <p className="text-[11px] text-slate-400 line-clamp-1 mt-0.5">{sp.insight}</p>
                     )}
                   </td>
 
-                  <td className="py-3 px-3">
-                    <div className="font-semibold text-gray-800">{sp.brand}</div>
-                    <div className="text-[11px] text-gray-500">{sp.channel}</div>
+                  <td className="py-3.5 px-3">
+                    <div className="font-bold text-white">{sp.brand}</div>
+                    <div className="text-[11px] text-slate-400">{sp.channel}</div>
                   </td>
 
-                  <td className="py-3 px-3">
-                    <span className="text-[11px] font-medium text-gray-600 bg-gray-100 px-2 py-0.5 rounded">
+                  <td className="py-3.5 px-3">
+                    <span className="text-[10px] font-bold text-slate-300 bg-white/10 px-2 py-0.5 rounded border border-white/10">
                       {sp.format}
                     </span>
                   </td>
 
-                  <td className="py-3 px-3 font-mono font-medium">{sp.reach?.toLocaleString('fr-FR')}</td>
-                  <td className="py-3 px-3 font-mono text-gray-500">{sp.impressions?.toLocaleString('fr-FR')}</td>
-                  <td className="py-3 px-3 font-mono font-semibold">{sp.engagements?.toLocaleString('fr-FR')}</td>
+                  <td className="py-3.5 px-3 font-mono font-bold text-white">{sp.reach?.toLocaleString('fr-FR')}</td>
+                  <td className="py-3.5 px-3 font-mono text-slate-400">{sp.impressions?.toLocaleString('fr-FR')}</td>
+                  <td className="py-3.5 px-3 font-mono font-bold text-[#00D4FF]">{sp.engagements?.toLocaleString('fr-FR')}</td>
                   
-                  <td className="py-3 px-3">
-                    <span className="font-bold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded">
+                  <td className="py-3.5 px-3">
+                    <span className="font-extrabold text-[#FF8C00] bg-[#FF6600]/15 px-2 py-0.5 rounded border border-[#FF6600]/30">
                       {sp.engagementRate}%
                     </span>
                   </td>
 
-                  <td className="py-3 px-3 font-mono text-gray-600">{sp.videoViews ? sp.videoViews.toLocaleString('fr-FR') : '—'}</td>
-                  <td className="py-3 px-3 font-mono font-semibold text-emerald-700">{sp.conversions ? sp.conversions.toLocaleString('fr-FR') : '—'}</td>
+                  <td className="py-3.5 px-3 font-mono text-slate-300">{sp.videoViews ? sp.videoViews.toLocaleString('fr-FR') : '—'}</td>
+                  <td className="py-3.5 px-3 font-mono font-black text-emerald-400">{sp.conversions ? sp.conversions.toLocaleString('fr-FR') : '—'}</td>
 
-                  <td className="py-3 px-3">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      sp.isPaid ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800'
+                  <td className="py-3.5 px-3">
+                    <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${
+                      sp.isPaid ? 'bg-[#00D4FF]/20 text-[#00D4FF] border-[#00D4FF]/30' : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
                     }`}>
                       {sp.isPaid ? 'Sponsorisé' : 'Organique'}
                     </span>
@@ -271,13 +272,13 @@ export default function ReportDataStudio({
 
       {/* Add Speech Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-gray-100">
-            <div className="flex items-center justify-between pb-3 mb-4 border-b border-gray-100">
-              <h3 className="text-base font-bold text-gray-900">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
+          <div className="cosmic-glass-card rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-white/20 bg-[#0A0E27]/95">
+            <div className="flex items-center justify-between pb-3 mb-4 border-b border-white/10">
+              <h3 className="text-base font-black text-white">
                 Ajouter une Prise de Parole & Données Brutes
               </h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-700">
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-white cursor-pointer">
                 <X size={18} />
               </button>
             </div>
@@ -285,131 +286,131 @@ export default function ReportDataStudio({
             <form onSubmit={handleSaveSpeech} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Marque *</label>
+                  <label className="block text-xs font-bold text-slate-300 mb-1">Marque *</label>
                   <select
                     value={newSpeech.brand}
                     onChange={(e) => setNewSpeech({ ...newSpeech, brand: e.target.value })}
-                    className="w-full text-xs p-2 bg-white border border-gray-300 rounded-lg"
+                    className="w-full text-xs p-2.5 rounded-xl cosmic-glass-input cursor-pointer"
                   >
                     {BRANDS_LIST.map(b => (
-                      <option key={b.id} value={b.name}>{b.name}</option>
+                      <option key={b.id} value={b.name} className="bg-[#0A0E27] text-white">{b.name}</option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Canal *</label>
+                  <label className="block text-xs font-bold text-slate-300 mb-1">Canal *</label>
                   <select
                     value={newSpeech.channel}
                     onChange={(e) => setNewSpeech({ ...newSpeech, channel: e.target.value })}
-                    className="w-full text-xs p-2 bg-white border border-gray-300 rounded-lg"
+                    className="w-full text-xs p-2.5 rounded-xl cosmic-glass-input cursor-pointer"
                   >
                     {CHANNELS_LIST.map(c => (
-                      <option key={c.id} value={c.name}>{c.name}</option>
+                      <option key={c.id} value={c.name} className="bg-[#0A0E27] text-white">{c.name}</option>
                     ))}
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Nom / Sujet du Post *</label>
+                <label className="block text-xs font-bold text-slate-300 mb-1">Nom / Sujet du Post *</label>
                 <input
                   type="text"
                   required
                   value={newSpeech.name}
                   onChange={(e) => setNewSpeech({ ...newSpeech, name: e.target.value })}
                   placeholder="Ex: Reel Tutoriel Transfert Orange Money vers Carte Visa"
-                  className="w-full text-xs p-2 bg-white border border-gray-300 rounded-lg"
+                  className="w-full text-xs p-2.5 rounded-xl cosmic-glass-input text-white"
                 />
               </div>
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Portée (Reach) *</label>
+                  <label className="block text-xs font-bold text-slate-300 mb-1">Portée (Reach) *</label>
                   <input
                     type="number"
                     value={newSpeech.reach}
                     onChange={(e) => setNewSpeech({ ...newSpeech, reach: e.target.value })}
-                    className="w-full text-xs p-2 bg-white border border-gray-300 rounded-lg"
+                    className="w-full text-xs p-2.5 rounded-xl cosmic-glass-input text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Impressions *</label>
+                  <label className="block text-xs font-bold text-slate-300 mb-1">Impressions *</label>
                   <input
                     type="number"
                     value={newSpeech.impressions}
                     onChange={(e) => setNewSpeech({ ...newSpeech, impressions: e.target.value })}
-                    className="w-full text-xs p-2 bg-white border border-gray-300 rounded-lg"
+                    className="w-full text-xs p-2.5 rounded-xl cosmic-glass-input text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Engagements *</label>
+                  <label className="block text-xs font-bold text-slate-300 mb-1">Engagements *</label>
                   <input
                     type="number"
                     value={newSpeech.engagements}
                     onChange={(e) => setNewSpeech({ ...newSpeech, engagements: e.target.value })}
-                    className="w-full text-xs p-2 bg-white border border-gray-300 rounded-lg"
+                    className="w-full text-xs p-2.5 rounded-xl cosmic-glass-input text-white"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Taux Eng. (%) *</label>
+                  <label className="block text-xs font-bold text-slate-300 mb-1">Taux Eng. (%) *</label>
                   <input
                     type="number"
                     step="0.01"
                     value={newSpeech.engagementRate}
                     onChange={(e) => setNewSpeech({ ...newSpeech, engagementRate: e.target.value })}
-                    className="w-full text-xs p-2 bg-white border border-gray-300 rounded-lg"
+                    className="w-full text-xs p-2.5 rounded-xl cosmic-glass-input text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Vues Vidéo</label>
+                  <label className="block text-xs font-bold text-slate-300 mb-1">Vues Vidéo</label>
                   <input
                     type="number"
                     value={newSpeech.videoViews}
                     onChange={(e) => setNewSpeech({ ...newSpeech, videoViews: e.target.value })}
-                    className="w-full text-xs p-2 bg-white border border-gray-300 rounded-lg"
+                    className="w-full text-xs p-2.5 rounded-xl cosmic-glass-input text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Conversions</label>
+                  <label className="block text-xs font-bold text-slate-300 mb-1">Conversions</label>
                   <input
                     type="number"
                     value={newSpeech.conversions}
                     onChange={(e) => setNewSpeech({ ...newSpeech, conversions: e.target.value })}
-                    className="w-full text-xs p-2 bg-white border border-gray-300 rounded-lg"
+                    className="w-full text-xs p-2.5 rounded-xl cosmic-glass-input text-white"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Enseignement & Analyse Analyste</label>
+                <label className="block text-xs font-bold text-slate-300 mb-1">Enseignement & Analyse Analyste</label>
                 <textarea
                   rows={2}
                   value={newSpeech.insight}
                   onChange={(e) => setNewSpeech({ ...newSpeech, insight: e.target.value })}
                   placeholder="Pourquoi cette prise de parole a performé ?"
-                  className="w-full text-xs p-2 bg-white border border-gray-300 rounded-lg"
+                  className="w-full text-xs p-2.5 rounded-xl cosmic-glass-input text-white"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-gray-100">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-white/10">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-3.5 py-1.5 border border-gray-200 rounded-lg text-xs font-medium text-gray-700 hover:bg-gray-100"
+                  className="px-4 py-2 rounded-xl cosmic-btn-glass text-xs font-bold cursor-pointer"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-bold shadow-xs"
+                  className="px-5 py-2 rounded-xl cosmic-btn-primary text-xs font-bold cursor-pointer"
                 >
                   Enregistrer
                 </button>

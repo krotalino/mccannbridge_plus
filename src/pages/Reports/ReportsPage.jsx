@@ -2,7 +2,8 @@ import { useState, useMemo } from 'react';
 import { 
   Plus, Sparkles, Calendar as CalendarIcon, List, 
   Download, Layers, RefreshCw, BarChart2, ShieldCheck, 
-  HelpCircle, ArrowLeft, CheckCircle2, TrendingUp 
+  HelpCircle, ArrowLeft, CheckCircle2, TrendingUp, Cpu,
+  Compass, Flame, Activity, LayoutDashboard, Globe, Zap
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
@@ -14,6 +15,8 @@ import NewReportRequestModal from './components/NewReportRequestModal';
 import ReportTemplatesModal from './components/ReportTemplatesModal';
 import ReportDetailView from './components/ReportDetailView';
 import ReportExportModal from './components/ReportExportModal';
+import ReportExecutiveCockpit from './components/ReportExecutiveCockpit';
+import ReportAiInsightsStudio from './components/ReportAiInsightsStudio';
 
 export default function ReportsPage() {
   const { 
@@ -31,7 +34,7 @@ export default function ReportsPage() {
 
   // Navigation / View state
   const [selectedReportId, setSelectedReportId] = useState(null);
-  const [currentViewMode, setCurrentViewMode] = useState('list'); // 'list' | 'calendar'
+  const [activeModuleTab, setActiveModuleTab] = useState('cockpit'); // 'cockpit' | 'reports_list' | 'calendar' | 'ai_studio'
 
   // Modals state
   const [isNewRequestOpen, setIsNewRequestOpen] = useState(false);
@@ -160,9 +163,20 @@ export default function ReportsPage() {
     setIsNewRequestOpen(true);
   };
 
+  const navTabs = [
+    { id: 'cockpit', label: 'Cockpit Exécutif 360°', icon: <LayoutDashboard size={16} /> },
+    { id: 'reports_list', label: `Registre des Rapports (${reports.length})`, icon: <List size={16} /> },
+    { id: 'calendar', label: 'Calendrier & SLA', icon: <CalendarIcon size={16} /> },
+    { id: 'ai_studio', label: 'IA Insights & Veille', icon: <Sparkles size={16} /> }
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-50/50 p-4 sm:p-6 lg:p-8 animate-fadeIn">
+    <div className="cosmic-theme-root min-h-screen p-4 sm:p-6 lg:p-8 animate-fadeIn relative">
       
+      {/* Floating particles aesthetic background lights */}
+      <div className="fixed top-20 left-1/4 w-96 h-96 rounded-full bg-[#00D4FF]/10 blur-3xl pointer-events-none -z-10 animate-pulse"></div>
+      <div className="fixed bottom-20 right-1/4 w-96 h-96 rounded-full bg-[#FF6600]/10 blur-3xl pointer-events-none -z-10 animate-pulse" style={{ animationDelay: '2s' }}></div>
+
       {/* If viewing a single report detail */}
       {selectedReport ? (
         <ReportDetailView
@@ -177,33 +191,63 @@ export default function ReportsPage() {
           currentUser={currentUser}
         />
       ) : (
-        /* Main Dashboard & List View */
-        <div className="space-y-6">
+        /* Main Dashboard Experience */
+        <div className="space-y-6 max-w-[1700px] mx-auto">
           
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="p-1.5 rounded-lg bg-orange-600 text-white shadow-2xs">
-                  <BarChart2 size={20} />
-                </span>
-                <h1 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">
-                  Reporting & Insights Stratégiques
-                </h1>
+          {/* Top Cosmic Navigation Header */}
+          <div className="p-6 rounded-3xl cosmic-glass-card border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.37)] flex flex-col xl:flex-row items-start xl:items-center justify-between gap-6">
+            
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#FF6600] to-[#00D4FF] p-[2px] shadow-[0_0_20px_rgba(255,102,0,0.4)]">
+                <div className="w-full h-full bg-[#0A0E27] rounded-2xl flex items-center justify-center">
+                  <BarChart2 size={24} className="text-[#00D4FF]" />
+                </div>
               </div>
-              <p className="text-xs sm:text-sm text-gray-500">
-                Gouvernance des rapports de performance, calendrier des livraisons, analyses 360° et benchmark McCann × Orange Cameroun
-              </p>
+
+              <div>
+                <div className="flex items-center gap-2.5">
+                  <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                    Reporting & Insights Stratégiques
+                  </h1>
+                  <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-[#00D4FF]/15 text-[#00D4FF] border border-[#00D4FF]/30 tracking-wider">
+                    Next-Gen Analytics
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
+                  Gouvernance des livrables de performance, cockpit exécutif, calendrier SLA et analyses concurrentielles McCann × Orange Cameroun
+                </p>
+              </div>
             </div>
 
-            {/* Action buttons */}
-            <div className="flex flex-wrap items-center gap-2">
+            {/* Top Navigation Tabs */}
+            <div className="flex flex-wrap items-center gap-2 p-1.5 rounded-2xl bg-black/40 border border-white/10 w-full xl:w-auto overflow-x-auto">
+              {navTabs.map(tab => {
+                const isActive = activeModuleTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveModuleTab(tab.id)}
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                      isActive 
+                        ? 'cosmic-tab-active shadow-md' 
+                        : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    {tab.icon}
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Primary Action buttons */}
+            <div className="flex flex-wrap items-center gap-2.5 shrink-0 self-stretch xl:self-auto justify-end">
               <button
                 type="button"
                 onClick={() => setIsTemplatesOpen(true)}
-                className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl cosmic-btn-glass text-slate-200 hover:text-white text-xs font-bold cursor-pointer"
               >
-                <Sparkles size={15} className="text-orange-500" />
+                <Sparkles size={15} className="text-[#00D4FF]" />
                 <span>Modèles Standardisés</span>
               </button>
 
@@ -213,59 +257,40 @@ export default function ReportsPage() {
                   setPrefilledTemplate(null);
                   setIsNewRequestOpen(true);
                 }}
-                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold shadow-sm transition-colors cursor-pointer"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl cosmic-btn-primary text-xs font-black shadow-lg cursor-pointer"
               >
                 <Plus size={16} />
-                <span>Nouvelle Demande de Rapport</span>
+                <span>Nouvelle Demande</span>
               </button>
             </div>
+
           </div>
 
-          {/* Metric Summary Cards */}
-          <ReportSummaryCards
-            reports={reports}
-            activeStatusFilter={activeStatusCardFilter}
-            onStatusFilterChange={handleStatusCardFilterChange}
-          />
-
-          {/* View Mode Switcher + Filters */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center bg-gray-200/80 p-1 rounded-xl">
-                <button
-                  type="button"
-                  onClick={() => setCurrentViewMode('list')}
-                  className={`flex items-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    currentViewMode === 'list' 
-                      ? 'bg-white text-gray-900 shadow-2xs' 
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  <List size={14} />
-                  <span>Vue Liste & Tableau</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setCurrentViewMode('calendar')}
-                  className={`flex items-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    currentViewMode === 'calendar' 
-                      ? 'bg-white text-gray-900 shadow-2xs' 
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  <CalendarIcon size={14} />
-                  <span>Calendrier & Échéances SLA</span>
-                </button>
-              </div>
-
-              <div className="text-xs text-gray-500 font-medium hidden sm:block">
-                <span>{filteredReports.length}</span> demande(s) filtrée(s) sur un total de <span>{reports.length}</span>
-              </div>
+          {/* TAB 1: EXECUTIVE COCKPIT 360° */}
+          {activeModuleTab === 'cockpit' && (
+            <div className="space-y-6 animate-fadeIn">
+              <ReportExecutiveCockpit
+                reports={reports}
+                onSelectReport={(rep) => setSelectedReportId(rep.id)}
+                onCreateReport={() => {
+                  setPrefilledTemplate(null);
+                  setIsNewRequestOpen(true);
+                }}
+              />
             </div>
+          )}
 
-            {/* Filters Bar (active in List view) */}
-            {currentViewMode === 'list' && (
+          {/* TAB 2: REGISTRY & LIST VIEW */}
+          {activeModuleTab === 'reports_list' && (
+            <div className="space-y-6 animate-fadeIn">
+              {/* Metric Summary Cards */}
+              <ReportSummaryCards
+                reports={reports}
+                activeStatusFilter={activeStatusCardFilter}
+                onStatusFilterChange={handleStatusCardFilterChange}
+              />
+
+              {/* Filters Bar */}
               <ReportFilters
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
@@ -281,26 +306,37 @@ export default function ReportsPage() {
                 totalResults={filteredReports.length}
                 onExportCsv={handleExportFilteredCsv}
               />
-            )}
-          </div>
 
-          {/* Main View Area */}
-          {currentViewMode === 'list' ? (
-            <ReportRequestsTable
-              reports={filteredReports}
-              onSelectReport={(rep) => setSelectedReportId(rep.id)}
-              onOpenWorkflow={(rep) => {
-                setSelectedReportId(rep.id);
-              }}
-              onOpenExport={(rep) => setExportModalReport(rep)}
-              onDeleteReport={deleteReport}
-              isAgency={isAgency}
-            />
-          ) : (
-            <ReportCalendarView
-              reports={reports}
-              onSelectReport={(rep) => setSelectedReportId(rep.id)}
-            />
+              {/* Table */}
+              <ReportRequestsTable
+                reports={filteredReports}
+                onSelectReport={(rep) => setSelectedReportId(rep.id)}
+                onOpenWorkflow={(rep) => setSelectedReportId(rep.id)}
+                onOpenExport={(rep) => setExportModalReport(rep)}
+                onDeleteReport={deleteReport}
+                isAgency={isAgency}
+              />
+            </div>
+          )}
+
+          {/* TAB 3: CALENDAR & SLA */}
+          {activeModuleTab === 'calendar' && (
+            <div className="space-y-6 animate-fadeIn">
+              <ReportCalendarView
+                reports={reports}
+                onSelectReport={(rep) => setSelectedReportId(rep.id)}
+              />
+            </div>
+          )}
+
+          {/* TAB 4: AI INSIGHTS STUDIO */}
+          {activeModuleTab === 'ai_studio' && (
+            <div className="space-y-6 animate-fadeIn">
+              <ReportAiInsightsStudio
+                reports={reports}
+                onSelectReport={(rep) => setSelectedReportId(rep.id)}
+              />
+            </div>
           )}
 
         </div>

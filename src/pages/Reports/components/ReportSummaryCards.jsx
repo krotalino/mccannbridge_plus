@@ -1,6 +1,6 @@
 import { 
   FileText, Clock, AlertTriangle, CheckCircle2, UserCheck, 
-  Send, Layers, TrendingUp 
+  Send, Layers, TrendingUp, Sparkles 
 } from 'lucide-react';
 import { REPORT_STATUSES } from '../../../data/reportsData';
 
@@ -29,84 +29,77 @@ export default function ReportSummaryCards({ reports, activeStatusFilter, onStat
       id: 'all',
       label: 'Total Demandes',
       count: total,
-      icon: <Layers size={18} className="text-orange-500" />,
-      bg: 'hover:border-orange-400',
-      activeBorder: 'border-orange-500 bg-orange-50/40 text-orange-950',
+      icon: <Layers size={16} className="text-[#FF6600]" />,
+      borderActive: 'border-[#FF6600] bg-gradient-to-b from-[#FF6600]/20 to-[#1A1F4E]/90 text-white shadow-[0_0_20px_rgba(255,102,0,0.35)]',
       badge: 'Tous types',
-      badgeColor: 'bg-gray-100 text-gray-700'
+      badgeClass: 'bg-white/10 text-slate-300'
     },
     {
       id: 'to_process',
-      label: 'À qualifier / traiter',
+      label: 'À qualifier',
       count: toProcess,
       filterStatuses: ['submitted', 'qualified'],
-      icon: <Send size={18} className="text-blue-500" />,
-      bg: 'hover:border-blue-400',
-      activeBorder: 'border-blue-500 bg-blue-50/40 text-blue-950',
-      badge: 'Attente Assignation',
-      badgeColor: 'bg-blue-100 text-blue-800'
+      icon: <Send size={16} className="text-[#00D4FF]" />,
+      borderActive: 'border-[#00D4FF] bg-gradient-to-b from-[#00D4FF]/20 to-[#1A1F4E]/90 text-white shadow-[0_0_20px_rgba(0,212,255,0.35)]',
+      badge: 'Attente Assign.',
+      badgeClass: 'bg-[#00D4FF]/20 text-[#00D4FF]'
     },
     {
       id: 'in_production',
       label: 'En production',
       count: inProd,
       filterStatuses: ['in_production', 'needs_info'],
-      icon: <TrendingUp size={18} className="text-amber-500" />,
-      bg: 'hover:border-amber-400',
-      activeBorder: 'border-amber-500 bg-amber-50/40 text-amber-950',
-      badge: 'Analyste Steve B.',
-      badgeColor: 'bg-amber-100 text-amber-800'
+      icon: <TrendingUp size={16} className="text-[#FF8C00]" />,
+      borderActive: 'border-[#FF8C00] bg-gradient-to-b from-[#FF8C00]/20 to-[#1A1F4E]/90 text-white shadow-[0_0_20px_rgba(255,140,0,0.35)]',
+      badge: 'Analyste Steve',
+      badgeClass: 'bg-[#FF8C00]/20 text-[#FF8C00]'
     },
     {
       id: 'internal_review',
-      label: 'Revue Interne McCann',
+      label: 'Revue Interne',
       count: internalReview,
       filterStatuses: ['internal_review', 'internal_fixes'],
-      icon: <UserCheck size={18} className="text-yellow-600" />,
-      bg: 'hover:border-yellow-400',
-      activeBorder: 'border-yellow-500 bg-yellow-50/40 text-yellow-950',
+      icon: <UserCheck size={16} className="text-amber-400" />,
+      borderActive: 'border-amber-400 bg-gradient-to-b from-amber-500/20 to-[#1A1F4E]/90 text-white shadow-[0_0_20px_rgba(245,158,11,0.35)]',
       badge: 'Lead QA',
-      badgeColor: 'bg-yellow-100 text-yellow-800'
+      badgeClass: 'bg-amber-400/20 text-amber-300'
     },
     {
       id: 'client_review',
-      label: 'En validation Client',
+      label: 'Validation Client',
       count: clientReview,
       filterStatuses: ['client_review', 'client_fixes'],
-      icon: <Clock size={18} className="text-orange-600" />,
-      bg: 'hover:border-orange-400',
-      activeBorder: 'border-orange-500 bg-orange-50/40 text-orange-950',
+      icon: <Clock size={16} className="text-[#FF6600]" />,
+      borderActive: 'border-[#FF6600] bg-gradient-to-b from-[#FF6600]/25 to-[#1A1F4E]/90 text-white shadow-[0_0_20px_rgba(255,102,0,0.4)]',
       badge: 'Action Orange',
-      badgeColor: 'bg-orange-100 text-orange-800'
+      badgeClass: 'bg-[#FF6600]/20 text-[#FF8C00]'
     },
     {
       id: 'delivered',
       label: 'Validés & Livrés',
       count: approvedDelivered,
       filterStatuses: ['approved', 'delivered'],
-      icon: <CheckCircle2 size={18} className="text-green-600" />,
-      bg: 'hover:border-green-400',
-      activeBorder: 'border-green-500 bg-green-50/40 text-green-950',
-      badge: 'Archivés officiels',
-      badgeColor: 'bg-green-100 text-green-800'
+      icon: <CheckCircle2 size={16} className="text-emerald-400" />,
+      borderActive: 'border-emerald-400 bg-gradient-to-b from-emerald-500/20 to-[#1A1F4E]/90 text-white shadow-[0_0_20px_rgba(16,185,129,0.35)]',
+      badge: 'Archivés',
+      badgeClass: 'bg-emerald-400/20 text-emerald-300'
     },
     {
       id: 'late',
-      label: 'En retard / Alertes SLA',
-      count: lateReports + (urgentReports > 0 ? ` (${urgentReports} urgents)` : ''),
+      label: 'Alertes SLA',
+      count: lateReports + (urgentReports > 0 ? ` (${urgentReports})` : ''),
       numCount: lateReports + urgentReports,
       isAlert: true,
       filterStatuses: ['late_or_urgent'],
-      icon: <AlertTriangle size={18} className="text-red-600" />,
-      bg: 'hover:border-red-400',
-      activeBorder: 'border-red-500 bg-red-50/50 text-red-950',
-      badge: 'SLA < 48h',
-      badgeColor: 'bg-red-100 text-red-800'
+      icon: <AlertTriangle size={16} className="text-rose-400" />,
+      borderActive: 'border-rose-500 bg-gradient-to-b from-rose-500/25 to-[#1A1F4E]/90 text-white shadow-[0_0_20px_rgba(244,63,94,0.4)]',
+      badge: 'Prioritaires',
+      badgeClass: 'bg-rose-500/20 text-rose-300'
     }
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3 mb-6">
+    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 mb-5">
       {cards.map((c) => {
         const isSelected = activeStatusFilter === c.id;
         return (
@@ -114,20 +107,26 @@ export default function ReportSummaryCards({ reports, activeStatusFilter, onStat
             key={c.id}
             type="button"
             onClick={() => onStatusFilterChange(isSelected && c.id !== 'all' ? 'all' : c.id)}
-            className={`flex flex-col text-left p-3.5 rounded-xl border bg-white shadow-xs transition-all duration-150 cursor-pointer ${
-              isSelected ? c.activeBorder + ' shadow-sm ring-1 ring-orange-400' : 'border-gray-200 ' + c.bg
+            className={`flex flex-col text-left p-3.5 rounded-xl transition-all duration-200 cursor-pointer relative overflow-hidden ${
+              isSelected 
+                ? c.borderActive + ' border ring-1 ring-white/30' 
+                : 'bg-black/35 border border-white/10 hover:border-white/20 hover:bg-white/5 text-slate-300'
             }`}
           >
             <div className="flex items-center justify-between w-full mb-1.5">
-              <span className="p-1.5 rounded-lg bg-gray-50 border border-gray-100">{c.icon}</span>
-              <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-md ${c.badgeColor}`}>
+              <span className="p-1.5 rounded-lg bg-white/5 border border-white/10">
+                {c.icon}
+              </span>
+              <span className={`text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded-md ${c.badgeClass}`}>
                 {c.badge}
               </span>
             </div>
-            <div className="text-xl font-bold text-gray-900 tracking-tight mt-1">
+
+            <div className="text-lg sm:text-xl font-black text-white tracking-tight mt-0.5">
               {c.count}
             </div>
-            <div className="text-xs text-gray-600 font-medium leading-tight mt-0.5 line-clamp-1">
+
+            <div className="text-[11px] text-slate-400 font-semibold leading-tight mt-0.5 truncate">
               {c.label}
             </div>
           </button>
