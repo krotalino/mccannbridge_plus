@@ -43,4 +43,5 @@ export const CLIENT_SECTIONS = [
   { id: 'dashboard', label: 'Dashboard Analytics', icon: '📊', path: '/dashboard' },
   { id: 'finance', label: 'Suivi Financier', icon: '💰', path: '/finance' },
   { id: 'growth', label: 'Growth Hacking', icon: '🚀', path: '/growth' },
+  { id: 'users', label: 'Utilisateurs & Droits', icon: '👥', path: '/users' },
 ];

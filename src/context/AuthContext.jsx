@@ -36,7 +36,7 @@ export function AuthProvider({ children }) {
           await signInAnonymously(auth);
         }
       } catch (e) {
-        console.warn('Auto anonymous sign-in:', e?.message || e);
+        // Anonymous sign-in may be restricted on the project; application operates safely with local persona/session
       }
     };
     initAuth();
@@ -113,7 +113,7 @@ export function AuthProvider({ children }) {
         try {
           await signInAnonymously(auth);
         } catch (e) {
-          console.warn('Anonymous sign-in skipped/failed:', e);
+          // Anonymous sign-in may be restricted; continue with persona authentication
         }
       }
 

@@ -38,7 +38,7 @@ function ProtectedRoutes() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/finance" element={<FinancePage />} />
 
-          {isAgency && <Route path="/users" element={<UsersPage />} />}
+          <Route path="/users" element={<UsersPage />} />
           {isAgency && <Route path="/admin-ia" element={<AdminIAPage />} />}
 
           <Route path="/reports" element={<ReportsPage />} />
@@ -58,6 +58,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />} />
+      <Route path="/home" element={<LoginPage />} />
       <Route path="/*" element={<ProtectedRoutes />} />
     </Routes>
   );

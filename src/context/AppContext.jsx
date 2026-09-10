@@ -30,6 +30,17 @@ import {
   INITIAL_CLIENTS_HIERARCHY
 } from '../data/aiAndDocsData';
 import { INITIAL_FINANCIAL_DOCUMENTS } from '../utils/financialUtils';
+import {
+  INITIAL_INFLUENCE_TALENTS,
+  INITIAL_INFLUENCE_DELIVERABLES,
+  INITIAL_INFLUENCE_SNAPSHOTS,
+  INITIAL_INFLUENCE_CAMPAIGNS,
+  INITIAL_AMBASSADOR_GROUPS,
+  INITIAL_INFLUENCE_DUPLICATES,
+  INITIAL_INFLUENCE_INSIGHTS,
+  INITIAL_INFLUENCE_ALERTS,
+  INITIAL_IMPORT_BATCH
+} from '../data/influenceSeedData';
 
 const AppContext = createContext(null);
 
@@ -140,13 +151,108 @@ const loadSavedAuditLogs = () => {
   }
 };
 
-// Load registered influencers from localStorage fallback (empty by default)
+// Load registered influencers from localStorage fallback (with INITIAL_INFLUENCE_TALENTS seed fallback)
 const loadSavedInfluencers = () => {
   try {
     const saved = localStorage.getItem('bridge_influencers_v2');
-    return saved ? JSON.parse(saved) : [];
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+    return INITIAL_INFLUENCE_TALENTS;
   } catch (e) {
-    return [];
+    return INITIAL_INFLUENCE_TALENTS;
+  }
+};
+
+const loadSavedInfluenceDeliverables = () => {
+  try {
+    const saved = localStorage.getItem('bridge_influence_deliverables_v2');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+    return INITIAL_INFLUENCE_DELIVERABLES;
+  } catch (e) {
+    return INITIAL_INFLUENCE_DELIVERABLES;
+  }
+};
+
+const loadSavedInfluenceCampaigns = () => {
+  try {
+    const saved = localStorage.getItem('bridge_influence_campaigns_v2');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+    return INITIAL_INFLUENCE_CAMPAIGNS;
+  } catch (e) {
+    return INITIAL_INFLUENCE_CAMPAIGNS;
+  }
+};
+
+const loadSavedInfluenceAmbassadorGroups = () => {
+  try {
+    const saved = localStorage.getItem('bridge_influence_groups_v2');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+    return INITIAL_AMBASSADOR_GROUPS;
+  } catch (e) {
+    return INITIAL_AMBASSADOR_GROUPS;
+  }
+};
+
+const loadSavedInfluenceDuplicates = () => {
+  try {
+    const saved = localStorage.getItem('bridge_influence_duplicates_v2');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+    return INITIAL_INFLUENCE_DUPLICATES;
+  } catch (e) {
+    return INITIAL_INFLUENCE_DUPLICATES;
+  }
+};
+
+const loadSavedInfluenceInsights = () => {
+  try {
+    const saved = localStorage.getItem('bridge_influence_insights_v2');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+    return INITIAL_INFLUENCE_INSIGHTS;
+  } catch (e) {
+    return INITIAL_INFLUENCE_INSIGHTS;
+  }
+};
+
+const loadSavedInfluenceAlerts = () => {
+  try {
+    const saved = localStorage.getItem('bridge_influence_alerts_v2');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+    return INITIAL_INFLUENCE_ALERTS;
+  } catch (e) {
+    return INITIAL_INFLUENCE_ALERTS;
+  }
+};
+
+const loadSavedInfluenceBatches = () => {
+  try {
+    const saved = localStorage.getItem('bridge_influence_batches_v2');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+    return [INITIAL_IMPORT_BATCH];
+  } catch (e) {
+    return [INITIAL_IMPORT_BATCH];
   }
 };
 
@@ -166,6 +272,16 @@ const initialState = {
   publications: loadSavedPublications(),
   calendarPosts: loadSavedCalendarPosts(),
   influencers: loadSavedInfluencers(),
+  influenceTalents: loadSavedInfluencers(),
+  influenceCampaigns: loadSavedInfluenceCampaigns(),
+  influenceDeliverables: loadSavedInfluenceDeliverables(),
+  influenceSnapshots: INITIAL_INFLUENCE_SNAPSHOTS,
+  influenceAmbassadorGroups: loadSavedInfluenceAmbassadorGroups(),
+  influenceDuplicates: loadSavedInfluenceDuplicates(),
+  influenceInsights: loadSavedInfluenceInsights(),
+  influenceAlerts: loadSavedInfluenceAlerts(),
+  influenceImportBatches: loadSavedInfluenceBatches(),
+  influenceUserRole: 'direction_agence',
   financialDocuments: loadSavedFinancialDocuments(),
   briefs: loadSavedBriefs(),
   reports: loadSavedReports(),
@@ -466,25 +582,206 @@ function appReducer(state, action) {
       return { ...state, auditLogs: updatedLogs };
     }
 
-    // ─── Influencers Management ───
-    case 'ADD_INFLUENCER': {
-      const updatedInf = [action.influencer, ...state.influencers.filter(i => String(i.id) !== String(action.influencer.id))];
-      try { localStorage.setItem('bridge_influencers_v2', JSON.stringify(updatedInf)); } catch (e) {}
-      return { ...state, influencers: updatedInf };
+    // ─── Influencers & Talents Unified Management ───
+    case 'SET_INFLUENCE_USER_ROLE':
+      return { ...state, influenceUserRole: action.role };
+
+    case 'ADD_INFLUENCER':
+    case 'ADD_INFLUENCE_TALENT': {
+      const talent = action.talent || action.influencer;
+      const updatedTalents = [talent, ...(state.influenceTalents || state.influencers).filter(i => String(i.id) !== String(talent.id))];
+      try { localStorage.setItem('bridge_influencers_v2', JSON.stringify(updatedTalents)); } catch (e) {}
+      return { ...state, influencers: updatedTalents, influenceTalents: updatedTalents };
     }
 
-    case 'UPDATE_INFLUENCER': {
-      const updatedInf = state.influencers.map(i =>
+    case 'UPDATE_INFLUENCER':
+    case 'UPDATE_INFLUENCE_TALENT': {
+      const updatedTalents = (state.influenceTalents || state.influencers).map(i =>
         String(i.id) === String(action.id) ? { ...i, ...action.updates, updatedAt: new Date().toISOString() } : i
       );
-      try { localStorage.setItem('bridge_influencers_v2', JSON.stringify(updatedInf)); } catch (e) {}
-      return { ...state, influencers: updatedInf };
+      try { localStorage.setItem('bridge_influencers_v2', JSON.stringify(updatedTalents)); } catch (e) {}
+      return { ...state, influencers: updatedTalents, influenceTalents: updatedTalents };
     }
 
-    case 'DELETE_INFLUENCER': {
-      const updatedInf = state.influencers.filter(i => String(i.id) !== String(action.id));
-      try { localStorage.setItem('bridge_influencers_v2', JSON.stringify(updatedInf)); } catch (e) {}
-      return { ...state, influencers: updatedInf };
+    case 'DELETE_INFLUENCER':
+    case 'DELETE_INFLUENCE_TALENT': {
+      const updatedTalents = (state.influenceTalents || state.influencers).filter(i => String(i.id) !== String(action.id));
+      try { localStorage.setItem('bridge_influencers_v2', JSON.stringify(updatedTalents)); } catch (e) {}
+      return { ...state, influencers: updatedTalents, influenceTalents: updatedTalents };
+    }
+
+    case 'ADD_INFLUENCE_CAMPAIGN': {
+      const updated = [action.campaign, ...state.influenceCampaigns.filter(c => c.id !== action.campaign.id)];
+      try { localStorage.setItem('bridge_influence_campaigns_v2', JSON.stringify(updated)); } catch (e) {}
+      return { ...state, influenceCampaigns: updated };
+    }
+
+    case 'UPDATE_INFLUENCE_CAMPAIGN': {
+      const updated = state.influenceCampaigns.map(c =>
+        c.id === action.id ? { ...c, ...action.updates, updatedAt: new Date().toISOString() } : c
+      );
+      try { localStorage.setItem('bridge_influence_campaigns_v2', JSON.stringify(updated)); } catch (e) {}
+      return { ...state, influenceCampaigns: updated };
+    }
+
+    case 'DELETE_INFLUENCE_CAMPAIGN': {
+      const updated = state.influenceCampaigns.filter(c => c.id !== action.id);
+      try { localStorage.setItem('bridge_influence_campaigns_v2', JSON.stringify(updated)); } catch (e) {}
+      return { ...state, influenceCampaigns: updated };
+    }
+
+    case 'ADD_INFLUENCE_DELIVERABLE': {
+      const updated = [action.deliverable, ...state.influenceDeliverables.filter(d => d.id !== action.deliverable.id)];
+      try { localStorage.setItem('bridge_influence_deliverables_v2', JSON.stringify(updated)); } catch (e) {}
+      return { ...state, influenceDeliverables: updated };
+    }
+
+    case 'UPDATE_INFLUENCE_DELIVERABLE': {
+      const updated = state.influenceDeliverables.map(d =>
+        d.id === action.id ? { ...d, ...action.updates, updatedAt: new Date().toISOString() } : d
+      );
+      try { localStorage.setItem('bridge_influence_deliverables_v2', JSON.stringify(updated)); } catch (e) {}
+      return { ...state, influenceDeliverables: updated };
+    }
+
+    case 'DELETE_INFLUENCE_DELIVERABLE': {
+      const updated = state.influenceDeliverables.filter(d => d.id !== action.id);
+      try { localStorage.setItem('bridge_influence_deliverables_v2', JSON.stringify(updated)); } catch (e) {}
+      return { ...state, influenceDeliverables: updated };
+    }
+
+    case 'ADD_INFLUENCE_INSIGHT': {
+      const updated = [action.insight, ...state.influenceInsights.filter(i => i.id !== action.insight.id)];
+      try { localStorage.setItem('bridge_influence_insights_v2', JSON.stringify(updated)); } catch (e) {}
+      return { ...state, influenceInsights: updated };
+    }
+
+    case 'UPDATE_INFLUENCE_INSIGHT': {
+      const updated = state.influenceInsights.map(i =>
+        i.id === action.id ? { ...i, ...action.updates } : i
+      );
+      try { localStorage.setItem('bridge_influence_insights_v2', JSON.stringify(updated)); } catch (e) {}
+      return { ...state, influenceInsights: updated };
+    }
+
+    case 'DELETE_INFLUENCE_INSIGHT': {
+      const updated = state.influenceInsights.filter(i => i.id !== action.id);
+      try { localStorage.setItem('bridge_influence_insights_v2', JSON.stringify(updated)); } catch (e) {}
+      return { ...state, influenceInsights: updated };
+    }
+
+    case 'RESOLVE_INFLUENCE_DUPLICATE': {
+      const { candidateId, actionChoice } = action;
+      // actionChoice: 'merge' | 'keep_separate' | 'ignore'
+      const updatedDuplicates = state.influenceDuplicates.filter(d => d.candidate.id !== candidateId);
+      let updatedTalents = state.influenceTalents;
+
+      if (actionChoice === 'merge') {
+        // Find duplicate info
+        const dup = state.influenceDuplicates.find(d => d.candidate.id === candidateId);
+        if (dup) {
+          // Merge metadata into target and mark candidate merged
+          updatedTalents = state.influenceTalents.map(t => {
+            if (t.id === dup.target.id) {
+              return {
+                ...t,
+                notes: `${t.notes || ''} | Fusionné avec ${dup.candidate.display_name} (${dup.candidate.source_sheet})`,
+                platform_profiles: [
+                  ...t.platform_profiles,
+                  ...(dup.candidate.platform_profiles || []).filter(p => !t.platform_profiles.some(tp => tp.url === p.url))
+                ]
+              };
+            }
+            if (t.id === candidateId) {
+              return { ...t, record_status: 'merged_into', merged_into_id: dup.target.id };
+            }
+            return t;
+          });
+        }
+      } else if (actionChoice === 'keep_separate') {
+        updatedTalents = state.influenceTalents.map(t =>
+          t.id === candidateId ? { ...t, record_status: 'active', duplicate_of: null, notes: `${t.notes || ''} [Confirmé distinct par arbitrage manuel]` } : t
+        );
+      } else if (actionChoice === 'ignore') {
+        updatedTalents = state.influenceTalents.map(t =>
+          t.id === candidateId ? { ...t, record_status: 'ignored' } : t
+        );
+      }
+
+      try {
+        localStorage.setItem('bridge_influence_duplicates_v2', JSON.stringify(updatedDuplicates));
+        localStorage.setItem('bridge_influencers_v2', JSON.stringify(updatedTalents));
+      } catch (e) {}
+
+      return {
+        ...state,
+        influenceDuplicates: updatedDuplicates,
+        influenceTalents: updatedTalents,
+        influencers: updatedTalents
+      };
+    }
+
+    case 'RESOLVE_INFLUENCE_ALERT': {
+      const updated = state.influenceAlerts.map(a =>
+        a.id === action.alertId ? { ...a, status: 'resolu', resolution_note: action.resolutionNote, resolved_at: new Date().toISOString() } : a
+      );
+      try { localStorage.setItem('bridge_influence_alerts_v2', JSON.stringify(updated)); } catch (e) {}
+      return { ...state, influenceAlerts: updated };
+    }
+
+    case 'IMPORT_INFLUENCE_BATCH': {
+      const { talents, deliverables, ambassadorGroups, duplicateCandidates, summary, campaigns } = action.batchData;
+
+      // Merge talents idempotently
+      const existingTalentsMap = new Map((state.influenceTalents || []).map(t => [t.id, t]));
+      for (const t of talents) {
+        existingTalentsMap.set(t.id, { ...(existingTalentsMap.get(t.id) || {}), ...t });
+      }
+      const mergedTalents = Array.from(existingTalentsMap.values());
+
+      // Merge deliverables idempotently
+      const existingDelivsMap = new Map((state.influenceDeliverables || []).map(d => [d.id, d]));
+      for (const d of deliverables) {
+        existingDelivsMap.set(d.id, { ...(existingDelivsMap.get(d.id) || {}), ...d });
+      }
+      const mergedDeliverables = Array.from(existingDelivsMap.values());
+
+      // Merge campaigns
+      const existingCampsMap = new Map((state.influenceCampaigns || []).map(c => [c.id, c]));
+      for (const c of (campaigns || [])) {
+        existingCampsMap.set(c.id, { ...(existingCampsMap.get(c.id) || {}), ...c });
+      }
+      const mergedCampaigns = Array.from(existingCampsMap.values());
+
+      // Merge groups
+      const existingGroupsMap = new Map((state.influenceAmbassadorGroups || []).map(g => [g.id, g]));
+      for (const g of (ambassadorGroups || [])) {
+        existingGroupsMap.set(g.id, { ...(existingGroupsMap.get(g.id) || {}), ...g });
+      }
+      const mergedGroups = Array.from(existingGroupsMap.values());
+
+      const updatedBatches = [summary, ...(state.influenceImportBatches || [])];
+      const updatedDuplicates = [...(duplicateCandidates || []), ...(state.influenceDuplicates || []).filter(d => !duplicateCandidates.some(nd => nd.candidate.id === d.candidate.id))];
+
+      try {
+        localStorage.setItem('bridge_influencers_v2', JSON.stringify(mergedTalents));
+        localStorage.setItem('bridge_influence_deliverables_v2', JSON.stringify(mergedDeliverables));
+        localStorage.setItem('bridge_influence_campaigns_v2', JSON.stringify(mergedCampaigns));
+        localStorage.setItem('bridge_influence_groups_v2', JSON.stringify(mergedGroups));
+        localStorage.setItem('bridge_influence_batches_v2', JSON.stringify(updatedBatches));
+        localStorage.setItem('bridge_influence_duplicates_v2', JSON.stringify(updatedDuplicates));
+      } catch (e) {}
+
+      return {
+        ...state,
+        influencers: mergedTalents,
+        influenceTalents: mergedTalents,
+        influenceDeliverables: mergedDeliverables,
+        influenceCampaigns: mergedCampaigns,
+        influenceAmbassadorGroups: mergedGroups,
+        influenceImportBatches: updatedBatches,
+        influenceDuplicates: updatedDuplicates
+      };
     }
 
     // ─── Briefs Workflow ───
@@ -986,10 +1283,6 @@ export function AppProvider({ children }) {
       // Clean up previous listeners
       unsubs.forEach(unsub => unsub && unsub());
       unsubs = [];
-
-      if (!firebaseUser) {
-        return;
-      }
 
       try {
         // 1. Briefs Listener (purely Firestore-driven)
@@ -2200,6 +2493,104 @@ export function AppProvider({ children }) {
     }
   }, []);
 
+  // ─── Extended Influence Operations Callbacks ───
+  const setInfluenceUserRole = useCallback((role) => {
+    dispatch({ type: 'SET_INFLUENCE_USER_ROLE', role });
+    const labels = {
+      direction_agence: 'Directeur de Projet / Agence (Accès Complet)',
+      influence_manager: 'Influence & Traffic Manager (Opérationnel)',
+      client: 'Client Orange Cameroun (Consultation Restreinte)'
+    };
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Rôle basculé : ${labels[role] || role}`, notifType: 'info' });
+  }, []);
+
+  const addInfluenceCampaign = useCallback((campaign) => {
+    const newCamp = {
+      ...campaign,
+      id: campaign.id || `CAMP-${Date.now().toString().slice(-6)}`,
+      created_at: new Date().toISOString()
+    };
+    dispatch({ type: 'ADD_INFLUENCE_CAMPAIGN', campaign: newCamp });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Campagne créée : ${newCamp.name}`, notifType: 'success' });
+    return newCamp;
+  }, []);
+
+  const updateInfluenceCampaign = useCallback((id, updates) => {
+    dispatch({ type: 'UPDATE_INFLUENCE_CAMPAIGN', id, updates });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Campagne mise à jour`, notifType: 'info' });
+  }, []);
+
+  const deleteInfluenceCampaign = useCallback((id) => {
+    dispatch({ type: 'DELETE_INFLUENCE_CAMPAIGN', id });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Campagne supprimée`, notifType: 'warning' });
+  }, []);
+
+  const addInfluenceDeliverable = useCallback((delData) => {
+    const newDel = {
+      ...delData,
+      id: delData.id || `PUB-${Date.now().toString().slice(-6)}`,
+      created_at: new Date().toISOString()
+    };
+    dispatch({ type: 'ADD_INFLUENCE_DELIVERABLE', deliverable: newDel });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Livrable enregistré : ${newDel.title}`, notifType: 'success' });
+    return newDel;
+  }, []);
+
+  const updateInfluenceDeliverable = useCallback((id, updates) => {
+    dispatch({ type: 'UPDATE_INFLUENCE_DELIVERABLE', id, updates });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Livrable actualisé`, notifType: 'info' });
+  }, []);
+
+  const deleteInfluenceDeliverable = useCallback((id) => {
+    dispatch({ type: 'DELETE_INFLUENCE_DELIVERABLE', id });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Livrable retiré`, notifType: 'warning' });
+  }, []);
+
+  const addInfluenceInsight = useCallback((insight) => {
+    const newInsight = {
+      ...insight,
+      id: insight.id || `INS-${Date.now().toString().slice(-6)}`,
+      created_at: new Date().toISOString()
+    };
+    dispatch({ type: 'ADD_INFLUENCE_INSIGHT', insight: newInsight });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Recommandation enregistrée : ${newInsight.title}`, notifType: 'success' });
+    return newInsight;
+  }, []);
+
+  const updateInfluenceInsight = useCallback((id, updates) => {
+    dispatch({ type: 'UPDATE_INFLUENCE_INSIGHT', id, updates });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Recommandation mise à jour`, notifType: 'info' });
+  }, []);
+
+  const deleteInfluenceInsight = useCallback((id) => {
+    dispatch({ type: 'DELETE_INFLUENCE_INSIGHT', id });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Recommandation retirée`, notifType: 'warning' });
+  }, []);
+
+  const resolveInfluenceDuplicate = useCallback((candidateId, actionChoice) => {
+    dispatch({ type: 'RESOLVE_INFLUENCE_DUPLICATE', candidateId, actionChoice });
+    const actionLabels = {
+      merge: 'fusionné avec le profil principal',
+      keep_separate: 'validé comme profil distinct',
+      ignore: 'écarté'
+    };
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Arbitrage doublon appliqué (${actionLabels[actionChoice] || actionChoice})`, notifType: 'success' });
+  }, []);
+
+  const resolveInfluenceAlert = useCallback((alertId, resolutionNote) => {
+    dispatch({ type: 'RESOLVE_INFLUENCE_ALERT', alertId, resolutionNote });
+    dispatch({ type: 'ADD_NOTIFICATION', text: `Alerte influence résolue avec succès`, notifType: 'success' });
+  }, []);
+
+  const importInfluenceBatch = useCallback((batchData) => {
+    dispatch({ type: 'IMPORT_INFLUENCE_BATCH', batchData });
+    dispatch({
+      type: 'ADD_NOTIFICATION',
+      text: `Lot importé avec succès : ${batchData.talents.length} talents, ${batchData.deliverables.length} livrables`,
+      notifType: 'success'
+    });
+  }, []);
+
   // ─── Financial Documents Management Handlers ───
   const addFinancialDocument = useCallback(async (docData) => {
     const newDoc = {
@@ -2385,6 +2776,20 @@ export function AppProvider({ children }) {
       setMessageFeedback,
       indexDocumentChunks,
       removeDocumentChunks,
+      // Extended Influence Operations
+      setInfluenceUserRole,
+      addInfluenceCampaign,
+      updateInfluenceCampaign,
+      deleteInfluenceCampaign,
+      addInfluenceDeliverable,
+      updateInfluenceDeliverable,
+      deleteInfluenceDeliverable,
+      addInfluenceInsight,
+      updateInfluenceInsight,
+      deleteInfluenceInsight,
+      resolveInfluenceDuplicate,
+      resolveInfluenceAlert,
+      importInfluenceBatch,
     }}>
       {children}
     </AppContext.Provider>

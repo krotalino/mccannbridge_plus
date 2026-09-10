@@ -34,7 +34,7 @@ export default function Sidebar({ isOpen, onClose }) {
         <div className="sidebar-header-top">
           <div>
             <div className="sidebar-logo">BRIDGE</div>
-            <div className="sidebar-subtitle">McCann × Orange Cameroun</div>
+            <div className="sidebar-subtitle">McCann × {user?.client || 'Orange Cameroun'}</div>
           </div>
           {/* Mobile & Tablet Close Button */}
           <button 

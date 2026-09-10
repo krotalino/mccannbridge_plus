@@ -1,5 +1,13 @@
 import { useState } from 'react';
 import { getStatusColor } from '../../../utils/helpers';
+import { exportInfluencerProfileToPdf, exportAllInfluencersCatalogPdf } from './fiche/InfluencerProfilePdfExport';
+import ShareProfileModal from './fiche/ShareProfileModal';
+import {
+  getInfluencerCdcAndDeliverables,
+  getDeliverableTypeLabel,
+  getDeliverableTypeIcon,
+  DELIVERABLE_STATUS_CONFIG
+} from './fiche/deliverableUtils';
 
 const SOCIAL_ICONS = {
   youtube: { label: 'YouTube', icon: '▶️', color: '#FF0000' },
@@ -71,7 +79,50 @@ function MiniSparkline({ data, width = 80, height = 24 }) {
   );
 }
 
-export default function InfluenceFiche({ influencers, onViewProfile, onEdit, onDelete, onAdd, filters, setFilters }) {
+export default function InfluenceFiche({ influencers, setInfluencers, onViewProfile, onEdit, onDelete, onAdd, filters, setFilters }) {
+  const [sharingInf, setSharingInf] = useState(null);
+  const [isExportingAll, setIsExportingAll] = useState(false);
+  const [exportingSingleId, setExportingSingleId] = useState(null);
+  const [toastMessage, setToastMessage] = useState('');
+  const [expandedCards, setExpandedCards] = useState({});
+
+  const toggleExpandCard = (id) => {
+    setExpandedCards(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const showToast = (msg) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(''), 3500);
+  };
+
+  const handleExportAll = () => {
+    setIsExportingAll(true);
+    try {
+      const listToExport = filtered.length > 0 ? filtered : influencers;
+      exportAllInfluencersCatalogPdf(listToExport);
+      showToast(`✓ Annuaire complet (${listToExport.length} talents) exporté au format PDF Orange Cameroun`);
+    } catch (err) {
+      console.error(err);
+      showToast('❌ Erreur lors de la génération du PDF');
+    } finally {
+      setIsExportingAll(false);
+    }
+  };
+
+  const handleExportSingle = (inf, e) => {
+    if (e) e.stopPropagation();
+    setExportingSingleId(inf.id);
+    try {
+      exportInfluencerProfileToPdf(inf);
+      showToast(`✓ Fiche de @${inf.pseudo || inf.name} exportée (PDF Orange)`);
+    } catch (err) {
+      console.error(err);
+      showToast('❌ Erreur lors de la génération de la fiche PDF');
+    } finally {
+      setExportingSingleId(null);
+    }
+  };
+
   const niches = [...new Set(influencers.flatMap(i => i.categories || [i.niche]).filter(Boolean))];
   const regions = Array.from(new Set([...CAMEROON_REGIONS, ...influencers.map(i => i.region).filter(Boolean)]));
   const platforms = [...new Set(influencers.map(i => i.platform).filter(Boolean))];
@@ -90,14 +141,103 @@ export default function InfluenceFiche({ influencers, onViewProfile, onEdit, onD
     return true;
   });
 
+  // Métriques globales des livrables
+  const deliverablesSummary = filtered.reduce((acc, inf) => {
+    const { activeDeliverables, stats } = getInfluencerCdcAndDeliverables(inf);
+    acc.total += stats.total;
+    acc.completed += stats.completed;
+    acc.inProgress += stats.inProgress;
+    acc.late += stats.late;
+    return acc;
+  }, { total: 0, completed: 0, inProgress: 0, late: 0 });
+
+  const globalProgressRate = deliverablesSummary.total > 0
+    ? Math.round((deliverablesSummary.completed / deliverablesSummary.total) * 100)
+    : 0;
+
   return (
     <div>
-      <div className="flex justify-between items-center mb-16">
-        <div>
-          <h1 className="text-2xl font-bold text-dark mb-4">📋 Fiche Influence — Informations générales</h1>
-          <p className="text-base text-muted">{filtered.length}/{influencers.length} talents référencés</p>
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div style={{
+          position: 'fixed',
+          top: 24,
+          right: 24,
+          zIndex: 9999,
+          background: '#111',
+          color: '#fff',
+          padding: '12px 20px',
+          borderRadius: 8,
+          boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+          fontSize: 13,
+          fontWeight: 600,
+          borderLeft: '4px solid #FF7900'
+        }}>
+          <span>{toastMessage}</span>
+          <button onClick={() => setToastMessage('')} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: 16 }}>✕</button>
         </div>
-        <button className="btn btn-orange" onClick={onAdd}>+ Ajouter un influenceur</button>
+      )}
+
+      {/* Header avec bouton d'export global */}
+      <div className="flex justify-between items-center mb-16 flex-wrap gap-12">
+        <div>
+          <h1 className="text-2xl font-bold text-dark mb-4 flex items-center gap-8">
+            <span>📋 Fiche Influence — Profils & Livrables en cours</span>
+          </h1>
+          <p className="text-base text-muted">
+            {filtered.length}/{influencers.length} talents référencés • {deliverablesSummary.total} livrables suivis ({deliverablesSummary.completed} validés, {deliverablesSummary.inProgress} en cours)
+          </p>
+        </div>
+        <div className="flex items-center gap-8 flex-wrap">
+          <button
+            className="btn btn-ghost border flex items-center gap-6"
+            onClick={handleExportAll}
+            disabled={isExportingAll}
+            title="Générer et télécharger l'annuaire complet de tous les influenceurs au format PDF charté Orange Cameroun"
+            style={{ fontWeight: 600, background: '#fff' }}
+          >
+            <span>📥</span>
+            <span>{isExportingAll ? 'Génération du PDF...' : "Exporter l'annuaire complet (PDF)"}</span>
+          </button>
+          <button className="btn btn-orange flex items-center gap-6" onClick={onAdd}>
+            <span>+</span>
+            <span>Ajouter un influenceur</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Bandeau KPIs livrables en cours */}
+      <div className="grid grid-4 gap-12 mb-16">
+        <div className="card p-12" style={{ background: '#fff', borderRadius: 8, borderLeft: '4px solid #FF7900' }}>
+          <div className="text-xs text-muted font-bold uppercase tracking-wider mb-4">Talents Actifs</div>
+          <div className="text-xl font-bold text-dark">
+            {filtered.filter(i => i.status === 'active').length} <span className="text-xs font-normal text-muted">/ {filtered.length}</span>
+          </div>
+        </div>
+        <div className="card p-12" style={{ background: '#fff', borderRadius: 8, borderLeft: '4px solid #0099FF' }}>
+          <div className="text-xs text-muted font-bold uppercase tracking-wider mb-4">Livrables en cours</div>
+          <div className="text-xl font-bold" style={{ color: '#0099FF' }}>
+            {deliverablesSummary.inProgress} <span className="text-xs font-normal text-muted">en attente de validation</span>
+          </div>
+        </div>
+        <div className="card p-12" style={{ background: '#fff', borderRadius: 8, borderLeft: '4px solid #28A745' }}>
+          <div className="text-xs text-muted font-bold uppercase tracking-wider mb-4">Livrables Validés</div>
+          <div className="text-xl font-bold" style={{ color: '#28A745' }}>
+            {deliverablesSummary.completed} <span className="text-xs font-normal text-muted">sur {deliverablesSummary.total} total</span>
+          </div>
+        </div>
+        <div className="card p-12" style={{ background: '#fff', borderRadius: 8, borderLeft: '4px solid #6C757D' }}>
+          <div className="text-xs text-muted font-bold uppercase tracking-wider mb-4">Avancement Global</div>
+          <div className="flex items-center justify-between">
+            <div className="text-xl font-bold text-dark">{globalProgressRate}%</div>
+            <div style={{ flex: 1, maxWidth: 80, height: 6, background: '#e0e0e0', borderRadius: 3, marginLeft: 8, overflow: 'hidden' }}>
+              <div style={{ width: `${globalProgressRate}%`, height: '100%', background: '#FF7900', borderRadius: 3 }} />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Filtres */}
@@ -258,9 +398,158 @@ export default function InfluenceFiche({ influencers, onViewProfile, onEdit, onD
                   </div>
                 )}
 
+                {/* Section Livrables en cours liés au cahier des charges */}
+                {(() => {
+                  const { activeCdc, activeDeliverables, stats } = getInfluencerCdcAndDeliverables(inf);
+                  const isExpanded = Boolean(expandedCards[inf.id]);
+                  return (
+                    <div style={{ background: '#fbfbfb', border: '1px solid #e9ecef', borderRadius: 8, padding: 10, marginBottom: 12 }}>
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-6" style={{ overflow: 'hidden' }}>
+                          <span style={{ fontSize: 13 }}>📦</span>
+                          <span className="font-bold text-xs text-dark truncate" title={activeCdc?.titre || 'Campagne en cours'}>
+                            {activeCdc?.titre ? (activeCdc.titre.length > 20 ? activeCdc.titre.substring(0, 18) + '...' : activeCdc.titre) : 'Campagne en cours'}
+                          </span>
+                          {activeCdc?.reference && (
+                            <span className="tag" style={{ fontSize: 9, padding: '1px 5px', background: '#f0f0f0', color: '#666' }}>
+                              {activeCdc.reference}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-4 shrink-0">
+                          <span className="tag" style={{
+                            fontSize: 9,
+                            padding: '1px 6px',
+                            background: stats.progress === 100 ? '#d4edda' : '#fff3cd',
+                            color: stats.progress === 100 ? '#155724' : '#856404',
+                            fontWeight: 700
+                          }}>
+                            {stats.progress}%
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); toggleExpandCard(inf.id); }}
+                            className="btn btn-ghost btn-xs"
+                            style={{ padding: '1px 4px', fontSize: 10 }}
+                            title={isExpanded ? 'Réduire les livrables' : 'Afficher les livrables détaillés'}
+                          >
+                            {isExpanded ? '▲' : '▼'}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Barre de progression */}
+                      <div style={{ height: 4, background: '#e9ecef', borderRadius: 2, overflow: 'hidden', marginBottom: 8 }}>
+                        <div style={{ width: `${stats.progress}%`, height: '100%', background: stats.progress === 100 ? '#28A745' : '#FF7900', borderRadius: 2 }} />
+                      </div>
+
+                      {/* Résumé condensé */}
+                      <div className="flex justify-between items-center text-xs text-muted mb-6" style={{ fontSize: 10 }}>
+                        <span>{stats.completed}/{stats.total} validés • {stats.inProgress} en cours</span>
+                        {stats.late > 0 && <span style={{ color: 'var(--red)', fontWeight: 700 }}>⚠️ {stats.late} retard</span>}
+                      </div>
+
+                      {/* Liste des livrables */}
+                      <div className="space-y-4">
+                        {activeDeliverables.slice(0, isExpanded ? 10 : 2).map((deliv, idx) => {
+                          const statusCfg = DELIVERABLE_STATUS_CONFIG[deliv.status] || DELIVERABLE_STATUS_CONFIG.a_faire;
+                          return (
+                            <div
+                              key={deliv.id || idx}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                padding: '4px 6px',
+                                background: '#fff',
+                                border: '1px solid #f0f0f0',
+                                borderRadius: 4,
+                                fontSize: 10
+                              }}
+                            >
+                              <div className="flex items-center gap-6" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, marginRight: 6 }}>
+                                <span>{getDeliverableTypeIcon(deliv.type)}</span>
+                                <span className="font-semibold text-dark truncate" title={deliv.titre || deliv.title}>
+                                  {deliv.titre || deliv.title}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-4 shrink-0">
+                                <span className="text-muted" style={{ fontSize: 9 }}>{deliv.dateEcheance || deliv.deadline || '—'}</span>
+                                <span
+                                  style={{
+                                    padding: '1px 5px',
+                                    borderRadius: 3,
+                                    fontSize: 8,
+                                    fontWeight: 700,
+                                    background: statusCfg.bg,
+                                    color: statusCfg.color
+                                  }}
+                                >
+                                  {statusCfg.label}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Détails supplémentaires si étendu */}
+                      {isExpanded && activeCdc && (
+                        <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px dashed #e0e0e0', fontSize: 10 }} className="text-muted">
+                          {activeCdc.objectifs && (
+                            <div className="mb-4">
+                              <strong className="text-dark">Objectifs:</strong> {activeCdc.objectifs}
+                            </div>
+                          )}
+                          {activeCdc.contraintes && (
+                            <div className="mb-4">
+                              <strong className="text-dark">Contraintes:</strong> {activeCdc.contraintes}
+                            </div>
+                          )}
+                          {activeCdc.dateDebut && (
+                            <div>
+                              <strong className="text-dark">Période:</strong> {activeCdc.dateDebut} au {activeCdc.dateFin || 'En cours'}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {activeDeliverables.length > 2 && !isExpanded && (
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); toggleExpandCard(inf.id); }}
+                          className="text-xs text-orange font-semibold mt-4 block w-full text-center"
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 10 }}
+                        >
+                          + {activeDeliverables.length - 2} autre(s) livrable(s)...
+                        </button>
+                      )}
+                    </div>
+                  );
+                })()}
+
                 {/* Actions */}
-                <div className="flex gap-6">
-                  <button onClick={() => onViewProfile(inf)} className="btn btn-orange btn-sm" style={{ flex: 1 }}>Voir fiche</button>
+                <div className="flex gap-4 items-center">
+                  <button onClick={() => onViewProfile(inf)} className="btn btn-orange btn-sm" style={{ flex: 2 }}>
+                    👁️ Voir fiche
+                  </button>
+                  <button
+                    onClick={(e) => handleExportSingle(inf, e)}
+                    className="btn btn-ghost btn-sm border"
+                    style={{ flex: 1, padding: '4px 6px', fontSize: 11 }}
+                    title="Exporter la fiche complète au format PDF Orange Cameroun"
+                    disabled={exportingSingleId === inf.id}
+                  >
+                    {exportingSingleId === inf.id ? '...' : '📄 PDF'}
+                  </button>
+                  <button
+                    onClick={() => setSharingInf(inf)}
+                    className="btn btn-ghost btn-sm border"
+                    style={{ flex: 1, padding: '4px 6px', fontSize: 11 }}
+                    title="Partager le profil (Lien, Email, WhatsApp)"
+                  >
+                    🔗 Partager
+                  </button>
                   <button onClick={() => onEdit(inf)} className="btn btn-ghost btn-sm" title="Modifier">✏️</button>
                   <button onClick={() => onDelete(inf.id)} className="btn btn-ghost btn-sm" title="Supprimer" style={{ color: 'var(--red)' }}>🗑</button>
                 </div>
@@ -268,6 +557,14 @@ export default function InfluenceFiche({ influencers, onViewProfile, onEdit, onD
             );
           })}
         </div>
+      )}
+
+      {/* Modal de partage */}
+      {sharingInf && (
+        <ShareProfileModal
+          influencer={sharingInf}
+          onClose={() => setSharingInf(null)}
+        />
       )}
     </div>
   );

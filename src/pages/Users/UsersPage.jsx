@@ -1,314 +1,508 @@
-import { useState, useRef } from 'react';
-import { TEAM } from '../../data/team';
+import React, { useState, useEffect, useMemo } from 'react';
+import { 
+  Users, Shield, Activity, Download, Plus, Search, 
+  LayoutGrid, List, RefreshCw, CheckCircle2, Building2
+} from 'lucide-react';
+import { INITIAL_USERS } from '../../data/initialUsers';
+import UsersDirectoryTab from '../../components/users/UsersDirectoryTab';
+import RolesPermissionsTab from '../../components/users/RolesPermissionsTab';
+import AuditSecurityTab from '../../components/users/AuditSecurityTab';
+import UsersExportTab from '../../components/users/UsersExportTab';
+import MemberCard from '../../components/users/MemberCard';
+import AddMemberModal from '../../components/users/AddMemberModal';
+import EditMemberModal from '../../components/users/EditMemberModal';
+import QuickMessageModal from '../../components/users/QuickMessageModal';
+import UserProfileModal from '../../components/users/UserProfileModal';
+
+const LOCAL_STORAGE_KEY = 'mccann_bridge_team_v4';
 
 export default function UsersPage() {
-  const [teamData, setTeamData] = useState(TEAM);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState(null);
-  const [viewingUser, setViewingUser] = useState(null);
-  const [activeFilter, setActiveFilter] = useState('Tous');
+  const [activeTab, setActiveTab] = useState('annuaire');
 
-  // Form State
-  const [formData, setFormData] = useState({
-    group: 'creatives',
-    id: '',
-    name: '',
-    role: '',
-    segment: '',
-    specialty: '',
-    avatar: '',
-    photo: ''
+  // Persistence Locale
+  const [users, setUsers] = useState(() => {
+    try {
+      const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.warn('Erreur lecture localStorage:', e);
+    }
+    return INITIAL_USERS;
   });
-  
-  const fileInputRef = useRef(null);
 
-  const filterTabs = ['Tous', 'Direction', 'Commercial', 'Création', 'Digital', 'Production', 'Finance', 'IT'];
+  useEffect(() => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(users));
+    } catch (e) {
+      console.warn('Erreur écriture localStorage:', e);
+    }
+  }, [users]);
 
-  // Map internal groups to display departments for the mock
-  const groupToDept = {
-    creatives: 'Création',
-    cdp: 'Digital',
-    cm: 'Digital',
-    specialists: 'Direction'
+  // Filtres Annuaire
+  const [selectedTeam, setSelectedTeam] = useState('mccann'); // 'mccann' | 'orange' | 'all'
+  const [activeDept, setActiveDept] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState('cards'); // 'cards' | 'table'
+
+  // Modales
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [editingMember, setEditingMember] = useState(null);
+  const [viewingProfile, setViewingProfile] = useState(null);
+  const [messagingMember, setMessagingMember] = useState(null);
+  const [toastMessage, setToastMessage] = useState(null);
+
+  const triggerToast = (msg) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
   };
 
-  const handleOpenAdd = () => {
-    setEditingUser(null);
-    setViewingUser(null);
-    setFormData({ group: 'creatives', id: '', name: '', role: '', segment: '', specialty: '', avatar: '', photo: '' });
-    setModalOpen(true);
-  };
-
-  const handleOpenEdit = (user, groupKey) => {
-    setViewingUser(null);
-    setEditingUser({ ...user, originalGroup: groupKey });
-    setFormData({
-      group: groupKey,
-      id: user.id,
-      name: user.name,
-      role: user.role,
-      segment: user.segment || '',
-      specialty: user.specialty || '',
-      avatar: user.avatar || '',
-      photo: user.photo || ''
-    });
-    setModalOpen(true);
-  };
-
-  const handleOpenView = (user, groupLabel) => {
-    setViewingUser({ ...user, groupLabel });
-  };
-
-  const handleDelete = (userId, groupKey) => {
-    if (confirm("Voulez-vous vraiment supprimer cet utilisateur ?")) {
-      const newTeam = { ...teamData };
-      newTeam[groupKey] = newTeam[groupKey].filter(u => u.id !== userId);
-      setTeamData(newTeam);
+  // Réinitialiser la liste
+  const handleReset = () => {
+    if (window.confirm("Réinitialiser l'annuaire avec la liste officielle initiale des collaborateurs ?")) {
+      setUsers(INITIAL_USERS);
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+      triggerToast("Annuaire réinitialisé avec succès");
     }
   };
 
-  const handlePhotoUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData({ ...formData, photo: reader.result });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const generateInitials = (name) => {
-    if (!name) return '';
-    return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const newTeam = { ...teamData };
-    
-    const finalAvatar = formData.photo ? '' : (formData.avatar || generateInitials(formData.name));
-    
-    const newUserObj = {
-      id: formData.id || Date.now().toString(),
-      name: formData.name,
-      role: formData.role,
-      segment: formData.segment,
-      specialty: formData.specialty,
-      avatar: finalAvatar,
-      photo: formData.photo
+  // Actions CRUD
+  const handleAddMember = (newMember) => {
+    const formatted = {
+      ...newMember,
+      id: newMember.id || `user-custom-${Date.now()}`,
+      matricule: newMember.matricule || `USR-${Math.floor(1000 + Math.random() * 9000)}`,
+      type: newMember.team === 'orange' ? 'client' : 'agence',
+      statut: newMember.statut || 'actif',
+      derniereConnexion: 'À l\'instant',
     };
-
-    if (editingUser) {
-      newTeam[editingUser.originalGroup] = newTeam[editingUser.originalGroup].filter(u => u.id !== editingUser.id);
-      newTeam[formData.group].push(newUserObj);
-    } else {
-      newTeam[formData.group].push(newUserObj);
-    }
-
-    setTeamData(newTeam);
-    setModalOpen(false);
+    setUsers(prev => [formatted, ...prev]);
+    setShowAddModal(false);
+    triggerToast(`✓ Collaborateur ${formatted.name} ajouté avec succès`);
   };
 
-  // Flatten users
-  const allUsers = Object.entries(teamData).flatMap(([groupKey, users]) => 
-    users.map(u => ({ ...u, groupKey, department: groupToDept[groupKey] || 'Digital' }))
-  );
+  const handleUpdateUser = (updatedUser) => {
+    setUsers(prev => prev.map(u => u.id === updatedUser.id ? updatedUser : u));
+    if (viewingProfile?.id === updatedUser.id) {
+      setViewingProfile(updatedUser);
+    }
+    setEditingMember(null);
+    triggerToast(`✓ Profil de ${updatedUser.name} mis à jour`);
+  };
 
-  const displayedUsers = activeFilter === 'Tous' 
-    ? allUsers 
-    : allUsers.filter(u => u.department === activeFilter);
+  const handleDeleteUser = (member) => {
+    if (window.confirm(`Voulez-vous vraiment retirer ${member.name} de l'équipe ?`)) {
+      setUsers(prev => prev.filter(u => u.id !== member.id));
+      if (viewingProfile?.id === member.id) setViewingProfile(null);
+      triggerToast(`Collaborateur ${member.name} retiré`);
+    }
+  };
+
+  const handleToggleStatus = (userId) => {
+    setUsers(prev => prev.map(u => {
+      if (u.id === userId) {
+        const newStatus = u.statut === 'actif' ? 'inactif' : 'actif';
+        triggerToast(`Statut de ${u.name} : ${newStatus.toUpperCase()}`);
+        return { ...u, statut: newStatus };
+      }
+      return u;
+    }));
+  };
+
+  const handleSendMessage = (member, msg) => {
+    triggerToast(`✓ Message direct envoyé à ${member.name}`);
+    setMessagingMember(null);
+  };
+
+  const handleMail = (member) => {
+    if (member.email) {
+      window.location.href = `mailto:${member.email}`;
+    } else {
+      triggerToast(`Aucune adresse email configurée pour ${member.name}`);
+    }
+  };
+
+  // Liste des départements calculée dynamiquement
+  const departments = useMemo(() => {
+    const relevantUsers = selectedTeam === 'all'
+      ? users
+      : users.filter(u => selectedTeam === 'mccann' ? u.type === 'agence' : u.type === 'client');
+    
+    const set = new Set();
+    relevantUsers.forEach(u => {
+      const d = u.department || u.entite;
+      if (d) set.add(d.trim());
+    });
+    return ['all', ...Array.from(set)];
+  }, [users, selectedTeam]);
+
+  // Utilisateurs filtrés pour l'affichage en cartes ou tableau
+  const filteredUsers = useMemo(() => {
+    return users.filter(u => {
+      // Équipe
+      if (selectedTeam === 'mccann' && u.type !== 'agence') return false;
+      if (selectedTeam === 'orange' && u.type !== 'client') return false;
+
+      // Pôle / Département
+      if (activeDept !== 'all') {
+        const dept = (u.department || u.entite || '').toLowerCase();
+        if (!dept.includes(activeDept.toLowerCase())) return false;
+      }
+
+      // Recherche texte
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const n = (u.name || '').toLowerCase();
+        const e = (u.email || '').toLowerCase();
+        const p = (u.poste || u.profil || '').toLowerCase();
+        const d = (u.department || u.entite || '').toLowerCase();
+        if (!n.includes(q) && !e.includes(q) && !p.includes(q) && !d.includes(q)) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [users, selectedTeam, activeDept, searchQuery]);
+
+  const mccannCount = useMemo(() => users.filter(u => u.type === 'agence').length, [users]);
+  const orangeCount = useMemo(() => users.filter(u => u.type === 'client').length, [users]);
+
+  const tabs = [
+    { id: 'annuaire', label: 'Annuaire des Membres', icon: Users, count: users.length },
+    { id: 'roles', label: 'Rôles & Permissions', icon: Shield },
+    { id: 'audit', label: 'Audit & Sécurité', icon: Activity },
+    { id: 'export', label: 'Export & Données', icon: Download },
+  ];
 
   return (
-    <div className="users-page-wrapper">
-      <div className="users-page-header">
+    <div className="space-y-6 animate-fade-in pb-12">
+      
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed top-5 right-5 z-50 px-4 py-3 rounded-xl bg-[#0E1428] border border-emerald-500/50 text-emerald-300 text-xs font-bold shadow-2xl flex items-center gap-2.5 animate-fade-in">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
+      {/* ─── 1. EN-TÊTE PRINCIPAL ─── */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/10">
         <div>
-          <h1 className="text-3xl font-bold mb-8" style={{ color: '#fff' }}>Équipe McCann Douala</h1>
-          <p className="text-base" style={{ color: '#aaa' }}>Gérez les membres de votre équipe</p>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2.5">
+              <span className="p-2 rounded-xl bg-orange-500/20 text-[#FF6600] border border-orange-500/30">
+                <Users className="w-6 h-6" />
+              </span>
+              Utilisateurs & Droits
+            </h1>
+          </div>
+          <p className="text-xs text-white/50 mt-1">
+            Gouvernance des équipes Agence McCann Douala & Client Orange Cameroun
+          </p>
         </div>
-        <button onClick={handleOpenAdd} className="btn btn-orange" style={{ padding: '12px 24px', borderRadius: 8, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 18 }}>+</span> Ajouter un membre
-        </button>
+
+        {/* Boutons d'actions */}
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={handleReset}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 hover:text-white text-xs font-semibold border border-white/10 transition-colors"
+            title="Réinitialiser l'annuaire"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Réinitialiser démo</span>
+          </button>
+
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#FF6600] to-orange-500 text-white font-bold text-xs shadow-lg shadow-orange-500/20 hover:brightness-110 transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Ajouter un collaborateur</span>
+          </button>
+        </div>
       </div>
 
-      {/* Filter Bar */}
-      <div className="users-filter-bar">
-        <div className="users-filter-tabs">
-          {filterTabs.map(tab => (
-            <button 
-              key={tab}
-              onClick={() => setActiveFilter(tab)}
-              className={`users-tab-btn ${activeFilter === tab ? 'active' : ''}`}
+      {/* ─── 2. ONGLETS DE NAVIGATION ─── */}
+      <div className="flex items-center gap-2 p-1.5 bg-[#0F142D] border border-white/10 rounded-2xl w-full sm:w-max overflow-x-auto">
+        {tabs.map((t) => {
+          const Icon = t.icon;
+          const isActive = activeTab === t.id;
+          return (
+            <button
+              key={t.id}
+              onClick={() => setActiveTab(t.id)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                isActive
+                  ? 'bg-gradient-to-r from-[#FF6600] to-orange-500 text-white shadow-md'
+                  : 'text-white/60 hover:text-white hover:bg-white/5'
+              }`}
             >
-              {tab}
+              <Icon className="w-4 h-4" />
+              <span>{t.label}</span>
+              {t.count !== undefined && (
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+                  isActive ? 'bg-black/30 text-white' : 'bg-white/10 text-white/50'
+                }`}>
+                  {t.count}
+                </span>
+              )}
             </button>
-          ))}
-        </div>
-        <div className="users-count-badge">
-          {displayedUsers.length} membres
-        </div>
+          );
+        })}
       </div>
 
-      {/* Grid */}
-      <div className="users-grid">
-        {displayedUsers.map(user => (
-          <div key={user.id} className="user-profile-card">
-            
-            {/* Edit/Delete tiny buttons on top right */}
-            <div style={{ position: 'absolute', top: 12, right: 12, display: 'flex', gap: 8 }}>
-              <button onClick={() => handleOpenEdit(user, user.groupKey)} style={{ background: 'transparent', border: 'none', color: '#888', cursor: 'pointer' }} title="Modifier">✏️</button>
-              <button onClick={() => handleDelete(user.id, user.groupKey)} style={{ background: 'transparent', border: 'none', color: 'var(--red)', cursor: 'pointer' }} title="Supprimer">🗑️</button>
-            </div>
+      {/* ─── 3. CONTENU DES ONGLETS ─── */}
 
-            <div className="avatar" style={{ 
-              width: 80, height: 80, margin: '0 auto 20px', 
-              background: 'var(--orange)', fontSize: 28, fontWeight: 'bold',
-              backgroundImage: user.photo ? `url(${user.photo})` : 'none',
-              backgroundSize: 'cover', backgroundPosition: 'center',
-              color: user.photo ? 'transparent' : 'white',
-              boxShadow: '0 8px 16px rgba(255,121,0,0.2)'
-            }}>
-              {user.photo ? '' : user.avatar}
-            </div>
-            
-            <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: '#fff' }}>{user.name}</h3>
-            <div style={{ color: 'var(--orange)', fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{user.role}</div>
-            <div style={{ color: '#888', fontSize: 13, marginBottom: 20 }}>{user.department} {user.segment ? `• ${user.segment}` : ''}</div>
-            
-            <div style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(39, 174, 96, 0.15)', color: '#2ecc71', padding: '6px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, marginBottom: 28 }}>
-              <span style={{ width: 8, height: 8, background: '#2ecc71', borderRadius: '50%', marginRight: 8, boxShadow: '0 0 8px #2ecc71' }}></span>
-              En ligne
-            </div>
+      {/* ONGLET 1: ANNUAIRE DES MEMBRES */}
+      {activeTab === 'annuaire' && (
+        <div className="space-y-6">
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
-              <button onClick={() => alert("Ouverture de la messagerie pour " + user.name)} style={{ background: '#333', border: '1px solid #444', padding: '10px 0', borderRadius: 8, color: '#ccc', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e=>e.target.style.background='#444'} onMouseOut={e=>e.target.style.background='#333'} title="Envoyer un email">✉️</button>
-              <button onClick={() => alert("Démarrer un chat avec " + user.name)} style={{ background: '#333', border: '1px solid #444', padding: '10px 0', borderRadius: 8, color: '#ccc', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e=>e.target.style.background='#444'} onMouseOut={e=>e.target.style.background='#333'} title="Message interne">💬</button>
-              <button onClick={() => handleOpenView(user, user.department)} style={{ background: 'var(--orange)', border: 'none', padding: '10px 0', borderRadius: 8, color: '#fff', cursor: 'pointer', transition: 'opacity 0.2s', boxShadow: '0 4px 12px rgba(255,121,0,0.3)' }} onMouseOver={e=>e.target.style.opacity=0.9} onMouseOut={e=>e.target.style.opacity=1} title="Voir Profil">👤</button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {displayedUsers.length === 0 && (
-        <div style={{ textAlign: 'center', color: '#888', marginTop: 40, fontSize: 16 }}>Aucun membre trouvé dans cette catégorie.</div>
-      )}
-
-      {/* Edit/Add Modal */}
-      {modalOpen && (
-        <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(4px)' }}>
-          <div style={{ width: 500, maxWidth: '90%', background: '#242424', padding: 32, borderRadius: 16, position: 'relative', border: '1px solid #444', color: '#fff' }}>
-            <button onClick={() => setModalOpen(false)} style={{ position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', fontSize: 24, cursor: 'pointer', color: '#888' }}>×</button>
-            <h2 className="text-xl font-bold mb-20">{editingUser ? 'Modifier Membre' : 'Nouveau Membre'}</h2>
+          {/* Bandeau de contrôle : Bascule Équipe + Recherche + Mode d'affichage */}
+          <div className="p-4 rounded-2xl bg-[#0F142D] border border-white/10 shadow-xl space-y-4">
             
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div className="flex gap-16 items-center">
-                <div className="avatar" style={{ 
-                    background: 'var(--orange)', 
-                    backgroundImage: formData.photo ? `url(${formData.photo})` : 'none',
-                    backgroundSize: 'cover', backgroundPosition: 'center',
-                    cursor: 'pointer', width: 80, height: 80, fontSize: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: formData.photo ? 'transparent' : 'white'
+            <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+              
+              {/* Sélecteur d'équipe (McCann / Orange / Tous) */}
+              <div className="flex items-center gap-2 p-1 bg-black/40 rounded-xl border border-white/10 overflow-x-auto">
+                <button
+                  onClick={() => {
+                    setSelectedTeam('mccann');
+                    setActiveDept('all');
                   }}
-                  onClick={() => fileInputRef.current.click()}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-black transition-all whitespace-nowrap ${
+                    selectedTeam === 'mccann'
+                      ? 'bg-[#FF6600] text-white shadow-md'
+                      : 'text-orange-400/70 hover:text-orange-400'
+                  }`}
                 >
-                  {!formData.photo && (formData.avatar || generateInitials(formData.name) || '?')}
+                  <span className="w-2 h-2 rounded-full bg-white"></span>
+                  <span>ÉQUIPE McCANN DOUALA ({mccannCount})</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setSelectedTeam('orange');
+                    setActiveDept('all');
+                  }}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-black transition-all whitespace-nowrap ${
+                    selectedTeam === 'orange'
+                      ? 'bg-[#00D4FF] text-[#080B17] shadow-md'
+                      : 'text-cyan-400/70 hover:text-cyan-400'
+                  }`}
+                >
+                  <span className="w-2 h-2 rounded-full bg-[#080B17]"></span>
+                  <span>ÉQUIPE CLIENT ORANGE ({orangeCount})</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setSelectedTeam('all');
+                    setActiveDept('all');
+                  }}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
+                    selectedTeam === 'all'
+                      ? 'bg-white/20 text-white shadow-sm'
+                      : 'text-white/50 hover:text-white'
+                  }`}
+                >
+                  <span>TOUS ({users.length})</span>
+                </button>
+              </div>
+
+              {/* Recherche + Bascule Cartes / Tableau */}
+              <div className="flex items-center gap-3">
+                <div className="relative flex-1 sm:w-72">
+                  <Search className="w-4 h-4 text-white/40 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Rechercher par nom, rôle, entité..."
+                    className="w-full pl-9 pr-3 py-2 bg-black/40 border border-white/10 rounded-xl text-xs text-white placeholder:text-white/40 focus:outline-none focus:border-[#FF6600]"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white text-xs font-bold"
+                    >
+                      &times;
+                    </button>
+                  )}
                 </div>
-                <div>
-                  <label style={{ fontSize: 14, fontWeight: 600, marginBottom: 8, display: 'block', color: '#aaa' }}>Photo de profil</label>
-                  <input type="file" accept="image/*" ref={fileInputRef} onChange={handlePhotoUpload} style={{ display: 'none' }} />
-                  <button type="button" onClick={() => fileInputRef.current.click()} style={{ background: '#333', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: 4, cursor: 'pointer' }}>Choisir une image</button>
-                  {formData.photo && <button type="button" onClick={() => setFormData({...formData, photo: ''})} style={{ background: 'transparent', color: 'var(--red)', border: 'none', padding: '6px 12px', cursor: 'pointer' }}>Retirer</button>}
+
+                {/* Bascule Mode Cartes / Tableau */}
+                <div className="flex items-center p-1 bg-black/40 rounded-xl border border-white/10">
+                  <button
+                    onClick={() => setViewMode('cards')}
+                    title="Vue Grille de Cartes"
+                    className={`p-2 rounded-lg transition-all ${
+                      viewMode === 'cards'
+                        ? 'bg-[#FF6600] text-white shadow-md'
+                        : 'text-white/50 hover:text-white'
+                    }`}
+                  >
+                    <LayoutGrid className="w-4 h-4" />
+                  </button>
+
+                  <button
+                    onClick={() => setViewMode('table')}
+                    title="Vue Tableau Console IAM"
+                    className={`p-2 rounded-lg transition-all ${
+                      viewMode === 'table'
+                        ? 'bg-[#FF6600] text-white shadow-md'
+                        : 'text-white/50 hover:text-white'
+                    }`}
+                  >
+                    <List className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
 
-              <div>
-                <label style={{ fontSize: 14, fontWeight: 600, marginBottom: 8, display: 'block', color: '#aaa' }}>Groupe système</label>
-                <select value={formData.group} onChange={e => setFormData({...formData, group: e.target.value})} required style={{ width: '100%', padding: 12, background: '#1c1c1c', border: '1px solid #444', borderRadius: 8, color: '#fff', outline: 'none' }}>
-                  <option value="creatives">Création</option>
-                  <option value="cdp">Chefs de Projet (Digital)</option>
-                  <option value="cm">Community Managers</option>
-                  <option value="specialists">Spécialistes (Direction/IT)</option>
-                </select>
-              </div>
+            </div>
 
-              <div>
-                <label style={{ fontSize: 14, fontWeight: 600, marginBottom: 8, display: 'block', color: '#aaa' }}>Nom Complet</label>
-                <input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required placeholder="Ex: Jean Dupont" style={{ width: '100%', padding: 12, background: '#1c1c1c', border: '1px solid #444', borderRadius: 8, color: '#fff', outline: 'none' }} />
-              </div>
-
-              <div>
-                <label style={{ fontSize: 14, fontWeight: 600, marginBottom: 8, display: 'block', color: '#aaa' }}>Rôle / Titre</label>
-                <input type="text" value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} required placeholder="Ex: Administrateur" style={{ width: '100%', padding: 12, background: '#1c1c1c', border: '1px solid #444', borderRadius: 8, color: '#fff', outline: 'none' }} />
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <div>
-                  <label style={{ fontSize: 14, fontWeight: 600, marginBottom: 8, display: 'block', color: '#aaa' }}>Segment</label>
-                  <input type="text" value={formData.segment} onChange={e => setFormData({...formData, segment: e.target.value})} placeholder="Ex: Telco" style={{ width: '100%', padding: 12, background: '#1c1c1c', border: '1px solid #444', borderRadius: 8, color: '#fff', outline: 'none' }} />
-                </div>
-                <div>
-                  <label style={{ fontSize: 14, fontWeight: 600, marginBottom: 8, display: 'block', color: '#aaa' }}>Spécialité</label>
-                  <input type="text" value={formData.specialty} onChange={e => setFormData({...formData, specialty: e.target.value})} placeholder="Ex: Motion" style={{ width: '100%', padding: 12, background: '#1c1c1c', border: '1px solid #444', borderRadius: 8, color: '#fff', outline: 'none' }} />
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 16 }}>
-                <button type="button" onClick={() => setModalOpen(false)} style={{ background: 'transparent', color: '#ccc', border: '1px solid #444', padding: '10px 20px', borderRadius: 8, cursor: 'pointer' }}>Annuler</button>
-                <button type="submit" style={{ background: 'var(--orange)', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: 8, cursor: 'pointer', fontWeight: 600 }}>{editingUser ? 'Enregistrer' : 'Créer'}</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* View Profile Modal (Kept the beautiful one but adapted colors) */}
-      {viewingUser && (
-        <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(4px)' }}>
-          <div style={{ width: 450, maxWidth: '90%', background: '#242424', padding: 0, position: 'relative', overflow: 'hidden', borderRadius: 16, border: '1px solid #444', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
-            
-            <div style={{ height: 120, background: 'linear-gradient(135deg, var(--orange), var(--orangeLight))' }}></div>
-            <button onClick={() => setViewingUser(null)} style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(0,0,0,0.3)', color: '#fff', border: 'none', borderRadius: '50%', width: 32, height: 32, fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
-            
-            <div style={{ padding: '0 32px 32px', textAlign: 'center', marginTop: -50 }}>
-              <div className="avatar" style={{ 
-                width: 100, height: 100, fontSize: 36, margin: '0 auto 16px', border: '4px solid #242424', boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
-                background: 'var(--orange)', 
-                backgroundImage: viewingUser.photo ? `url(${viewingUser.photo})` : 'none',
-                backgroundSize: 'cover', backgroundPosition: 'center',
-                color: viewingUser.photo ? 'transparent' : 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center'
-              }}>
-                {viewingUser.photo ? '' : viewingUser.avatar}
-              </div>
-              
-              <h2 style={{ fontSize: 24, fontWeight: 700, color: '#fff', marginBottom: 8 }}>{viewingUser.name}</h2>
-              <div style={{ fontSize: 16, color: '#aaa', marginBottom: 16 }}>{viewingUser.role}</div>
-              <span style={{ background: 'rgba(255,121,0,0.15)', color: 'var(--orange)', padding: '6px 16px', borderRadius: 20, fontSize: 14, fontWeight: 600 }}>{viewingUser.department}</span>
-
-              <div style={{ borderTop: '1px solid #333', margin: '32px 0 24px', paddingTop: 24, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, textAlign: 'left' }}>
-                {viewingUser.segment && (
-                  <div>
-                    <div style={{ fontSize: 11, color: '#888', textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>Segment</div>
-                    <div style={{ fontSize: 14, color: '#fff', fontWeight: 600 }}>{viewingUser.segment}</div>
-                  </div>
-                )}
-                {viewingUser.specialty && (
-                  <div>
-                    <div style={{ fontSize: 11, color: '#888', textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>Spécialité</div>
-                    <div style={{ fontSize: 14, color: '#fff', fontWeight: 600 }}>{viewingUser.specialty}</div>
-                  </div>
-                )}
-              </div>
-              
-              <button style={{ background: 'var(--orange)', color: '#fff', border: 'none', padding: '12px', width: '100%', borderRadius: 8, fontWeight: 600, cursor: 'pointer' }} onClick={() => {
-                handleOpenEdit(viewingUser, viewingUser.groupKey);
-              }}>
-                Modifier le profil
-              </button>
+            {/* Pilules de filtres par pôle / département */}
+            <div className="flex items-center gap-2 overflow-x-auto pt-1 pb-1 scrollbar-thin">
+              <span className="text-[11px] font-bold text-white/40 uppercase tracking-wider flex-shrink-0 mr-1 flex items-center gap-1">
+                <Building2 className="w-3.5 h-3.5" />
+                Pôles :
+              </span>
+              {departments.map((dept) => {
+                const isSelected = activeDept === dept;
+                const label = dept === 'all' ? 'Tous les pôles' : dept;
+                return (
+                  <button
+                    key={dept}
+                    onClick={() => setActiveDept(dept)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                      isSelected
+                        ? selectedTeam === 'orange'
+                          ? 'bg-[#00D4FF] text-[#080B17] font-bold shadow-md'
+                          : 'bg-[#FF6600] text-white font-bold shadow-md'
+                        : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
             </div>
 
           </div>
+
+          {/* AFFICHAGE EN MODE CARTES (MEMBERCARD) */}
+          {viewMode === 'cards' && (
+            <div>
+              {filteredUsers.length === 0 ? (
+                <div className="p-12 text-center rounded-2xl bg-[#0F142D] border border-white/10">
+                  <p className="text-sm font-semibold text-white/60">
+                    Aucun collaborateur ne correspond à ces critères de recherche.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setSearchQuery('');
+                      setActiveDept('all');
+                    }}
+                    className="mt-4 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-xs text-white font-bold transition-all"
+                  >
+                    Effacer les filtres
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5">
+                  {filteredUsers.map((u) => (
+                    <MemberCard
+                      key={u.id}
+                      member={u}
+                      onEdit={(m) => setEditingMember(m)}
+                      onDelete={(m) => handleDeleteUser(m)}
+                      onMail={(m) => handleMail(m)}
+                      onChat={(m) => setMessagingMember(m)}
+                      onOpenProfile={(m) => setViewingProfile(m)}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* AFFICHAGE EN MODE TABLEAU CONSOLE IAM (USERSDIRECTORYTAB) */}
+          {viewMode === 'table' && (
+            <UsersDirectoryTab
+              users={filteredUsers}
+              onViewProfile={(u) => setViewingProfile(u)}
+              onExportPdf={() => setActiveTab('export')}
+              onOpenSecurity={() => setActiveTab('roles')}
+              onToggleStatus={handleToggleStatus}
+              onOpenCreate={() => setShowAddModal(true)}
+            />
+          )}
+
         </div>
       )}
+
+      {/* ONGLET 2: RÔLES & PERMISSIONS RBAC */}
+      {activeTab === 'roles' && (
+        <RolesPermissionsTab />
+      )}
+
+      {/* ONGLET 3: AUDIT & SÉCURITÉ */}
+      {activeTab === 'audit' && (
+        <AuditSecurityTab />
+      )}
+
+      {/* ONGLET 4: EXPORT & DONNÉES */}
+      {activeTab === 'export' && (
+        <UsersExportTab users={users} />
+      )}
+
+      {/* ─── MODALES ─── */}
+
+      {/* Modale d'ajout d'un collaborateur */}
+      {showAddModal && (
+        <AddMemberModal
+          defaultTeam={selectedTeam === 'orange' ? 'orange' : 'mccann'}
+          onClose={() => setShowAddModal(false)}
+          onAdd={handleAddMember}
+        />
+      )}
+
+      {/* Modale d'édition rapide */}
+      {editingMember && (
+        <EditMemberModal
+          member={editingMember}
+          onClose={() => setEditingMember(null)}
+          onSave={handleUpdateUser}
+        />
+      )}
+
+      {/* Modale d'envoi de message rapide direct */}
+      {messagingMember && (
+        <QuickMessageModal
+          member={messagingMember}
+          onClose={() => setMessagingMember(null)}
+          onSend={handleSendMessage}
+        />
+      )}
+
+      {/* Modale de fiche profil complète (Screen 1 à 5) */}
+      {viewingProfile && (
+        <UserProfileModal
+          user={viewingProfile}
+          onClose={() => setViewingProfile(null)}
+          onUpdateUser={handleUpdateUser}
+          onToggleStatus={handleToggleStatus}
+          onExportPdf={() => {
+            setViewingProfile(null);
+            setActiveTab('export');
+          }}
+        />
+      )}
+
     </div>
   );
 }

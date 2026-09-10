@@ -1,4 +1,7 @@
 import { useState, useRef } from 'react';
+import InfluencerDeliverablesSection from './sections/fiche/InfluencerDeliverablesSection';
+import { exportInfluencerProfileToPdf } from './sections/fiche/InfluencerProfilePdfExport';
+import ShareProfileModal from './sections/fiche/ShareProfileModal';
 
 export const CAMEROON_REGIONS = [
   'Centre',
@@ -37,12 +40,29 @@ function formatFollowers(n) {
 }
 
 /* ─── Profile Modal ─── */
-export function ProfileModal({ inf, onClose, onEdit, onDelete }) {
+export function ProfileModal({ inf, onClose, onEdit, onDelete, setInfluencers }) {
   const [profileTab, setProfileTab] = useState('overview');
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
+  const [toastMsg, setToastMsg] = useState('');
+
+  const handleExportPdf = () => {
+    setIsExportingPdf(true);
+    try {
+      exportInfluencerProfileToPdf(inf);
+      setToastMsg('✓ Fiche PDF Orange Cameroun générée');
+      setTimeout(() => setToastMsg(''), 3500);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsExportingPdf(false);
+    }
+  };
+
   const tabs = [
     { id: 'overview', label: "Vue d'ensemble", icon: '🏠' },
     { id: 'socials', label: 'Réseaux & Liens', icon: '🌐' },
-    { id: 'content', label: 'Livrables', icon: '🖼' },
+    { id: 'content', label: 'Livrables & CDC', icon: '📦' },
     { id: 'analytics', label: 'Analytics', icon: '📊' },
     { id: 'contact', label: 'Contact & Legal', icon: '💬' },
   ];
@@ -76,11 +96,35 @@ export function ProfileModal({ inf, onClose, onEdit, onDelete }) {
               <span>👁 <strong>{inf.avgViews}</strong> vues moy.</span>
             </div>
           </div>
-          <div className="inf-profile-actions">
+          <div className="inf-profile-actions flex items-center gap-6 flex-wrap">
+            <button
+              className="btn btn-sm flex items-center gap-4"
+              style={{ background: '#FF7900', color: '#fff', border: 'none', fontWeight: 700 }}
+              onClick={handleExportPdf}
+              disabled={isExportingPdf}
+              title="Exporter la fiche officielle au format PDF Orange Cameroun"
+            >
+              <span>📄</span>
+              <span>{isExportingPdf ? 'Export...' : 'PDF Fiche'}</span>
+            </button>
+            <button
+              className="btn btn-ghost btn-sm flex items-center gap-4"
+              onClick={() => setShowShareModal(true)}
+              title="Partager le profil ou copier le lien"
+            >
+              <span>🔗</span>
+              <span>Partager</span>
+            </button>
             <button className="btn btn-ghost btn-sm" onClick={() => onEdit(inf)} title="Modifier">✏️ Modifier</button>
             <button className="btn btn-ghost btn-sm" onClick={() => onDelete(inf.id)} title="Supprimer" style={{ color: 'var(--red)' }}>🗑</button>
           </div>
         </div>
+
+        {toastMsg && (
+          <div style={{ background: '#e8f5e9', color: '#2e7d32', padding: '6px 16px', fontSize: 12, fontWeight: 600, borderBottom: '1px solid #a5d6a7' }}>
+            {toastMsg}
+          </div>
+        )}
 
         {/* Tabs */}
         <div className="inf-profile-tabs">
@@ -153,12 +197,12 @@ export function ProfileModal({ inf, onClose, onEdit, onDelete }) {
           )}
 
           {profileTab === 'content' && (
-            <div>
-              <h4 className="text-sm font-bold text-dark mb-12">Livrables en cours / Cahier des charges</h4>
-              {inf.pendingDeliverables && inf.pendingDeliverables.length > 0 ? inf.pendingDeliverables.map((d, i) => (
-                <div key={i} className="inf-deliv-item"><span className="font-semibold">{d.title}</span><span className="text-muted text-sm">Deadline: {d.deadline}</span><span className={`tag ${d.daysLeft < 0 ? 'tag-red' : 'tag-yellow'}`}>{d.daysLeft < 0 ? 'EN RETARD' : d.status.replace('_', ' ')}</span></div>
-              )) : <p className="text-muted text-sm">Aucun livrable en attente.</p>}
-            </div>
+            <InfluencerDeliverablesSection
+              influencer={inf}
+              setInfluencers={setInfluencers}
+              onExportPdf={handleExportPdf}
+              onShare={() => setShowShareModal(true)}
+            />
           )}
 
           {profileTab === 'analytics' && (
@@ -183,6 +227,13 @@ export function ProfileModal({ inf, onClose, onEdit, onDelete }) {
             </div>
           )}
         </div>
+
+        {showShareModal && (
+          <ShareProfileModal
+            influencer={inf}
+            onClose={() => setShowShareModal(false)}
+          />
+        )}
       </div>
     </div>
   );

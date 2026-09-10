@@ -9,6 +9,7 @@ import InfluenceCahierCharges from './sections/InfluenceCahierCharges';
 import InfluencePerformance from './sections/InfluencePerformance';
 import InfluenceHistorique from './sections/InfluenceHistorique';
 import InfluenceFinance from './sections/InfluenceFinance';
+import InfluenceVeille from './sections/InfluenceVeille';
 
 export default function InfluencePage() {
   const [tab, setTab] = useState('fiche');
@@ -27,6 +28,7 @@ export default function InfluencePage() {
     { id: 'performance', label: '4. Performance & KPIs' },
     { id: 'historique', label: '5. Historique campagnes' },
     { id: 'finance', label: '6. Budgets & Paiements' },
+    { id: 'veille', label: '7. Veille stratégique' },
   ];
 
   const handleSave = async (form) => {
@@ -90,6 +92,7 @@ export default function InfluencePage() {
       {tab === 'fiche' && (
         <InfluenceFiche
           influencers={influencers}
+          setInfluencers={handleSetInfluencers}
           onViewProfile={(inf) => setProfileInf(inf)}
           onEdit={(inf) => setEditInf(inf)}
           onDelete={handleDelete}
@@ -134,13 +137,21 @@ export default function InfluencePage() {
         />
       )}
 
+      {tab === 'veille' && (
+        <InfluenceVeille
+          influencers={influencers}
+          setInfluencers={handleSetInfluencers}
+        />
+      )}
+
       {/* Modals de détail et d'édition globale */}
       {profileInf && (
         <ProfileModal
-          inf={profileInf}
+          inf={influencers.find(i => String(i.id) === String(profileInf.id)) || profileInf}
           onClose={() => setProfileInf(null)}
           onEdit={(inf) => { setProfileInf(null); setEditInf(inf); }}
           onDelete={handleDelete}
+          setInfluencers={handleSetInfluencers}
         />
       )}
 
