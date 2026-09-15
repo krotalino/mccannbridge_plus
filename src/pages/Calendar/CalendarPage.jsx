@@ -213,6 +213,7 @@ function CreatePublicationModal({ onClose, onSubmit }) {
     dateTarget: '',
     heureTarget: '10:00',
     image: '',
+    url: '',
   });
 
   const handleSubmit = (e) => {
@@ -281,6 +282,20 @@ function CreatePublicationModal({ onClose, onSubmit }) {
             onChange={img => setForm({ ...form, image: img })}
             label="Visuel de la publication (Upload direct ou URL)"
           />
+
+          <div className="pub-form-group">
+            <label className="pub-form-label flex items-center justify-between">
+              <span>Lien de la publication (URL)</span>
+              <span className="text-xs font-normal text-slate-400">Pour consulter le post en ligne</span>
+            </label>
+            <input
+              className="pub-form-input"
+              type="url"
+              placeholder="Ex: https://www.facebook.com/... ou https://instagram.com/p/..."
+              value={form.url}
+              onChange={e => setForm({ ...form, url: e.target.value })}
+            />
+          </div>
 
           <div className="pub-form-actions">
             <button type="button" className="btn btn-ghost" onClick={onClose}>Annuler</button>

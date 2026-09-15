@@ -30,10 +30,23 @@ export default function AdvancedCalendar({ onOpenArchive }) {
   const [viewModalImgError, setViewModalImgError] = useState(false);
   const [showViewModalImageEditor, setShowViewModalImageEditor] = useState(false);
   const [lightboxImage, setLightboxImage] = useState(null);
+  const [isEditingPostUrl, setIsEditingPostUrl] = useState(false);
+  const [postUrlInput, setPostUrlInput] = useState('');
+  const [copiedLinkNotification, setCopiedLinkNotification] = useState(false);
   const [editModalState, setEditModalState] = useState(null); // null | { mode: 'create'|'edit', data: {...} }
   const [deleteModalPost, setDeleteModalPost] = useState(null);
   const [copiedNotification, setCopiedNotification] = useState(false);
   const viewModalFileInputRef = useRef(null);
+
+  // Safe external URL helper to avoid relative navigation
+  const formatExternalUrl = (url) => {
+    if (!url) return '#';
+    const trimmed = url.trim();
+    if (!/^https?:\/\//i.test(trimmed)) {
+      return `https://${trimmed}`;
+    }
+    return trimmed;
+  };
 
   // Preset image thumbnails using verified Brand presets
   const IMAGE_PRESETS = BRAND_IMAGE_PRESETS;
@@ -207,6 +220,7 @@ export default function AdvancedCalendar({ onOpenArchive }) {
         desc: '',
         image: '',
         campaign: '',
+        url: '',
       }
     });
   };
@@ -219,6 +233,7 @@ export default function AdvancedCalendar({ onOpenArchive }) {
         date: getPostDateStr(post),
         day: post.day || (post.date ? parseInt(post.date.split('-')[2], 10) : 19),
         desc: post.desc || post.description || '',
+        url: post.url || post.link || '',
       }
     });
     if (viewModalPost) {
@@ -237,6 +252,7 @@ export default function AdvancedCalendar({ onOpenArchive }) {
       const newPost = {
         ...formData,
         day: dayParsed,
+        url: (formData.url || '').trim(),
         createdAt: new Date().toISOString(),
       };
       await addCalendarPost(newPost);
@@ -257,6 +273,7 @@ export default function AdvancedCalendar({ onOpenArchive }) {
       // Edit mode
       await updateCalendarPost(formData.id, {
         ...formData,
+        url: (formData.url || '').trim(),
         day: dayParsed,
         updatedAt: new Date().toISOString()
       });
@@ -278,6 +295,31 @@ export default function AdvancedCalendar({ onOpenArchive }) {
     setViewModalPost(post);
     setViewModalImgError(false);
     setShowViewModalImageEditor(false);
+    setIsEditingPostUrl(false);
+    setPostUrlInput(post.url || post.link || '');
+  };
+
+  const handleSavePostUrl = async (customUrl = null) => {
+    if (!viewModalPost) return;
+    const targetUrl = (customUrl !== null ? customUrl : postUrlInput).trim();
+    await updateCalendarPost(viewModalPost.id, { url: targetUrl });
+    setViewModalPost(prev => ({ ...prev, url: targetUrl }));
+    setIsEditingPostUrl(false);
+  };
+
+  const handleRemovePostUrl = async () => {
+    if (!viewModalPost) return;
+    await updateCalendarPost(viewModalPost.id, { url: '' });
+    setViewModalPost(prev => ({ ...prev, url: '' }));
+    setPostUrlInput('');
+    setIsEditingPostUrl(false);
+  };
+
+  const handleCopyPostLink = (urlToCopy) => {
+    if (!urlToCopy) return;
+    navigator.clipboard?.writeText(urlToCopy);
+    setCopiedLinkNotification(true);
+    setTimeout(() => setCopiedLinkNotification(false), 2000);
   };
 
   const handleUpdatePostImage = async (postId, newImage) => {
@@ -707,6 +749,19 @@ export default function AdvancedCalendar({ onOpenArchive }) {
                           >
                             ✏️ Éditer
                           </button>
+                          {(post.url || post.link) && (
+                            <a 
+                              href={formatExternalUrl(post.url || post.link)} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="btn-icon-sm" 
+                              style={{ color: '#ff9233', borderColor: 'rgba(255, 121, 0, 0.35)' }}
+                              title="Consulter la publication en ligne"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              🌐 Lien ↗
+                            </a>
+                          )}
                         </div>
                         
                         <button 
@@ -863,6 +918,18 @@ export default function AdvancedCalendar({ onOpenArchive }) {
                                   >
                                     🗑 Supprimer
                                   </button>
+                                  {(post.url || post.link) && (
+                                    <a
+                                      href={formatExternalUrl(post.url || post.link)}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="btn-icon-sm"
+                                      style={{ color: '#ff9233', borderColor: 'rgba(255, 121, 0, 0.4)' }}
+                                      title="Consulter la publication sur le réseau"
+                                    >
+                                      🌐 Consulter ↗
+                                    </a>
+                                  )}
                                   {post.status !== 'PUBLISHED' && (
                                     <button 
                                       className="btn-icon-sm"
@@ -958,6 +1025,151 @@ export default function AdvancedCalendar({ onOpenArchive }) {
                   ID: #{viewModalPost.id}
                 </div>
               </div>
+
+              {/* ─── LIEN DE LA PUBLICATION / CONSULTATION DIRECTE ─── */}
+              {isEditingPostUrl ? (
+                <div className="adv-detail-link-edit animate-fade">
+                  <div className="flex justify-between items-center mb-8">
+                    <span className="text-xs font-bold text-orange-400 uppercase tracking-wider flex items-center gap-6">
+                      <span>🔗</span>
+                      <span>{(viewModalPost.url || viewModalPost.link) ? 'Modifier le lien de la publication' : 'Ajouter le lien de la publication'}</span>
+                    </span>
+                    <button
+                      type="button"
+                      className="text-xs text-slate-400 hover:text-white"
+                      onClick={() => setIsEditingPostUrl(false)}
+                    >
+                      ✕ Annuler
+                    </button>
+                  </div>
+                  <div className="flex gap-8 items-center flex-wrap">
+                    <input
+                      type="url"
+                      className="pub-form-input flex-1 min-w-[240px] text-sm"
+                      placeholder="Ex: https://www.facebook.com/... ou https://www.instagram.com/p/..."
+                      value={postUrlInput}
+                      onChange={(e) => setPostUrlInput(e.target.value)}
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleSavePostUrl();
+                        }
+                      }}
+                    />
+                    <div className="flex items-center gap-6">
+                      <button
+                        type="button"
+                        className="btn btn-orange btn-sm whitespace-nowrap"
+                        onClick={() => handleSavePostUrl()}
+                      >
+                        💾 Enregistrer le lien
+                      </button>
+                      {(viewModalPost.url || viewModalPost.link) && (
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-sm text-rose-300 hover:text-rose-100"
+                          onClick={handleRemovePostUrl}
+                        >
+                          🗑️ Retirer
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-xs text-slate-400 mt-6">
+                    💡 Collez le lien direct vers le post publié sur <strong>{viewModalPost.canal || 'les réseaux sociaux'}</strong> pour pouvoir le consulter en 1 clic.
+                  </div>
+                </div>
+              ) : (viewModalPost.url || viewModalPost.link) ? (
+                <div className="adv-detail-link-card animate-fade">
+                  <div className="adv-detail-link-content">
+                    <div className="adv-detail-link-info">
+                      <div className="adv-detail-link-badge">
+                        {getPlatformIcon(viewModalPost.canal)}
+                      </div>
+                      <div className="adv-detail-link-meta">
+                        <div className="adv-detail-link-title">
+                          <span>Lien direct de la publication</span>
+                          <span className="text-slate-400 font-normal">({viewModalPost.canal || 'En ligne'})</span>
+                        </div>
+                        <a
+                          href={formatExternalUrl(viewModalPost.url || viewModalPost.link)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="adv-detail-link-url"
+                          title="Ouvrir la publication dans un nouvel onglet"
+                        >
+                          {viewModalPost.url || viewModalPost.link}
+                        </a>
+                      </div>
+                    </div>
+
+                    <div className="adv-detail-link-actions">
+                      <a
+                        href={formatExternalUrl(viewModalPost.url || viewModalPost.link)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="adv-consult-btn"
+                        title="Consulter directement la publication sur la plateforme"
+                      >
+                        <span>🌐 Consulter la publication</span>
+                        <span className="text-xs">↗</span>
+                      </a>
+                      <button
+                        type="button"
+                        className="btn-icon-sm text-xs py-2 px-8"
+                        onClick={() => handleCopyPostLink(viewModalPost.url || viewModalPost.link)}
+                        title="Copier le lien"
+                      >
+                        {copiedLinkNotification ? '✓ Copié !' : '📋 Copier'}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-icon-sm text-xs py-2 px-8 text-slate-300 hover:text-white"
+                        onClick={() => {
+                          setPostUrlInput(viewModalPost.url || viewModalPost.link || '');
+                          setIsEditingPostUrl(true);
+                        }}
+                        title="Modifier ce lien"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-icon-sm text-xs py-2 px-8 text-rose-300 hover:text-rose-100 hover:border-rose-500"
+                        onClick={handleRemovePostUrl}
+                        title="Retirer ce lien"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="adv-detail-link-empty">
+                  <div className="flex items-center gap-8 min-w-0">
+                    <span className="text-xl">🔗</span>
+                    <div>
+                      <div className="text-xs font-semibold text-slate-300">
+                        Lien de consultation en ligne non renseigné
+                      </div>
+                      <div className="text-xs text-slate-400">
+                        Ajoutez l'URL du post publié sur {viewModalPost.canal || 'les réseaux sociaux'} pour y accéder directement.
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-xs text-orange-400 hover:text-orange-300 hover:border-orange-500/50"
+                    onClick={() => {
+                      setPostUrlInput('');
+                      setIsEditingPostUrl(true);
+                    }}
+                  >
+                    + Ajouter le lien du post
+                  </button>
+                </div>
+              )}
 
               {/* Media image preview or error / add section */}
               {viewModalPost.image && !viewModalImgError ? (
@@ -1139,6 +1351,18 @@ export default function AdvancedCalendar({ onOpenArchive }) {
             </div>
 
             <div className="adv-modal-footer">
+              {(viewModalPost.url || viewModalPost.link) && (
+                <a
+                  href={formatExternalUrl(viewModalPost.url || viewModalPost.link)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="adv-consult-btn mr-auto"
+                  title="Ouvrir la publication dans un nouvel onglet"
+                >
+                  <span>🌐 Consulter la publication</span>
+                  <span>↗</span>
+                </a>
+              )}
               <button 
                 className="btn btn-red btn-sm"
                 onClick={() => {
@@ -1346,6 +1570,24 @@ export default function AdvancedCalendar({ onOpenArchive }) {
                   }))}
                   label="Image / Visuel de la publication (Upload ou URL)"
                 />
+
+                {/* Online Publication URL */}
+                <div className="pub-form-group">
+                  <label className="pub-form-label flex items-center justify-between">
+                    <span>Lien de la publication (URL)</span>
+                    <span className="text-xs font-normal text-slate-400">Pour aller consulter le post en direct</span>
+                  </label>
+                  <input 
+                    className="pub-form-input" 
+                    type="url" 
+                    placeholder="Ex: https://www.facebook.com/... ou https://instagram.com/p/..." 
+                    value={editModalState.data.url || ''}
+                    onChange={e => setEditModalState({
+                      ...editModalState,
+                      data: { ...editModalState.data, url: e.target.value }
+                    })}
+                  />
+                </div>
 
                 {/* Description / Copywriting with AI Generator Button */}
                 <div className="pub-form-group">
