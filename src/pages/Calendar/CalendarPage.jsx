@@ -4,6 +4,7 @@ import { useApp } from '../../context/AppContext';
 import AdvancedCalendar from './sections/AdvancedCalendar';
 import ArchiveModal from './sections/ArchiveModal';
 import AdsSponsoringSection from './sections/AdsSponsoringSection';
+import PublicationImageManager from './sections/PublicationImageManager';
 
 const FMT = (n) => n.toLocaleString('fr-FR');
 
@@ -211,6 +212,7 @@ function CreatePublicationModal({ onClose, onSubmit }) {
     description: '',
     dateTarget: '',
     heureTarget: '10:00',
+    image: '',
   });
 
   const handleSubmit = (e) => {
@@ -273,6 +275,13 @@ function CreatePublicationModal({ onClose, onSubmit }) {
               onChange={e => setForm({ ...form, description: e.target.value })}
             />
           </div>
+
+          <PublicationImageManager
+            value={form.image}
+            onChange={img => setForm({ ...form, image: img })}
+            label="Visuel de la publication (Upload direct ou URL)"
+          />
+
           <div className="pub-form-actions">
             <button type="button" className="btn btn-ghost" onClick={onClose}>Annuler</button>
             <button type="submit" className="btn btn-orange">🔥 Créer la publication</button>

@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { CM_DATA } from '../../../data/community';
 import { useApp } from '../../../context/AppContext';
+import PublicationImageManager, { processImageFile, BRAND_IMAGE_PRESETS } from './PublicationImageManager';
 import './calendar.css';
 
 export default function AdvancedCalendar({ onOpenArchive }) {
@@ -26,18 +27,16 @@ export default function AdvancedCalendar({ onOpenArchive }) {
 
   // Modals
   const [viewModalPost, setViewModalPost] = useState(null);
+  const [viewModalImgError, setViewModalImgError] = useState(false);
+  const [showViewModalImageEditor, setShowViewModalImageEditor] = useState(false);
+  const [lightboxImage, setLightboxImage] = useState(null);
   const [editModalState, setEditModalState] = useState(null); // null | { mode: 'create'|'edit', data: {...} }
   const [deleteModalPost, setDeleteModalPost] = useState(null);
   const [copiedNotification, setCopiedNotification] = useState(false);
+  const viewModalFileInputRef = useRef(null);
 
-  // Preset image thumbnails for convenience
-  const IMAGE_PRESETS = [
-    { label: 'Orange Telco', url: 'https://placehold.co/400x300/ff7900/white?text=Orange+Telco' },
-    { label: 'Orange Money', url: 'https://placehold.co/400x300/9b59b6/white?text=Orange+Money' },
-    { label: 'Max it Promo', url: 'https://placehold.co/400x300/2980b9/white?text=Max+it+Promo' },
-    { label: 'Digital Center', url: 'https://placehold.co/400x300/34495e/white?text=ODC+Tech' },
-    { label: 'AI Gen Copy', url: 'https://placehold.co/400x300/111827/ffffff?text=AI+Generated' },
-  ];
+  // Preset image thumbnails using verified Brand presets
+  const IMAGE_PRESETS = BRAND_IMAGE_PRESETS;
 
   // Helper date parsing and formatting
   const getPostDateStr = (post) => {
@@ -272,6 +271,31 @@ export default function AdvancedCalendar({ onOpenArchive }) {
     setDeleteModalPost(null);
     if (viewModalPost && viewModalPost.id === deleteModalPost.id) {
       setViewModalPost(null);
+    }
+  };
+
+  const handleOpenViewModal = (post) => {
+    setViewModalPost(post);
+    setViewModalImgError(false);
+    setShowViewModalImageEditor(false);
+  };
+
+  const handleUpdatePostImage = async (postId, newImage) => {
+    await updateCalendarPost(postId, { image: newImage });
+    if (viewModalPost && viewModalPost.id === postId) {
+      setViewModalPost(prev => ({ ...prev, image: newImage }));
+      setViewModalImgError(false);
+      setShowViewModalImageEditor(false);
+    }
+  };
+
+  const handleViewModalFileUpload = async (files) => {
+    if (!files || files.length === 0 || !viewModalPost) return;
+    try {
+      const res = await processImageFile(files[0]);
+      await handleUpdatePostImage(viewModalPost.id, res.dataUrl);
+    } catch (err) {
+      alert(err.message || "Erreur lors du traitement de l'image.");
     }
   };
 
@@ -586,7 +610,7 @@ export default function AdvancedCalendar({ onOpenArchive }) {
                       <div 
                         key={post.id} 
                         className={`adv-month-post-chip status-${(post.status || 'draft').toLowerCase()}`}
-                        onClick={() => setViewModalPost(post)}
+                        onClick={() => handleOpenViewModal(post)}
                         title={`${post.title} — ${post.canal} (${post.time})`}
                       >
                         <span>{getPlatformIcon(post.canal)}</span>
@@ -672,7 +696,7 @@ export default function AdvancedCalendar({ onOpenArchive }) {
                           <button 
                             className="btn-icon-sm" 
                             title="Visualiser les détails"
-                            onClick={() => setViewModalPost(post)}
+                            onClick={() => handleOpenViewModal(post)}
                           >
                             👁 Voir
                           </button>
@@ -823,7 +847,7 @@ export default function AdvancedCalendar({ onOpenArchive }) {
                                 <div className="flex items-center gap-8">
                                   <button 
                                     className="btn-icon-sm"
-                                    onClick={() => setViewModalPost(post)}
+                                    onClick={() => handleOpenViewModal(post)}
                                   >
                                     👁 Visualiser
                                   </button>
@@ -935,10 +959,141 @@ export default function AdvancedCalendar({ onOpenArchive }) {
                 </div>
               </div>
 
-              {/* Media preview if available */}
-              {viewModalPost.image && (
+              {/* Media image preview or error / add section */}
+              {viewModalPost.image && !viewModalImgError ? (
                 <div className="adv-detail-image-box">
-                  <img src={viewModalPost.image} alt={viewModalPost.title} />
+                  <div className="adv-detail-image-wrapper">
+                    <img
+                      src={viewModalPost.image}
+                      alt={viewModalPost.title}
+                      referrerPolicy="no-referrer"
+                      onError={() => setViewModalImgError(true)}
+                      onClick={() => setLightboxImage(viewModalPost.image)}
+                      className="cursor-pointer hover:opacity-95"
+                      title="Cliquer pour afficher en plein écran"
+                    />
+                  </div>
+                  <div className="adv-detail-image-bar">
+                    <span className="text-xs text-slate-300 flex items-center gap-6">
+                      <span className="font-semibold text-white">
+                        {viewModalPost.image.startsWith('data:') ? '📁 Visuel importé (local)' : '🌐 Visuel via URL web'}
+                      </span>
+                    </span>
+                    <div className="flex items-center gap-6">
+                      <button
+                        type="button"
+                        className="btn-icon-sm text-xs py-2 px-8"
+                        onClick={() => setLightboxImage(viewModalPost.image)}
+                        title="Afficher en grand"
+                      >
+                        🔍 Agrandir
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-icon-sm text-xs py-2 px-8"
+                        onClick={() => setShowViewModalImageEditor(!showViewModalImageEditor)}
+                        title="Remplacer par une autre image ou un fichier"
+                      >
+                        🔄 Remplacer
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-icon-sm text-xs py-2 px-8 text-rose-300 hover:text-rose-100 hover:border-rose-500"
+                        onClick={() => handleUpdatePostImage(viewModalPost.id, '')}
+                        title="Supprimer cette image"
+                      >
+                        🗑️ Retirer
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : viewModalPost.image && viewModalImgError ? (
+                <div className="adv-detail-image-error">
+                  <span className="text-3xl">⚠️</span>
+                  <div className="text-sm font-bold text-rose-300">
+                    Image inaccessible ou lien externe expiré
+                  </div>
+                  <p className="text-xs text-slate-300 max-w-md m-0">
+                    Le lien distant configuré ne répond pas (erreur réseau, 404 ou blocage CORS). Vous pouvez téléverser directement un fichier image ou saisir un nouveau lien.
+                  </p>
+                  <div className="flex gap-8 flex-wrap justify-center mt-4">
+                    <button
+                      type="button"
+                      className="btn btn-blue btn-sm"
+                      onClick={() => viewModalFileInputRef.current?.click()}
+                    >
+                      📁 Téléverser une image directe
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
+                      onClick={() => setShowViewModalImageEditor(true)}
+                    >
+                      🔗 Changer le lien URL
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-red btn-sm"
+                      onClick={() => handleUpdatePostImage(viewModalPost.id, '')}
+                    >
+                      🗑️ Supprimer le visuel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="adv-detail-no-image">
+                  <span className="text-2xl">🖼️</span>
+                  <div className="text-xs text-slate-300 font-medium">
+                    Aucun visuel associé à cette publication
+                  </div>
+                  <div className="flex gap-6 flex-wrap justify-center mt-4">
+                    <button
+                      type="button"
+                      className="btn btn-blue btn-xs"
+                      onClick={() => viewModalFileInputRef.current?.click()}
+                    >
+                      📁 Téléverser une image
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-xs"
+                      onClick={() => setShowViewModalImageEditor(true)}
+                    >
+                      🔗 Ajouter via URL
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Hidden file input for direct detail upload */}
+              <input
+                ref={viewModalFileInputRef}
+                type="file"
+                accept="image/png, image/jpeg, image/webp, image/gif, image/svg+xml"
+                className="hidden"
+                onChange={(e) => handleViewModalFileUpload(e.target.files)}
+              />
+
+              {/* Collapsible Inline Image Editor in Detail View */}
+              {showViewModalImageEditor && (
+                <div className="p-12 bg-slate-900/95 rounded-lg border border-blue-500/40 animate-fade">
+                  <div className="flex justify-between items-center mb-8">
+                    <span className="text-xs font-bold text-white uppercase tracking-wider">
+                      Modifier le visuel (Fichier direct ou URL)
+                    </span>
+                    <button
+                      type="button"
+                      className="text-xs text-slate-400 hover:text-white"
+                      onClick={() => setShowViewModalImageEditor(false)}
+                    >
+                      ✕ Fermer
+                    </button>
+                  </div>
+                  <PublicationImageManager
+                    value={viewModalPost.image || ''}
+                    onChange={(newImg) => handleUpdatePostImage(viewModalPost.id, newImg)}
+                    label="Choisir le visuel :"
+                  />
                 </div>
               )}
 
@@ -1182,36 +1337,15 @@ export default function AdvancedCalendar({ onOpenArchive }) {
                   />
                 </div>
 
-                {/* Image URL with presets */}
-                <div className="pub-form-group">
-                  <label className="pub-form-label">Image / Visuel (URL)</label>
-                  <input 
-                    className="pub-form-input" 
-                    type="url" 
-                    placeholder="https://..." 
-                    value={editModalState.data.image || ''}
-                    onChange={e => setEditModalState({
-                      ...editModalState,
-                      data: { ...editModalState.data, image: e.target.value }
-                    })}
-                  />
-                  <div className="flex gap-6 mt-6 flex-wrap items-center text-xs text-slate-400">
-                    <span>Présets rapides :</span>
-                    {IMAGE_PRESETS.map((preset, pIdx) => (
-                      <button
-                        key={pIdx}
-                        type="button"
-                        className="btn-icon-sm text-xs py-2 px-6"
-                        onClick={() => setEditModalState({
-                          ...editModalState,
-                          data: { ...editModalState.data, image: preset.url }
-                        })}
-                      >
-                        {preset.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                {/* Image Section: Direct Upload or URL Link */}
+                <PublicationImageManager
+                  value={editModalState.data.image || ''}
+                  onChange={(img) => setEditModalState(prev => ({
+                    ...prev,
+                    data: { ...prev.data, image: img }
+                  }))}
+                  label="Image / Visuel de la publication (Upload ou URL)"
+                />
 
                 {/* Description / Copywriting with AI Generator Button */}
                 <div className="pub-form-group">
@@ -1308,6 +1442,26 @@ export default function AdvancedCalendar({ onOpenArchive }) {
                 🗑 Supprimer définitivement
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── LIGHTBOX ZOOM MODAL ─── */}
+      {lightboxImage && (
+        <div className="adv-lightbox-backdrop" onClick={() => setLightboxImage(null)}>
+          <div className="adv-lightbox-content" onClick={e => e.stopPropagation()}>
+            <button
+              className="adv-lightbox-close"
+              onClick={() => setLightboxImage(null)}
+              title="Fermer"
+            >
+              ✕
+            </button>
+            <img
+              src={lightboxImage}
+              alt="Visuel agrandi"
+              referrerPolicy="no-referrer"
+            />
           </div>
         </div>
       )}
