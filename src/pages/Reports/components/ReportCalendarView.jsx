@@ -52,33 +52,51 @@ export default function ReportCalendarView({ reports, onSelectReport }) {
   const weekDays = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 
   return (
-    <div className="p-6 rounded-2xl cosmic-glass-card border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.37)]">
-      {/* Calendar Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-white/10">
-        <div>
-          <h2 className="text-base font-black text-white flex items-center gap-2 tracking-tight">
-            <CalendarIcon size={18} className="text-[#FF6600]" />
-            <span>Calendrier Cosmique des Livraisons & Échéances SLA</span>
-          </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Suivi temps réel des jalons de clôture (Hebdo J+2, Mensuel J+5, Spontané SLA & Comités)
-          </p>
+    <div className="space-y-5 animate-fadeIn pb-10">
+      
+      {/* En-tête de section (Style Influence) */}
+      <div className="flex flex-wrap items-center justify-between gap-16 mb-16">
+        <div className="flex items-center gap-10">
+          <div
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 10,
+              background: '#FF7900',
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 2px 8px rgba(255, 121, 0, 0.25)',
+            }}
+          >
+            <CalendarIcon size={22} />
+          </div>
+          <div>
+            <h2 className="text-xl font-black text-dark" style={{ margin: 0 }}>
+              6. Calendrier & Échéances — Planning des Livraisons SLA
+            </h2>
+            <p className="text-xs text-muted mt-2" style={{ margin: 0 }}>
+              Suivi des jalons de clôture (Hebdo J+2, Mensuel J+5, Spontané SLA et Comités de performance)
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex items-center bg-black/40 rounded-xl p-1 border border-white/10">
+        {/* Navigation Mois & Bouton Aujourd'hui */}
+        <div className="flex items-center gap-4 flex-wrap">
+          <div className="flex items-center bg-white rounded-lg p-1 border border-gray-200" style={{ boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
             <button
               onClick={handlePrevMonth}
-              className="p-1 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+              className="p-1.5 text-muted hover:text-dark hover:bg-gray-100 rounded transition-colors"
             >
               <ChevronLeft size={16} />
             </button>
-            <span className="text-xs font-black text-white px-3 min-w-[120px] text-center">
+            <span className="text-xs font-bold text-dark px-3 min-w-[130px] text-center">
               {monthNames[currentMonth]} {currentYear}
             </span>
             <button
               onClick={handleNextMonth}
-              className="p-1 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+              className="p-1.5 text-muted hover:text-dark hover:bg-gray-100 rounded transition-colors"
             >
               <ChevronRight size={16} />
             </button>
@@ -86,129 +104,89 @@ export default function ReportCalendarView({ reports, onSelectReport }) {
 
           <button
             onClick={() => { setCurrentMonth(7); setCurrentYear(2026); }}
-            className="text-xs font-black px-3 py-1.5 rounded-xl cosmic-btn-cyan cursor-pointer"
+            className="btn btn-ghost border text-xs font-bold px-3 py-1.5 rounded"
+            style={{ background: '#fff' }}
           >
-            Août 2026 (Actuel)
+            Aujourd'hui
           </button>
         </div>
       </div>
 
-      {/* Week days grid header */}
-      <div className="grid grid-cols-7 gap-px bg-white/10 rounded-t-xl overflow-hidden border border-white/10">
-        {weekDays.map((wd, i) => (
-          <div 
-            key={wd} 
-            className={`py-2.5 text-center text-xs font-extrabold ${
-              i >= 5 ? 'bg-black/60 text-slate-500' : 'bg-black/40 text-slate-300'
-            }`}
-          >
-            {wd}
-          </div>
-        ))}
-      </div>
-
-      {/* Calendar Days Matrix */}
-      <div className="grid grid-cols-7 gap-px bg-white/10 border-x border-b border-white/10 rounded-b-xl overflow-hidden">
-        {calendarDays.map((cell, idx) => {
-          if (!cell.isCurrentMonth) {
-            return (
-              <div key={`empty-${idx}`} className="bg-black/40 min-h-[100px] p-2 opacity-20"></div>
-            );
-          }
-
-          const hasReports = cell.reports && cell.reports.length > 0;
-          const isToday = cell.dateStr === '2026-08-16';
-
-          return (
-            <div 
-              key={cell.dateStr} 
-              className={`bg-black/30 min-h-[105px] p-2.5 flex flex-col justify-between transition-colors ${
-                isToday ? 'bg-[#FF6600]/15 ring-1 ring-inset ring-[#FF6600]' : 'hover:bg-white/5'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span className={`text-xs font-black ${isToday ? 'text-[#FF6600]' : 'text-slate-200'}`}>
-                  {cell.day}
-                </span>
-                {isToday && (
-                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-gradient-to-r from-[#FF6600] to-[#FF8C00] text-white shadow-xs">
-                    AUJOURD'HUI
-                  </span>
-                )}
-              </div>
-
-              {/* Reports in day */}
-              <div className="space-y-1.5 my-1.5">
-                {cell.reports?.map((rep) => {
-                  const isUrgent = rep.priority === 'urgente';
-                  const isDelivered = rep.status === 'delivered';
-
-                  return (
-                    <button
-                      key={rep.id}
-                      onClick={() => onSelectReport(rep)}
-                      className={`w-full text-left p-1.5 rounded-lg border text-[10px] leading-tight transition-all block cursor-pointer ${
-                        isUrgent 
-                          ? 'bg-red-500/20 border-red-500/40 text-red-300 font-black animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.3)]'
-                          : isDelivered 
-                          ? 'bg-emerald-500/20 border-emerald-500/35 text-emerald-300 font-bold'
-                          : 'bg-[#FF6600]/20 border-[#FF6600]/35 text-[#FFA040] font-bold hover:border-[#FF6600]'
-                      }`}
-                      title={`${rep.id} - ${rep.title}`}
-                    >
-                      <div className="flex items-center gap-1 truncate">
-                        {isUrgent && <AlertTriangle size={10} className="text-red-400 shrink-0" />}
-                        {isDelivered && <CheckCircle2 size={10} className="text-emerald-400 shrink-0" />}
-                        <span className="font-mono truncate">{rep.id}</span>
-                      </div>
-                      <div className="truncate text-[9px] text-slate-300 mt-0.5">
-                        {rep.brands?.[0] || 'Orange'}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="text-[9px] text-slate-500 font-semibold text-right">
-                {hasReports ? `${cell.reports.length} livrable(s)` : ''}
-              </div>
+      {/* Grille du Calendrier (Style Influence) */}
+      <div className="card" style={{ background: '#fff', borderRadius: 8, boxShadow: '0 1px 3px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
+        {/* Days of the week */}
+        <div className="grid grid-cols-7 border-b border-gray-200 bg-gray-50 text-center py-2.5">
+          {weekDays.map(wd => (
+            <div key={wd} className="text-xs font-bold text-muted uppercase tracking-wider">
+              {wd}
             </div>
-          );
-        })}
+          ))}
+        </div>
+
+        {/* Days Grid */}
+        <div className="grid grid-cols-7 divide-x divide-y divide-gray-100 bg-white">
+          {calendarDays.map((cd, index) => {
+            if (!cd.isCurrentMonth) {
+              return (
+                <div key={index} className="min-h-[110px] p-2 bg-gray-50/50 opacity-40" />
+              );
+            }
+
+            const isToday = cd.dateStr === '2026-08-16';
+
+            return (
+              <div
+                key={index}
+                className={`min-h-[110px] p-2.5 transition-colors ${
+                  isToday ? 'bg-orange-50/20' : 'hover:bg-gray-50'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <span
+                    className={`text-xs font-bold inline-flex items-center justify-center w-6 h-6 rounded-full ${
+                      isToday
+                        ? 'bg-[#FF7900] text-white'
+                        : 'text-dark'
+                    }`}
+                  >
+                    {cd.day}
+                  </span>
+
+                  {cd.reports.length > 0 && (
+                    <span className="text-[10px] font-bold text-muted bg-gray-100 px-1.5 py-0.2 rounded">
+                      {cd.reports.length}
+                    </span>
+                  )}
+                </div>
+
+                {/* Day events pills */}
+                <div className="space-y-1">
+                  {cd.reports.map(r => {
+                    const statusCfg = REPORT_STATUSES[r.status] || REPORT_STATUSES.draft;
+                    const isDelivered = r.status === 'delivered';
+                    return (
+                      <div
+                        key={r.id}
+                        onClick={() => onSelectReport(r)}
+                        className="p-1 rounded text-[10px] font-bold truncate cursor-pointer transition-all hover:opacity-90"
+                        style={{
+                          backgroundColor: statusCfg.color + '18',
+                          color: statusCfg.color,
+                          border: `1px solid ${statusCfg.color}40`
+                        }}
+                        title={`${r.id} - ${r.title}`}
+                      >
+                        {isDelivered ? '✓' : '⏰'} {r.id}: {r.title}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      {/* SLA Guidelines Summary */}
-      <div className="mt-6 pt-5 border-t border-white/10 grid grid-cols-1 sm:grid-cols-3 gap-3.5 text-xs">
-        <div className="p-3 rounded-xl bg-black/40 border border-[#FF6600]/30">
-          <div className="font-black text-[#FF8C00] flex items-center gap-1.5 mb-1">
-            <span className="w-2 h-2 rounded-full bg-[#FF6600]"></span>
-            Rapports Hebdomadaires
-          </div>
-          <p className="text-[11px] text-slate-300">
-            Clôture dimanche minuit → Livraison J+2 / J+3 (Mardi 10h max).
-          </p>
-        </div>
-
-        <div className="p-3 rounded-xl bg-black/40 border border-[#00D4FF]/30">
-          <div className="font-black text-[#00D4FF] flex items-center gap-1.5 mb-1">
-            <span className="w-2 h-2 rounded-full bg-[#00D4FF]"></span>
-            Rapports Mensuels
-          </div>
-          <p className="text-[11px] text-slate-300">
-            Consolidation fin de mois → Livraison J+5 ouvrés pour comité.
-          </p>
-        </div>
-
-        <div className="p-3 rounded-xl bg-black/40 border border-red-500/30">
-          <div className="font-black text-red-400 flex items-center gap-1.5 mb-1">
-            <span className="w-2 h-2 rounded-full bg-red-500"></span>
-            Rapports Spontanés & Urgences
-          </div>
-          <p className="text-[11px] text-slate-300">
-            SLA sous 24h à 48h avec validation de crise express.
-          </p>
-        </div>
-      </div>
     </div>
   );
 }

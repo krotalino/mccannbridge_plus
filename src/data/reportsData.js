@@ -80,708 +80,1395 @@ export const REPORT_SECTIONS_CATALOG = [
 
 export const INITIAL_REPORTS = [
   {
-    id: 'REP-2026-0817-TELCO',
-    title: 'Rapport Hebdomadaire Social Media — S33 (11 au 17 Août 2026)',
-    type: 'hebdomadaire',
-    client: 'Orange Cameroun',
-    brands: ['Orange TELCO', 'Orange Money'],
-    requester: { name: 'Lauriane Ngameni', role: 'Digital Brand Manager', email: 'lauriane.ngameni@orange.cm', avatar: 'LN' },
-    clientContact: { name: 'Patrick Tuete', role: 'Head of Digital Marketing', email: 'patrick.tuete@orange.cm' },
-    assignee: { name: 'Steve BESSOUBE', role: 'Digital Web Analyst Lead', email: 'steve.bessoube@mccann.cm', avatar: 'SB' },
-    reviewer: { name: 'Victor F. AKOA', role: 'Directeur de Création & Stratégie', avatar: 'VA' },
-    priority: 'haute',
-    status: 'client_review',
-    submittedAt: '2026-08-18T08:30:00Z',
-    dueDate: '2026-08-19',
-    deliveredDate: null,
-    briefCompleteness: 100,
-    version: 'v1.2',
-    versions: [
-      { versionNumber: 'v1.0', date: '2026-08-18 14:00', author: 'Steve BESSOUBE', changelog: 'Création initiale des métriques S33' },
-      { versionNumber: 'v1.1', date: '2026-08-18 16:30', author: 'Victor F. AKOA', changelog: 'Revue interne : ajustement benchmark TikTok MTN' },
-      { versionNumber: 'v1.2', date: '2026-08-18 18:00', author: 'Steve BESSOUBE', changelog: 'Soumission finale pour validation client' }
+    "id": "REP-2026-0817-TELCO",
+    "title": "Rapport Hebdomadaire Social Media — S33 (11 au 17 Août 2026)",
+    "type": "hebdomadaire",
+    "client": "Orange Cameroun",
+    "brands": [
+      "Orange TELCO"
     ],
-    period: {
-      start: '2026-08-11',
-      end: '2026-08-17',
-      label: 'Semaine du 11 au 17 août 2026 (S33)',
-      comparisonType: 'periode_precedente',
-      comparisonLabel: 'vs Semaine précédente (S32)',
-      dataTypes: 'mixte',
-      channels: ['Facebook', 'Instagram', 'TikTok', 'LinkedIn', 'X (Twitter)', 'YouTube'],
-      region: 'Cameroun (National)',
-      currency: 'XAF',
+    "status": "delivered",
+    "version": "v2.0",
+    "priority": "haute",
+    "dueDate": "2026-08-19",
+    "createdAt": "2026-08-17T08:30:00Z",
+    "updatedAt": "2026-08-19T11:00:00Z",
+    "period": {
+      "start": "2026-08-11",
+      "end": "2026-08-17",
+      "label": "Semaine S33 (11 au 17 Août 2026)",
+      "comparisonType": "periode_precedente"
     },
-    context: {
-      campaignName: 'Push Promo Maxit 50% & Pulse Campus Gaming',
-      marketingObjective: 'Engagement & Conversions Maxit',
-      businessQuestion: 'Quel est l’impact du format vidéo court TikTok/Reels sur les conversions Maxit face à l’offensive MoMo MTN ?',
-      hypotheses: 'Le couplage des offres Telco avec le gaming génère 2x plus de partage sur TikTok.',
-      keyMoments: 'Lancement du tournoi Orange Pulse E-Sport Douala + Promo Maxit 50% bonus data.',
-      attachments: [
-        { name: 'Plan_Media_S33_Orange.xlsx', size: '2.4 MB', type: 'excel' },
-        { name: 'Brief_Promo_Maxit_Aout2026.pdf', size: '1.8 MB', type: 'pdf' }
+    "requester": {
+      "name": "Lauriane Ngameni",
+      "role": "Digital Brand Manager",
+      "email": "lauriane.ngameni@orange.cm"
+    },
+    "assignee": {
+      "name": "Steve BESSOUBE",
+      "role": "Digital Web Analyst & Media"
+    },
+    "clientContact": "Patrick Tuete (Head of Digital Marketing)",
+    "channels": [
+      "Facebook",
+      "Instagram",
+      "TikTok",
+      "LinkedIn",
+      "X (Twitter)",
+      "YouTube"
+    ],
+    "sections": [
+      "cover",
+      "executive_summary",
+      "community_growth",
+      "platform_performance",
+      "period_comparison",
+      "speeches_analysis",
+      "qualitative_insights",
+      "competitive_benchmark",
+      "best_posts",
+      "actionable_recos"
+    ],
+    "context": {
+      "campaignName": "Good Deal Data & Rentrée 4G+",
+      "marketingObjective": "Notoriété & Engagement My Orange",
+      "businessQuestion": "Quel impact de l’activation Good Deal du vendredi 15 août sur le volume de téléchargements et les réactions ?",
+      "hypotheses": "Le format Reel humoristique génère un taux d’engagement supérieur à 8% et draine du trafic vers l’application.",
+      "keyMoments": "Flash Promo data 5 Go à 1 000 FCFA le vendredi 15 août."
+    },
+    "data": {
+      "summaryKpis": {
+        "followers": 2450000,
+        "followersGrowth": 18450,
+        "growthRate": 0.76,
+        "reach": 3850000,
+        "impressions": 6200000,
+        "engagements": 248000,
+        "engagementRate": 6.44,
+        "videoViews": 1420000,
+        "videoCompletionRate": 38.5,
+        "linkClicks": 42300,
+        "adSpend": 2850000,
+        "cpm": 460,
+        "cpc": 67,
+        "ctr": 2.85,
+        "cpa": 240
+      },
+      "platformBreakdown": [
+        {
+          "channel": "Facebook",
+          "followers": 1650000,
+          "growth": 7200,
+          "reach": 2100000,
+          "engagements": 135000,
+          "rate": 6.43,
+          "posts": 14
+        },
+        {
+          "channel": "TikTok",
+          "followers": 420000,
+          "growth": 8400,
+          "reach": 1150000,
+          "engagements": 82000,
+          "rate": 7.13,
+          "posts": 6
+        },
+        {
+          "channel": "Instagram",
+          "followers": 235000,
+          "growth": 1950,
+          "reach": 380000,
+          "engagements": 21000,
+          "rate": 5.53,
+          "posts": 9
+        },
+        {
+          "channel": "LinkedIn",
+          "followers": 98000,
+          "growth": 650,
+          "reach": 145000,
+          "engagements": 7200,
+          "rate": 4.96,
+          "posts": 4
+        },
+        {
+          "channel": "X (Twitter)",
+          "followers": 47000,
+          "growth": 250,
+          "reach": 75000,
+          "engagements": 2800,
+          "rate": 3.73,
+          "posts": 12
+        }
+      ],
+      "periodComparison": {
+        "nVsNMinus1": [
+          {
+            "kpi": "Portée Totale (Reach)",
+            "n": "3.85 M",
+            "nMinus1": "3.20 M",
+            "diff": "+20.3%",
+            "isPositive": true
+          },
+          {
+            "kpi": "Engagements Globaux",
+            "n": "248.0 K",
+            "nMinus1": "212.5 K",
+            "diff": "+16.7%",
+            "isPositive": true
+          },
+          {
+            "kpi": "Taux d’engagement moyen",
+            "n": "6.44%",
+            "nMinus1": "6.12%",
+            "diff": "+0.32 pt",
+            "isPositive": true
+          },
+          {
+            "kpi": "Vues de vidéos (>3s)",
+            "n": "1.42 M",
+            "nMinus1": "1.10 M",
+            "diff": "+29.1%",
+            "isPositive": true
+          },
+          {
+            "kpi": "Clics vers My Orange",
+            "n": "42.3 K",
+            "nMinus1": "35.8 K",
+            "diff": "+18.2%",
+            "isPositive": true
+          }
+        ]
+      },
+      "speeches": [
+        {
+          "id": "SP-001",
+          "brand": "Orange TELCO",
+          "name": "Good Deal 5Go Weekend Promo",
+          "channel": "Facebook",
+          "format": "Reel & Carrousel",
+          "objective": "Engagement & Clics",
+          "date": "2026-08-15",
+          "reach": 840000,
+          "impressions": 1250000,
+          "engagements": 68500,
+          "engagementRate": 8.15,
+          "videoViews": 450000,
+          "clicks": 18400,
+          "conversions": 6200,
+          "sentiment": "91% Positif",
+          "isPaid": true,
+          "spend": 850000,
+          "insight": "L’accroche directe sur le prix barré a suscité un partage massif sur WhatsApp et Facebook."
+        },
+        {
+          "id": "SP-002",
+          "brand": "Orange TELCO",
+          "name": "Tutoriel Auto-assistance USSD #150#",
+          "channel": "TikTok",
+          "format": "Vidéo Courte Face Cam",
+          "objective": "Éducation & Notoriété",
+          "date": "2026-08-13",
+          "reach": 480000,
+          "impressions": 720000,
+          "engagements": 41200,
+          "engagementRate": 8.58,
+          "videoViews": 390000,
+          "clicks": 4200,
+          "conversions": 1850,
+          "sentiment": "88% Positif",
+          "isPaid": false,
+          "spend": 0,
+          "insight": "Le ton décalé avec le créateur local Ulrich a généré plus de 1 200 commentaires constructifs."
+        },
+        {
+          "id": "SP-003",
+          "brand": "Orange TELCO",
+          "name": "Conseils Sécurité SIM & Phishing",
+          "channel": "LinkedIn",
+          "format": "Document PDF Infographie",
+          "objective": "Confiance & Corporate",
+          "date": "2026-08-12",
+          "reach": 95000,
+          "impressions": 130000,
+          "engagements": 4800,
+          "engagementRate": 5.05,
+          "videoViews": 0,
+          "clicks": 2100,
+          "conversions": 350,
+          "sentiment": "94% Positif",
+          "isPaid": false,
+          "spend": 0,
+          "insight": "Fort taux de republication par les cadres RH et chefs d’entreprises locaux."
+        }
+      ],
+      "bestPosts": [
+        {
+          "id": "BP-01",
+          "channel": "TikTok",
+          "title": "Quand tu actives les 5 Go du Good Deal à 23h59 🏃💨",
+          "format": "Reel / Vidéo humoristique",
+          "date": "15 Août 2026",
+          "reach": "520 K",
+          "engagements": "48.2 K",
+          "rate": "9.27%",
+          "url": "https://tiktok.com/@orangecameroon",
+          "successFactor": "Format court de 12s calé sur une musique tendance camerounaise. Rétention à 68% jusqu’à la fin."
+        },
+        {
+          "id": "BP-02",
+          "channel": "Facebook",
+          "title": "Alerte Promo : Rechargez via My Orange et gagnez 100% de bonus data immédiat",
+          "format": "Carrousel interactif 4 visuels",
+          "date": "14 Août 2026",
+          "reach": "780 K",
+          "engagements": "52.4 K",
+          "rate": "6.71%",
+          "url": "https://facebook.com/orangecameroon",
+          "successFactor": "Design épuré fond noir et orange néon avec bouton CTA direct vers la boutique en ligne."
+        }
+      ],
+      "benchmark": {
+        "competitors": [
+          {
+            "name": "Orange TELCO",
+            "shareOfVoice": "44.5%",
+            "interactions": "248 K",
+            "posts": 45,
+            "sentimentPositive": "84%"
+          },
+          {
+            "name": "MTN Cameroun",
+            "shareOfVoice": "38.2%",
+            "interactions": "198 K",
+            "posts": 38,
+            "sentimentPositive": "78%"
+          },
+          {
+            "name": "Blue by Camtel",
+            "shareOfVoice": "17.3%",
+            "interactions": "64 K",
+            "posts": 22,
+            "sentimentPositive": "71%"
+          }
+        ]
+      },
+      "qualitativeInsights": {
+        "drivers": [
+          "Le levier des micro-promotions week-end (Good Deal) reste le principal vecteur d’engagement spontané et de clics qualifiés.",
+          "Forte progression de TikTok (+8 400 abonnés en 7 jours) grâce à une stratégie de co-création de contenu avec des créateurs camerounais."
+        ],
+        "friction": [
+          "Légère saturation sur les publications de service client générique sous forme d’images statiques le lundi matin.",
+          "Temps de réponse community management moyen mesuré à 14 min le dimanche (objectif : <10 min)."
+        ],
+        "learnings": [
+          "Privilégier les publications vidéo courtes de 15 à 30 secondes pour toutes les annonces de tarif.",
+          "Les Stories interactives avec stickers sondages augmentent la mémorisation de marque de 32%."
+        ]
+      },
+      "actionableRecos": [
+        "Reconduire l’offre Good Deal sur la tranche horaire 18h-22h avec amplification Meta Ads à 300 000 FCFA.",
+        "Accélérer sur TikTok en programmant 3 capsules éducatives supplémentaires avec l’ambassadeur local.",
+        "Renforcer la modération active sur Facebook durant les pics de questions sur l’itinérance réseau."
       ]
     },
-    selectedSections: [
-      'cover', 'executive_summary', 'community_growth', 'platform_performance',
-      'period_comparison', 'speeches_analysis', 'qualitative_insights',
-      'competitive_benchmark', 'best_posts', 'actionable_recos'
-    ],
-    comments: [
+    "comments": [
       {
-        id: 'c1',
-        author: 'Victor F. AKOA',
-        role: 'Directeur Conseil McCann',
-        date: '2026-08-18 16:15',
-        type: 'internal',
-        text: 'Très bonne analyse sur TikTok. N\'oublie pas d\'insister sur le ratio coût par acquisition vs Facebook.',
-        resolved: true
+        "id": "c1",
+        "author": "Lauriane Ngameni",
+        "role": "Demandeur Client",
+        "date": "2026-08-17 08:35",
+        "text": "Merci d’inclure un focus particulier sur la conversion de l’offre data du 15 août."
       },
       {
-        id: 'c2',
-        author: 'Lauriane Ngameni',
-        role: 'Digital Brand Manager (Orange)',
-        date: '2026-08-19 09:40',
-        type: 'client',
-        text: 'Nous apprécions le focus sur Pulse Gaming. Pouvez-vous préciser le taux de clic vers l\'application Maxit ?',
-        resolved: false
+        "id": "c2",
+        "author": "Steve BESSOUBE",
+        "role": "Digital Analyst",
+        "date": "2026-08-18 14:10",
+        "text": "Données consolidées et intégrées dans le Data Studio avec le détail par canal."
+      },
+      {
+        "id": "c3",
+        "author": "Victor F. AKOA",
+        "role": "Reviewer McCann",
+        "date": "2026-08-18 17:30",
+        "text": "Revue interne effectuée : les KPI et le benchmark concurrentiel sont validés. Rapport transmis au client."
+      },
+      {
+        "id": "c4",
+        "author": "Patrick Tuete",
+        "role": "Client Lead",
+        "date": "2026-08-19 10:45",
+        "text": "Rapport validé sans réserve. Excellente analyse des formats TikTok."
       }
     ],
-    auditLog: [
-      { timestamp: '2026-08-18 08:30', user: 'Lauriane Ngameni', action: 'Création', detail: 'Demande hebdomadaire S33 soumise avec priorité Haute' },
-      { timestamp: '2026-08-18 09:00', user: 'Victor F. AKOA', action: 'Qualification', detail: 'Demande qualifiée et assignée à Steve BESSOUBE' },
-      { timestamp: '2026-08-18 14:00', user: 'Steve BESSOUBE', action: 'Production', detail: 'Importation des KPI et rédaction des insights qualitatifs' },
-      { timestamp: '2026-08-18 16:30', user: 'Victor F. AKOA', action: 'Revue Interne', detail: 'Validation interne accordée avec mention mineure' },
-      { timestamp: '2026-08-18 18:00', user: 'Steve BESSOUBE', action: 'Transmission Client', detail: 'Rapport v1.2 soumis en validation client' }
+    "workflowHistory": [
+      {
+        "step": "submitted",
+        "label": "Demande soumise",
+        "date": "2026-08-17 08:30",
+        "author": "Lauriane Ngameni"
+      },
+      {
+        "step": "qualified",
+        "label": "Demande qualifiée & planifiée",
+        "date": "2026-08-17 09:15",
+        "author": "Steve BESSOUBE"
+      },
+      {
+        "step": "in_production",
+        "label": "Collecte & Analyse en cours",
+        "date": "2026-08-17 10:00",
+        "author": "Steve BESSOUBE"
+      },
+      {
+        "step": "internal_review",
+        "label": "Soumis au contrôle qualité McCann",
+        "date": "2026-08-18 16:30",
+        "author": "Steve BESSOUBE"
+      },
+      {
+        "step": "client_review",
+        "label": "Transmis au client Orange",
+        "date": "2026-08-18 17:35",
+        "author": "Victor F. AKOA"
+      },
+      {
+        "step": "approved",
+        "label": "Validé par le client",
+        "date": "2026-08-19 10:45",
+        "author": "Patrick Tuete"
+      },
+      {
+        "step": "delivered",
+        "label": "Livrable officiel livré et archivé",
+        "date": "2026-08-19 11:00",
+        "author": "Steve BESSOUBE"
+      }
     ],
-    data: {
-      executiveSummary: {
-        highlights: [
-          'Portée globale consolidée de 2.45M personnes (+14.2% vs S32) tirée par la campagne Pulse Gaming.',
-          'Taux d’engagement moyen record à 5.8% (vs 4.9% la semaine précédente), surperformant le benchmark MTN (4.1%).',
-          '9 200 activations de l’offre Maxit générées directement depuis les liens sponsorisés.',
-          'Surperformance spectaculaire de TikTok : +12.5% de communauté et 420K vues sur le sketch OM Transfer.'
-        ],
-        alerts: [
-          'X (Twitter) en léger recul d’abonnés (-0.5%) suite aux réclamations relatives à la latence fibre du 13 août.',
-          'Sous-exposition persistante des régions Grand Nord (Garoua, Maroua) représentant seulement 8% du reach payant.'
-        ],
-        priorityRecos: [
-          'Réallouer 20% du sponsoring Facebook vers TikTok et Instagram Reels pour maximiser la cible 18-25 ans.',
-          'Déployer une prise de parole rassurante sur X concernant la stabilité du réseau fibre et mobile.'
-        ]
+    "auditLog": [
+      {
+        "action": "CREATION",
+        "author": "Lauriane Ngameni",
+        "date": "2026-08-17 08:30:12"
       },
-      communityEvolution: {
-        initialTotal: 1407000,
-        finalTotal: 1422000,
-        netGrowth: 15000,
-        growthPercent: 1.07,
-        byPlatform: [
-          { platform: 'Facebook', initial: 882000, final: 890000, net: 8000, growth: 0.91 },
-          { platform: 'Instagram', initial: 312000, final: 320000, net: 8000, growth: 2.56 },
-          { platform: 'TikTok', initial: 75000, final: 85000, net: 10000, growth: 13.33 },
-          { platform: 'LinkedIn', initial: 44200, final: 45000, net: 800, growth: 1.81 },
-          { platform: 'X (Twitter)', initial: 67300, final: 67000, net: -300, growth: -0.45 },
-          { platform: 'YouTube', initial: 26500, final: 27000, net: 500, growth: 1.88 },
-        ]
+      {
+        "action": "DATA_IMPORT",
+        "author": "Steve BESSOUBE",
+        "date": "2026-08-18 11:45:00",
+        "details": "Import de 5 plateformes via Data Studio"
       },
-      platformPerformance: [
-        { name: 'Facebook', followers: 890000, reach: 1200000, impressions: 2100000, engagements: 88200, engagementRate: 4.2, videoViews: 450000, clicks: 32000, posts: 14, growth: '+0.9%', vsPrevious: { reach: '+8.5%', engagement: '+0.4pt' } },
-        { name: 'Instagram', followers: 320000, reach: 580000, impressions: 980000, engagements: 56840, engagementRate: 5.8, videoViews: 380000, clicks: 14500, posts: 10, growth: '+2.6%', vsPrevious: { reach: '+18.2%', engagement: '+1.1pt' } },
-        { name: 'TikTok', followers: 85000, reach: 420000, impressions: 750000, engagements: 61500, engagementRate: 8.2, videoViews: 520000, clicks: 18200, posts: 6, growth: '+13.3%', vsPrevious: { reach: '+34.0%', engagement: '+2.3pt' } },
-        { name: 'LinkedIn', followers: 45000, reach: 62000, impressions: 110000, engagements: 2860, engagementRate: 2.6, videoViews: 18000, clicks: 3400, posts: 4, growth: '+1.8%', vsPrevious: { reach: '+5.0%', engagement: '-0.2pt' } },
-        { name: 'X (Twitter)', followers: 67000, reach: 95000, impressions: 180000, engagements: 3420, engagementRate: 1.9, videoViews: 22000, clicks: 4100, posts: 8, growth: '-0.5%', vsPrevious: { reach: '-12.0%', engagement: '-0.8pt' } },
-        { name: 'YouTube', followers: 27000, reach: 93000, impressions: 150000, engagements: 4100, engagementRate: 4.4, videoViews: 88000, clicks: 2100, posts: 2, growth: '+1.9%', vsPrevious: { reach: '+15.0%', engagement: '+0.5pt' } },
-      ],
-      speeches: [
+      {
+        "action": "STATUS_UPDATE",
+        "author": "Victor F. AKOA",
+        "date": "2026-08-18 17:35:00",
+        "details": "Passage au statut en validation client"
+      },
+      {
+        "action": "CLIENT_APPROVAL",
+        "author": "Patrick Tuete",
+        "date": "2026-08-19 10:45:00",
+        "details": "Validation client approuvée"
+      },
+      {
+        "action": "EXPORT_PDF",
+        "author": "Steve BESSOUBE",
+        "date": "2026-08-19 11:02:15",
+        "details": "Export version définitive v2.0"
+      }
+    ]
+  },
+  {
+    "id": "REP-2026-0731-MONEY",
+    "title": "Rapport Mensuel Consolidé 360° & FinTech — Juillet 2026",
+    "type": "mensuel",
+    "client": "Orange Cameroun",
+    "brands": [
+      "Orange Money (OM)"
+    ],
+    "status": "client_review",
+    "version": "v1.1",
+    "priority": "haute",
+    "dueDate": "2026-08-07",
+    "createdAt": "2026-08-01T09:00:00Z",
+    "updatedAt": "2026-08-05T16:20:00Z",
+    "period": {
+      "start": "2026-07-01",
+      "end": "2026-07-31",
+      "label": "Mois de Juillet 2026",
+      "comparisonType": "periode_precedente"
+    },
+    "requester": {
+      "name": "Martial Manga",
+      "role": "Product Marketing Manager OM",
+      "email": "martial.manga@orange.cm"
+    },
+    "assignee": {
+      "name": "Steve BESSOUBE",
+      "role": "Digital Analyst"
+    },
+    "clientContact": "Mireille Etoa (Head of Mobile Financial Services)",
+    "channels": [
+      "Facebook",
+      "Instagram",
+      "LinkedIn",
+      "TikTok",
+      "YouTube",
+      "Meta & Google Ads / Display"
+    ],
+    "sections": [
+      "cover",
+      "executive_summary",
+      "community_growth",
+      "platform_performance",
+      "period_comparison",
+      "speeches_analysis",
+      "qualitative_insights",
+      "format_analysis",
+      "competitive_benchmark",
+      "best_posts",
+      "paid_media_roi",
+      "sentiment_social_listening",
+      "actionable_recos",
+      "raw_data_annexes"
+    ],
+    "context": {
+      "campaignName": "Campagne 0 Frais Transferts & Maxit App",
+      "marketingObjective": "Adoption de l’application Maxit & Transactionnel",
+      "businessQuestion": "Quelle est l’efficacité comparée de nos prises de parole face à MoMo MTN sur le segment des commerçants et jeunes ?",
+      "hypotheses": "La gratuité des retraits jusqu’à 5 000 FCFA entraîne une baisse sensible des réclamations négatives.",
+      "keyMoments": "Campagne display sponsorisée tout le mois de juillet + tournoi vacances inter-quartiers."
+    },
+    "data": {
+      "summaryKpis": {
+        "followers": 1850000,
+        "followersGrowth": 34200,
+        "growthRate": 1.88,
+        "reach": 7450000,
+        "impressions": 14200000,
+        "engagements": 512000,
+        "engagementRate": 6.87,
+        "videoViews": 3200000,
+        "videoCompletionRate": 41.2,
+        "linkClicks": 112000,
+        "adSpend": 6500000,
+        "cpm": 457,
+        "cpc": 58,
+        "ctr": 3.12,
+        "cpa": 380
+      },
+      "platformBreakdown": [
         {
-          id: 'SP-01',
-          name: 'Promo Maxit 50% Bonus Data',
-          brand: 'Orange TELCO',
-          period: '11-17 Août',
-          objective: 'Conversions & Téléchargements',
-          channel: 'Facebook & Instagram',
-          format: 'Carrousel 5 slides + Reel',
-          url: 'https://facebook.com/orangecameroon/posts/10162984',
-          isPaid: true,
-          impressions: 850000,
-          reach: 602000,
-          clicks: 24500,
-          engagements: 36700,
-          engagementRate: 6.1,
-          videoViews: 195000,
-          conversions: 9200,
-          cpa: '135 FCFA',
-          insight: 'Surperformance (+20% vs objectif). Le visuel combinant l’offre Data avec un bonus OM transfert suscite un fort intérêt croisé.',
-          recommendation: 'Maintenir la rotation du carrousel et amplifier le sponsoring sur Douala et Bafoussam.'
+          "channel": "Facebook",
+          "followers": 1200000,
+          "growth": 14500,
+          "reach": 4100000,
+          "engagements": 285000,
+          "rate": 6.95,
+          "posts": 28
         },
         {
-          id: 'SP-02',
-          name: 'Pulse Campus Gaming E-Sport',
-          brand: 'Orange Pulse',
-          period: '13-17 Août',
-          objective: 'Notoriété & Engagement Jeunes',
-          channel: 'TikTok & Instagram',
-          format: 'Vidéo courte / Challenge TikTok',
-          url: 'https://tiktok.com/@orangecameroon/video/849204',
-          isPaid: true,
-          impressions: 540000,
-          reach: 410000,
-          clicks: 12800,
-          engagements: 48200,
-          engagementRate: 8.9,
-          videoViews: 390000,
-          conversions: 1850,
-          cpa: '210 FCFA',
-          insight: 'Format ultra-dynamique avec créateurs gaming locaux (score d’affinité 9.2/10). Commentaires très positifs.',
-          recommendation: 'Organiser une deuxième session live avec attribution de pass data gaming en direct.'
+          "channel": "TikTok",
+          "followers": 350000,
+          "growth": 15200,
+          "reach": 2400000,
+          "engagements": 172000,
+          "rate": 7.16,
+          "posts": 14
         },
         {
-          id: 'SP-03',
-          name: 'OM Transfert Zéro Frais Août',
-          brand: 'Orange Money',
-          period: '11-16 Août',
-          objective: 'Transactions & Fidélisation',
-          channel: 'Facebook & X',
-          format: 'Infographie motion 15s',
-          url: 'https://facebook.com/orangemoneycm/posts/948271',
-          isPaid: false,
-          impressions: 310000,
-          reach: 220000,
-          clicks: 6400,
-          engagements: 9800,
-          engagementRate: 4.4,
-          videoViews: 95000,
-          conversions: 3400,
-          cpa: '0 FCFA (Organique)',
-          insight: 'Le format infographie pédagogique a généré plus de 1 200 partages organiques par les utilisateurs satisfaits.',
-          recommendation: 'Sponsoriser la vidéo motion pour contrer l’offensive MoMo MTN Zero Fees.'
+          "channel": "LinkedIn",
+          "followers": 160000,
+          "growth": 2800,
+          "reach": 520000,
+          "engagements": 34000,
+          "rate": 6.53,
+          "posts": 10
         },
         {
-          id: 'SP-04',
-          name: 'Webinaire B2B — Cybersécurité PME',
-          brand: 'Orange Business',
-          period: '12-15 Août',
-          objective: 'Lead Generation B2B',
-          channel: 'LinkedIn',
-          format: 'Bannière Carrousel Document',
-          url: 'https://linkedin.com/company/orange-business-cm/posts/2391',
-          isPaid: true,
-          impressions: 48000,
-          reach: 32000,
-          clicks: 1950,
-          engagements: 1240,
-          engagementRate: 3.8,
-          videoViews: 0,
-          conversions: 440,
-          cpa: '1 850 FCFA',
-          insight: '88% de taux de complétion de l’objectif d’inscription. Profil des inscrits : DSI et Directeurs Financiers.',
-          recommendation: 'Envoyer un rappel SMS 1h avant l’événement aux inscrits pour maximiser la présence réelle.'
+          "channel": "Instagram",
+          "followers": 140000,
+          "growth": 1700,
+          "reach": 430000,
+          "engagements": 21000,
+          "rate": 4.88,
+          "posts": 12
         }
       ],
-      benchmark: {
-        period: 'Semaine 33 (Août 2026)',
-        competitors: [
-          { name: 'MTN Cameroun', followers: '2.12M', engagement: '3.9%', postsPerWeek: 26, topFormat: 'Vidéos Skit TikTok', topCampaign: 'MoMo Zero Fees Promo', insight: 'Présence agressive sur TikTok avec sponsoring lourd. Moins engageant sur LinkedIn.' },
-          { name: 'Camtel (Blue)', followers: '182K', engagement: '2.0%', postsPerWeek: 7, topFormat: 'Statique corporate', topCampaign: 'Fibre Blue Ultra', insight: 'Activité faible le week-end. Focus sur les offres fibre.' }
-        ],
-        orange: { name: 'Orange Cameroun', followers: '1.42M', engagement: '5.8%', postsPerWeek: 20, topFormat: 'Reels / TikTok & Carrousel' },
-        insights: [
-          'Orange maintient le meilleur taux d’engagement sectoriel (5.8% vs 3.9% pour MTN et 2.0% pour Camtel).',
-          'MTN conserve un avantage en volume d’abonnés bruts (+49%), mais avec un taux d’interaction par post inférieur de 32%.'
+      "periodComparison": {
+        "nVsNMinus1": [
+          {
+            "kpi": "Reach Consolidé",
+            "n": "7.45 M",
+            "nMinus1": "6.10 M",
+            "diff": "+22.1%",
+            "isPositive": true
+          },
+          {
+            "kpi": "Engagements Totaux",
+            "n": "512.0 K",
+            "nMinus1": "420.0 K",
+            "diff": "+21.9%",
+            "isPositive": true
+          },
+          {
+            "kpi": "Clics vers Maxit",
+            "n": "112.0 K",
+            "nMinus1": "86.5 K",
+            "diff": "+29.4%",
+            "isPositive": true
+          },
+          {
+            "kpi": "Dépenses Média Ads",
+            "n": "6.50 M XAF",
+            "nMinus1": "5.80 M XAF",
+            "diff": "+12.0%",
+            "isPositive": false
+          },
+          {
+            "kpi": "Coût par Clic (CPC)",
+            "n": "58 XAF",
+            "nMinus1": "67 XAF",
+            "diff": "-13.4%",
+            "isPositive": true
+          }
         ]
       },
-      bestPosts: [
+      "speeches": [
         {
-          id: 'BP-01',
-          title: 'Challenge Pulse Gaming Douala 🎮',
-          channel: 'TikTok',
-          format: 'Vidéo courte 22s',
-          date: '14 Août 2026',
-          reach: 385000,
-          engagements: 42100,
-          rate: '10.9%',
-          imageUrl: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600&auto=format&fit=crop&q=80',
-          caption: 'Qui est le champion FIFA de Douala ? Découvre les vainqueurs du tournoi Orange Pulse Gaming ! 🔥 #OrangePulse #GamingCM',
-          keyDriver: 'Humour local et mise en avant des vrais joueurs de la communauté.',
-          lesson: 'Les contenus avec visages de clients et gamers locaux génèrent 3x plus d’interactions spontanées.'
+          "id": "SP-101",
+          "brand": "Orange Money (OM)",
+          "name": "Zéro frais sur retraits jusqu’à 5 000 F",
+          "channel": "Facebook",
+          "format": "Vidéo Motion Design",
+          "objective": "Notoriété & Confiance",
+          "date": "2026-07-08",
+          "reach": 1850000,
+          "impressions": 3400000,
+          "engagements": 142000,
+          "engagementRate": 7.67,
+          "videoViews": 1100000,
+          "clicks": 34000,
+          "conversions": 8400,
+          "sentiment": "89% Positif",
+          "isPaid": true,
+          "spend": 2100000,
+          "insight": "Levier d’acquisition majeur : plus de 8 400 nouveaux comptes Maxit activés."
         },
         {
-          id: 'BP-02',
-          title: 'Carrousel : 5 Astuces pour doubler vos datas Maxit 🚀',
-          channel: 'Instagram',
-          format: 'Carrousel 5 slides',
-          date: '12 Août 2026',
-          reach: 240000,
-          engagements: 19400,
-          rate: '8.1%',
-          imageUrl: 'https://images.unsplash.com/photo-1616469829941-c7200edec809?w=600&auto=format&fit=crop&q=80',
-          caption: 'Ne perds plus un seul méga ! Swipe pour débloquer les 5 bonus cachés de l’application Maxit 📲✨',
-          keyDriver: 'Format valeur ajoutée et utilité immédiate pour le portefeuille de l’utilisateur.',
-          lesson: 'Les carrousels "How-to" ont le taux de sauvegarde le plus élevé (3 800 enregistrements).'
+          "id": "SP-102",
+          "brand": "Orange Money (OM)",
+          "name": "Paiement Commerçant QR Code en Boutique",
+          "channel": "TikTok",
+          "format": "Reel Caméra Cachée",
+          "objective": "Usage & Pédagogie",
+          "date": "2026-07-16",
+          "reach": 920000,
+          "impressions": 1600000,
+          "engagements": 78000,
+          "engagementRate": 8.47,
+          "videoViews": 750000,
+          "clicks": 12500,
+          "conversions": 3200,
+          "sentiment": "92% Positif",
+          "isPaid": true,
+          "spend": 900000,
+          "insight": "Le format éducatif montrant la simplicité du scan QR code séduit les 18-30 ans."
         }
       ],
-      paidMedia: {
-        budgetSpent: 3500000,
-        paidReach: 1450000,
-        impressions: 2900000,
-        cpm: '1 206 FCFA',
-        cpc: '48 FCFA',
-        ctr: '2.51%',
-        conversions: 11490,
-        cpa: '304 FCFA',
-        channelsBreakdown: [
-          { channel: 'Meta Ads (FB/IG)', budget: 2200000, share: '63%', cpc: '42 FCFA', results: 8200 },
-          { channel: 'TikTok Ads', budget: 900000, share: '26%', cpc: '38 FCFA', results: 2850 },
-          { channel: 'LinkedIn Ads', budget: 400000, share: '11%', cpc: '205 FCFA', results: 440 }
-        ]
-      },
-      sentimentAnalysis: {
-        positive: 68,
-        neutral: 22,
-        negative: 10,
-        topKeywords: ['Maxit Promo', 'Pulse Gaming', 'Rapidité Orange Money', 'Fibre Douala', 'Data Bonus'],
-        riskMentions: ['Latence fibre Bonabéri le 13/08 (résolu en 2h)', 'Questions sur les conditions du bonus 50%']
-      },
-      recommendations: {
-        editorial: [
-          'Capitaliser sur l’engouement du gaming avec 2 vidéos courtes hebdomadaires régulières.',
-          'Conserver le format carrousel éducatif le mardi matin (pic de rétention observé).'
-        ],
-        media: [
-          'Augmenter de +15% l’allocation budgétaire sur TikTok Ads où le CPC (38 FCFA) est le plus efficient.',
-          'Recentrer la diffusion géographique payante pour couvrir l’Ouest et le Grand Nord.'
-        ],
-        creative: [
-          'Tester des vidéos avec sous-titres en Pidgin / Français familier pour maximiser la proximité.',
-          'Accroître les éléments visuels de preuve (témoignages utilisateurs réels).'
-        ],
-        strategic: [
-          'Préparer le dispositif de rentrée scolaire (Offre Rentrée Étudiante Pulse) dès S35.',
-          'Monitorer le benchmark MoMo suite aux récentes annonces tarifaires de la concurrence.'
-        ]
-      }
-    }
-  },
-  {
-    id: 'REP-2026-07-360',
-    title: 'Rapport Mensuel Consolidé 360° — Juillet 2026',
-    type: 'mensuel',
-    client: 'Orange Cameroun',
-    brands: ['Orange TELCO', 'Orange Money', 'Orange Business', 'Orange Pulse'],
-    requester: { name: 'Patrick Tuete', role: 'Head of Digital Marketing', email: 'patrick.tuete@orange.cm', avatar: 'PT' },
-    clientContact: { name: 'Henriette Silo', role: 'Directrice Communication Marque', email: 'henriette.silo@orange.cm' },
-    assignee: { name: 'Steve BESSOUBE', role: 'Digital Web Analyst Lead', email: 'steve.bessoube@mccann.cm', avatar: 'SB' },
-    reviewer: { name: 'Victor F. AKOA', role: 'Directeur Conseil McCann', avatar: 'VA' },
-    priority: 'normale',
-    status: 'delivered',
-    submittedAt: '2026-08-01T10:00:00Z',
-    dueDate: '2026-08-07',
-    deliveredDate: '2026-08-06',
-    briefCompleteness: 100,
-    version: 'v2.0 (Verrouillée)',
-    versions: [
-      { versionNumber: 'v1.0', date: '2026-08-04 11:00', author: 'Steve BESSOUBE', changelog: 'Version initiale mensuelle' },
-      { versionNumber: 'v2.0', date: '2026-08-06 17:00', author: 'Steve BESSOUBE', changelog: 'Validation client finale & Clôture' }
-    ],
-    period: {
-      start: '2026-07-01',
-      end: '2026-07-31',
-      label: 'Mois de Juillet 2026',
-      comparisonType: 'periode_precedente',
-      comparisonLabel: 'vs Juin 2026 (M-1)',
-      dataTypes: 'mixte',
-      channels: ['Facebook', 'Instagram', 'TikTok', 'LinkedIn', 'X (Twitter)', 'YouTube', 'Site Web'],
-      region: 'National & Régions clés',
-      currency: 'XAF',
-    },
-    context: {
-      campaignName: 'Bilan Mensuel Digital & Campagne Vacances Connectées',
-      marketingObjective: 'Notoriété, Recrutement & Ventes offres Data Vacances',
-      businessQuestion: 'Quelles sont les performances globales sur les 4 BUs et le ROI des investissements médias digitaux de juillet ?',
-      hypotheses: 'Le mois de juillet enregistre une hausse de +25% de trafic web suite au sponsoring football.',
-      keyMoments: 'Sponsoring tournois de vacances, Lancement Promo OM Vacances, Campagne Fibre B2B.',
-      attachments: [{ name: 'Bilan_Media_Juillet_2026.pdf', size: '4.8 MB', type: 'pdf' }]
-    },
-    selectedSections: [
-      'cover', 'executive_summary', 'community_growth', 'platform_performance',
-      'period_comparison', 'speeches_analysis', 'qualitative_insights', 'format_analysis',
-      'competitive_benchmark', 'best_posts', 'paid_media_roi', 'sentiment_social_listening',
-      'actionable_recos', 'raw_data_annexes'
-    ],
-    comments: [
-      {
-        id: 'c3',
-        author: 'Henriette Silo',
-        role: 'Directrice Communication',
-        date: '2026-08-06 15:20',
-        type: 'client',
-        text: 'Rapport très complet et d’excellente facture. Validé sans réserve pour présentation au comité de direction.',
-        resolved: true
-      }
-    ],
-    auditLog: [
-      { timestamp: '2026-08-01 10:00', user: 'Patrick Tuete', action: 'Création', detail: 'Demande mensuelle Juillet 2026' },
-      { timestamp: '2026-08-06 15:20', user: 'Henriette Silo', action: 'Validation', detail: 'Approbation client officielle' },
-      { timestamp: '2026-08-06 17:00', user: 'Steve BESSOUBE', action: 'Livraison', detail: 'Verrouillage v2.0 et archivage du livrable final' }
-    ],
-    data: {
-      executiveSummary: {
-        highlights: [
-          'Reach mensuel net dédupliqué de 5.8 millions de personnes touchées (+18% vs Juin).',
-          'Croissance nette des communautés de +48 500 nouveaux abonnés qualifiés sur l’ensemble des carrefours d’audience.',
-          '18.4 millions d’impressions globales avec un taux d’engagement moyen consolidé de 5.2%.',
-          'ROAS digital estimé à 4.6x sur les offres Maxit et souscriptions data vacances.'
-        ],
-        alerts: ['Tension concurrentielle accrue sur les tarifs transferts d’argent pendant la deuxième quinzaine.'],
-        priorityRecos: ['Maintenir l’offensive sur le mobile gaming et intensifier la conversion sur l’app Maxit en août.']
-      },
-      communityEvolution: {
-        initialTotal: 1358500,
-        finalTotal: 1407000,
-        netGrowth: 48500,
-        growthPercent: 3.57,
-        byPlatform: [
-          { platform: 'Facebook', initial: 865000, final: 882000, net: 17000, growth: 1.96 },
-          { platform: 'Instagram', initial: 298000, final: 312000, net: 14000, growth: 4.69 },
-          { platform: 'TikTok', initial: 60000, final: 75000, net: 15000, growth: 25.0 },
-          { platform: 'LinkedIn', initial: 42500, final: 44200, net: 1700, growth: 4.0 },
-          { platform: 'X (Twitter)', initial: 66500, final: 67300, net: 800, growth: 1.2 },
-          { platform: 'YouTube', initial: 26500, final: 26500, net: 0, growth: 0.0 }
-        ]
-      },
-      platformPerformance: [
-        { name: 'Facebook', followers: 882000, reach: 3800000, impressions: 8500000, engagements: 345000, engagementRate: 4.1, videoViews: 1800000, clicks: 125000, posts: 58, growth: '+1.96%', vsPrevious: { reach: '+12.0%', engagement: '+0.2pt' } },
-        { name: 'Instagram', followers: 312000, reach: 1950000, impressions: 4200000, engagements: 218000, engagementRate: 5.2, videoViews: 1450000, clicks: 58000, posts: 42, growth: '+4.69%', vsPrevious: { reach: '+22.0%', engagement: '+0.6pt' } },
-        { name: 'TikTok', followers: 75000, reach: 1450000, impressions: 3100000, engagements: 248000, engagementRate: 8.0, videoViews: 2200000, clicks: 64000, posts: 24, growth: '+25.0%', vsPrevious: { reach: '+65.0%', engagement: '+1.8pt' } },
-        { name: 'LinkedIn', followers: 44200, reach: 240000, impressions: 480000, engagements: 11500, engagementRate: 2.4, videoViews: 65000, clicks: 14200, posts: 16, growth: '+4.0%', vsPrevious: { reach: '+8.0%', engagement: '+0.1pt' } },
-        { name: 'X (Twitter)', followers: 67300, reach: 390000, impressions: 720000, engagements: 13800, engagementRate: 1.9, videoViews: 85000, clicks: 16500, posts: 32, growth: '+1.2%', vsPrevious: { reach: '+2.0%', engagement: '-0.1pt' } },
-        { name: 'YouTube', followers: 26500, reach: 380000, impressions: 680000, engagements: 18200, engagementRate: 4.8, videoViews: 340000, clicks: 9400, posts: 8, growth: '+0.0%', vsPrevious: { reach: '+14.0%', engagement: '+0.4pt' } }
+      "bestPosts": [
+        {
+          "id": "BP-OM-01",
+          "channel": "Facebook",
+          "title": "Envoyez l’argent des vacances à la famille au village sans stress ni frais cachés 📲💚",
+          "format": "Vidéo courte 25s",
+          "date": "12 Juillet 2026",
+          "reach": "1.2 M",
+          "engagements": "84 K",
+          "rate": "7.00%",
+          "url": "https://facebook.com/orangemoneycameroun",
+          "successFactor": "Connexion émotionnelle forte avec le contexte des grandes vacances scolaires."
+        }
       ],
-      speeches: [],
-      benchmark: {
-        period: 'Juillet 2026',
-        competitors: [
-          { name: 'MTN Cameroun', followers: '2.10M', engagement: '3.7%', postsPerWeek: 28, topFormat: 'Vidéos & Sponsoring influenceurs', topCampaign: 'MoMo Summer Deals', insight: 'Très forte présence événementielle sur le littoral.' },
-          { name: 'Camtel Blue', followers: '180K', engagement: '2.1%', postsPerWeek: 8, topFormat: 'Statique', topCampaign: 'Fibre Été', insight: 'Progression modérée.' }
+      "benchmark": {
+        "competitors": [
+          {
+            "name": "Orange Money",
+            "shareOfVoice": "51.8%",
+            "interactions": "512 K",
+            "posts": 64,
+            "sentimentPositive": "82%"
+          },
+          {
+            "name": "MoMo MTN",
+            "shareOfVoice": "42.4%",
+            "interactions": "410 K",
+            "posts": 58,
+            "sentimentPositive": "76%"
+          },
+          {
+            "name": "Autres FinTech",
+            "shareOfVoice": "5.8%",
+            "interactions": "45 K",
+            "posts": 18,
+            "sentimentPositive": "70%"
+          }
+        ]
+      },
+      "qualitativeInsights": {
+        "drivers": [
+          "Leadership affirmé sur la part de voix FinTech (51.8% vs 42.4% pour MoMo MTN).",
+          "L’application Maxit s’impose comme le premier mot-clé de conversion dans les commentaires."
         ],
-        orange: { name: 'Orange Cameroun', followers: '1.40M', engagement: '5.2%', postsPerWeek: 22, topFormat: 'Reels / Vidéos courtes & Carrousels' },
-        insights: ['Orange surperforme sur la qualité d’engagement et la mémorisation publicitaire digitale.']
+        "friction": [
+          "Quelques interrogations récurrentes sur les plafonds de transfert mensuels pour les comptes non certifiés."
+        ],
+        "learnings": [
+          "Les vidéos démo avec écran partagé génèrent 3x plus d’installation d’appli que les affiches statiques."
+        ]
       },
-      bestPosts: [],
-      paidMedia: {
-        budgetSpent: 14200000,
-        paidReach: 4200000,
-        impressions: 9800000,
-        cpm: '1 448 FCFA',
-        cpc: '45 FCFA',
-        ctr: '2.48%',
-        conversions: 46800,
-        cpa: '303 FCFA',
-        channelsBreakdown: []
-      },
-      sentimentAnalysis: { positive: 72, neutral: 20, negative: 8, topKeywords: ['Vacances Orange', 'OM Zéro Frais', 'Maxit', 'Fibre Orange'], riskMentions: [] },
-      recommendations: { editorial: [], media: [], creative: [], strategic: [] }
-    }
-  },
-  {
-    id: 'REP-2026-0814-CRISIS',
-    title: 'Rapport Spontané — Analyse Post-Incident Latence Fibre & Sentiment Social',
-    type: 'spontane',
-    client: 'Orange Cameroun',
-    brands: ['Orange TELCO', 'Orange Business'],
-    requester: { name: 'Henriette Silo', role: 'Directrice Communication Marque', email: 'henriette.silo@orange.cm', avatar: 'HS' },
-    clientContact: { name: 'Lauriane Ngameni', role: 'Digital Brand Manager', email: 'lauriane.ngameni@orange.cm' },
-    assignee: { name: 'Steve BESSOUBE', role: 'Digital Web Analyst Lead', email: 'steve.bessoube@mccann.cm', avatar: 'SB' },
-    reviewer: { name: 'Victor F. AKOA', role: 'Directeur Conseil McCann', avatar: 'VA' },
-    priority: 'urgente',
-    urgentReason: 'Spike de réclamations sur X et Facebook suite à la rupture câble sous-marin WACS du 13 août 2026 (14h-18h). Nécessité d’un bilan e-réputation sous 24h pour le comité de crise.',
-    status: 'in_production',
-    submittedAt: '2026-08-14T09:15:00Z',
-    dueDate: '2026-08-15',
-    deliveredDate: null,
-    briefCompleteness: 95,
-    version: 'v1.0 (Draft)',
-    versions: [
-      { versionNumber: 'v1.0', date: '2026-08-14 11:30', author: 'Steve BESSOUBE', changelog: 'Extraction social listening et cartographie des volumes' }
-    ],
-    period: {
-      start: '2026-08-13',
-      end: '2026-08-14',
-      label: '48h d’analyse d’incident (13-14 août 2026)',
-      comparisonType: 'aucune',
-      comparisonLabel: 'Sans comparaison',
-      dataTypes: 'organique',
-      channels: ['X (Twitter)', 'Facebook', 'LinkedIn'],
-      region: 'Douala & Yaoundé',
-      currency: 'XAF',
+      "actionableRecos": [
+        "Lancer un volet de vidéos FAQ courtes pour lever les doutes sur l’identification biométrique.",
+        "Consolider le partenariat avec les commerces de proximité dans les zones universitaires."
+      ]
     },
-    context: {
-      campaignName: 'Veille de Crise — Coupure Fibre',
-      marketingObjective: 'Veille & Préservation de l’e-réputation',
-      businessQuestion: 'Quel a été l’impact de l’incident réseau sur le sentiment de marque et quel est le volume des verbatims négatifs ?',
-      hypotheses: 'Le pic de négativité a été contenu grâce au communiqué officiel publié à 15h30.',
-      keyMoments: '14h10 : début des lenteurs ; 15h30 : tweet d’information ; 18h00 : rétablissement total.',
-      attachments: [{ name: 'Social_Listening_Export_1308.csv', size: '1.2 MB', type: 'csv' }]
-    },
-    selectedSections: ['cover', 'executive_summary', 'qualitative_insights', 'sentiment_social_listening', 'actionable_recos'],
-    comments: [
+    "comments": [
       {
-        id: 'c4',
-        author: 'Steve BESSOUBE',
-        role: 'Web Analyst',
-        date: '2026-08-14 11:45',
-        type: 'internal',
-        text: 'Collecte de 1 450 tweets et 2 800 commentaires FB effectuée. Sentiment négatif tombé de 64% à 18% après le message de rétablissement.',
-        resolved: false
+        "id": "c1",
+        "author": "Martial Manga",
+        "role": "Product Marketing",
+        "date": "2026-08-01 09:12",
+        "text": "Bien vérifier le rapprochement des dépenses média Meta et Google Ads."
+      },
+      {
+        "id": "c2",
+        "author": "Steve BESSOUBE",
+        "role": "Digital Analyst",
+        "date": "2026-08-04 18:00",
+        "text": "Données publicitaires réconciliées avec l’équipe média McCann. CPC en baisse de 13.4%."
+      },
+      {
+        "id": "c3",
+        "author": "Victor F. AKOA",
+        "role": "Reviewer McCann",
+        "date": "2026-08-05 16:20",
+        "text": "Revue interne validée avec mention très favorable. Transmis à Madame Etoa pour approbation finale."
       }
     ],
-    auditLog: [
-      { timestamp: '2026-08-14 09:15', user: 'Henriette Silo', action: 'Création Urgente', detail: 'Demande spontanée avec SLA 24h' },
-      { timestamp: '2026-08-14 09:30', user: 'Victor F. AKOA', action: 'Attribution Directe', detail: 'Assigné en urgence à Steve BESSOUBE' }
-    ],
-    data: {
-      executiveSummary: {
-        highlights: [
-          'Volume total de 4 250 mentions captées sur l’incident (82% sur Twitter/X et Facebook).',
-          'La réactivité du community management (réponse sous 12 minutes) a permis d’éviter la viralité hors des cercles tech.',
-          'Retour à la normale du sentiment net dès le 14 août au matin (74% de tonalité neutre ou positive).'
-        ],
-        alerts: ['3 comptes d’influenceurs tech locaux ont relayé l’incident avant le communiqué officiel.'],
-        priorityRecos: ['Créer un canal WhatsApp direct d’alerte pour les 15 créateurs tech de référence en cas d’incident technique.']
+    "workflowHistory": [
+      {
+        "step": "submitted",
+        "label": "Demande soumise",
+        "date": "2026-08-01 09:00",
+        "author": "Martial Manga"
       },
-      communityEvolution: { initialTotal: 1422000, finalTotal: 1422000, netGrowth: 0, growthPercent: 0, byPlatform: [] },
-      platformPerformance: [],
-      speeches: [],
-      benchmark: { period: '13-14 Août', competitors: [], orange: {}, insights: [] },
-      bestPosts: [],
-      paidMedia: { budgetSpent: 0, paidReach: 0, impressions: 0, cpm: '0', cpc: '0', ctr: '0%', conversions: 0, cpa: '0', channelsBreakdown: [] },
-      sentimentAnalysis: {
-        positive: 38,
-        neutral: 44,
-        negative: 18,
-        topKeywords: ['Réseau', 'Fibre', 'Orange Cameroun', 'Bonabéri', 'Rétablissement rapide', 'Connexion'],
-        riskMentions: ['Demandes de dédommagement data formulées par 120 utilisateurs sur X']
+      {
+        "step": "qualified",
+        "label": "Demande qualifiée",
+        "date": "2026-08-01 11:30",
+        "author": "Steve BESSOUBE"
       },
-      recommendations: {
-        editorial: ['Publier un mot de remerciement pour la fidélité et la patience des abonnés.'],
-        media: ['Suspendre les posts promotionnels sponsorisés pendant les 6h suivant un incident technique.'],
-        creative: ['Préparer des gabarits d’infographies d’incident prêts à l’emploi pour gagner 30 minutes.'],
-        strategic: ['Mettre en place un protocole d’information proactif SMS pour les clients Fibre Entreprise.']
+      {
+        "step": "in_production",
+        "label": "Production & Consolidation 360°",
+        "date": "2026-08-02 08:30",
+        "author": "Steve BESSOUBE"
+      },
+      {
+        "step": "internal_review",
+        "label": "Contrôle qualité interne",
+        "date": "2026-08-05 14:00",
+        "author": "Steve BESSOUBE"
+      },
+      {
+        "step": "client_review",
+        "label": "En cours de validation client",
+        "date": "2026-08-05 16:20",
+        "author": "Victor F. AKOA"
       }
-    }
+    ],
+    "auditLog": [
+      {
+        "action": "CREATION",
+        "author": "Martial Manga",
+        "date": "2026-08-01 09:00:00"
+      },
+      {
+        "action": "STATUS_UPDATE",
+        "author": "Victor F. AKOA",
+        "date": "2026-08-05 16:20:00",
+        "details": "Transmis en validation client"
+      }
+    ]
   },
   {
-    id: 'REP-2026-0801-PULSE',
-    title: 'Rapport de Campagne — Orange Pulse Gaming & Campus Tour 2026',
-    type: 'campagne',
-    client: 'Orange Cameroun',
-    brands: ['Orange Pulse', 'Orange TELCO'],
-    requester: { name: 'Lauriane Ngameni', role: 'Digital Brand Manager', email: 'lauriane.ngameni@orange.cm', avatar: 'LN' },
-    clientContact: { name: 'Patrick Tuete', role: 'Head of Digital Marketing', email: 'patrick.tuete@orange.cm' },
-    assignee: { name: 'Steve BESSOUBE', role: 'Digital Web Analyst Lead', email: 'steve.bessoube@mccann.cm', avatar: 'SB' },
-    reviewer: { name: 'Victor F. AKOA', role: 'Directeur Conseil McCann', avatar: 'VA' },
-    priority: 'haute',
-    status: 'internal_review',
-    submittedAt: '2026-08-01T14:00:00Z',
-    dueDate: '2026-08-20',
-    deliveredDate: null,
-    briefCompleteness: 100,
-    version: 'v1.1',
-    versions: [
-      { versionNumber: 'v1.0', date: '2026-08-16 10:00', author: 'Steve BESSOUBE', changelog: 'Consolidation des données terrain campus + digital' },
-      { versionNumber: 'v1.1', date: '2026-08-17 14:00', author: 'Steve BESSOUBE', changelog: 'Intégration du ROI influenceurs campus' }
+    "id": "REP-2026-0812-SPONT",
+    "title": "Rapport Spontané — Incident Réseau & Sentiment Clients (Fibre & 4G+)",
+    "type": "spontane",
+    "client": "Orange Cameroun",
+    "brands": [
+      "Orange Business",
+      "Orange TELCO"
     ],
-    period: {
-      start: '2026-07-15',
-      end: '2026-08-15',
-      label: 'Campagne Pulse Tour (15 Juillet - 15 Août 2026)',
-      comparisonType: 'periode_precedente',
-      comparisonLabel: 'vs Campagne Pulse 2025',
-      dataTypes: 'mixte',
-      channels: ['TikTok', 'Instagram', 'Facebook', 'YouTube'],
-      region: 'Campus Douala, Yaoundé, Dschang, Buea',
-      currency: 'XAF',
+    "status": "in_production",
+    "version": "v1.0",
+    "priority": "urgente",
+    "urgentReason": "Cellule de crise suite à la coupure du câble sous-marin SAT-3 le 11 août. Demande DG pour le comité exécutif.",
+    "dueDate": "2026-08-13",
+    "createdAt": "2026-08-12T07:15:00Z",
+    "updatedAt": "2026-08-12T15:40:00Z",
+    "period": {
+      "start": "2026-08-11",
+      "end": "2026-08-12",
+      "label": "48h Post-Incident (11-12 Août 2026)",
+      "comparisonType": "aucune"
     },
-    context: {
-      campaignName: 'Pulse Campus Tour & E-Sport Championship',
-      marketingObjective: 'Recrutement abonnés jeunes & Adoption Pass Pulse Gaming',
-      businessQuestion: 'Quel est l’impact de l’activation hybride (physique + TikTok) sur les souscriptions au forfait Pulse Gaming ?',
-      hypotheses: 'Le tournoi physique démultiplié en live TikTok génère un coût par acquisition divisé par deux.',
-      keyMoments: '4 tournois inter-campus, 12 micro-influenceurs activés, 1 finale nationale e-sport.',
-      attachments: [{ name: 'Bilan_Influenceurs_Pulse.xlsx', size: '3.1 MB', type: 'excel' }]
+    "requester": {
+      "name": "Arnaud Kamdem",
+      "role": "Corporate Communications Lead",
+      "email": "arnaud.kamdem@orange.cm"
     },
-    selectedSections: [
-      'cover', 'executive_summary', 'community_growth', 'platform_performance',
-      'speeches_analysis', 'qualitative_insights', 'format_analysis', 'best_posts',
-      'paid_media_roi', 'actionable_recos'
+    "assignee": {
+      "name": "Steve BESSOUBE",
+      "role": "Digital Analyst"
+    },
+    "clientContact": "Serge Mvondo (Directeur de la Communication)",
+    "channels": [
+      "X (Twitter)",
+      "Facebook",
+      "LinkedIn",
+      "WhatsApp Business / Direct"
     ],
-    comments: [],
-    auditLog: [
-      { timestamp: '2026-08-01 14:00', user: 'Lauriane Ngameni', action: 'Création', detail: 'Demande de rapport de campagne' },
-      { timestamp: '2026-08-17 14:30', user: 'Steve BESSOUBE', action: 'Revue Interne', detail: 'Soumis pour contrôle qualité McCann' }
+    "sections": [
+      "cover",
+      "executive_summary",
+      "platform_performance",
+      "qualitative_insights",
+      "sentiment_social_listening",
+      "actionable_recos"
     ],
-    data: {
-      executiveSummary: {
-        highlights: [
-          '1.85M de reach cumulé sur la cible 18-25 ans sur 30 jours d’activation.',
-          '18 400 souscriptions au pass Pulse Gaming (123% de l’objectif initial de 15 000).',
-          'Taux d’engagement record sur TikTok (9.4%) généré par les micro-influenceurs gamers.'
-        ],
-        alerts: ['L’activation sur le campus de Buea a manqué de couverture réseau le 2 août (corrigé avec camion relais).'],
-        priorityRecos: ['Pérenniser la ligue E-Sport Orange Pulse avec des rendez-vous mensuels réguliers.']
+    "context": {
+      "campaignName": "Communication de crise & Restauration Réseau",
+      "marketingObjective": "Réputation / Veille & Réassurance",
+      "businessQuestion": "Quelle est l’ampleur du bad buzz et la part de sentiment négatif sur X et Facebook ?",
+      "hypotheses": "Le communiqué officiel diffusé à 11h30 a permis d’inverser la courbe de panique et de rassurer les entreprises B2B.",
+      "keyMoments": "Incident majeur fibre optique à 08h15, reprise partielle à 14h00, rétablissement 100% à 20h00."
+    },
+    "data": {
+      "summaryKpis": {
+        "followers": 1748000,
+        "followersGrowth": -120,
+        "growthRate": -0.01,
+        "reach": 2850000,
+        "impressions": 4900000,
+        "engagements": 168000,
+        "engagementRate": 5.89,
+        "videoViews": 410000,
+        "videoCompletionRate": 28.4,
+        "linkClicks": 52000,
+        "adSpend": 0,
+        "cpm": 0,
+        "cpc": 0,
+        "ctr": 0,
+        "cpa": 0
       },
-      communityEvolution: {
-        initialTotal: 65000,
-        finalTotal: 88000,
-        netGrowth: 23000,
-        growthPercent: 35.38,
-        byPlatform: [
-          { platform: 'TikTok', initial: 50000, final: 70000, net: 20000, growth: 40.0 },
-          { platform: 'Instagram', initial: 15000, final: 18000, net: 3000, growth: 20.0 }
+      "platformBreakdown": [
+        {
+          "channel": "X (Twitter)",
+          "followers": 47000,
+          "growth": 1200,
+          "reach": 890000,
+          "engagements": 74000,
+          "rate": 8.31,
+          "posts": 8
+        },
+        {
+          "channel": "Facebook",
+          "followers": 1600000,
+          "growth": -1500,
+          "reach": 1650000,
+          "engagements": 81000,
+          "rate": 4.9,
+          "posts": 5
+        },
+        {
+          "channel": "LinkedIn",
+          "followers": 101000,
+          "growth": 180,
+          "reach": 310000,
+          "engagements": 13000,
+          "rate": 4.19,
+          "posts": 3
+        }
+      ],
+      "speeches": [
+        {
+          "id": "SP-201",
+          "brand": "Orange Business",
+          "name": "Point de situation technique n°1 : Incident Câble sous-marin",
+          "channel": "X (Twitter)",
+          "format": "Thread Info & Communiqué officiel",
+          "objective": "Réassurance & Transparence",
+          "date": "2026-08-11",
+          "reach": 450000,
+          "impressions": 920000,
+          "engagements": 38000,
+          "engagementRate": 8.44,
+          "videoViews": 0,
+          "clicks": 18000,
+          "conversions": 0,
+          "sentiment": "62% Négatif (atténué)",
+          "isPaid": false,
+          "spend": 0,
+          "insight": "La rapidité de publication a évité la propagation de fake news sur un incident national généralisé."
+        }
+      ],
+      "qualitativeInsights": {
+        "drivers": [
+          "Transparence technique saluée sur LinkedIn par les DSI et administrateurs réseaux.",
+          "Mise en place d’un thread actualisé toutes les 2 heures sur X très appréciée."
+        ],
+        "friction": [
+          "Tonalité fortement négative sur Facebook durant les 4 premières heures (manque de connectivité marchande)."
+        ],
+        "learnings": [
+          "Les clients pardonnent l’aléa technique si l’information sur l’heure estimée de rétablissement est fournie."
         ]
       },
-      platformPerformance: [],
-      speeches: [],
-      benchmark: { period: '', competitors: [], orange: {}, insights: [] },
-      bestPosts: [],
-      paidMedia: { budgetSpent: 6500000, paidReach: 1400000, impressions: 3200000, cpm: '2031 FCFA', cpc: '52 FCFA', ctr: '3.1%', conversions: 18400, cpa: '353 FCFA', channelsBreakdown: [] },
-      sentimentAnalysis: { positive: 88, neutral: 10, negative: 2, topKeywords: [], riskMentions: [] },
-      recommendations: { editorial: [], media: [], creative: [], strategic: [] }
-    }
-  },
-  {
-    id: 'REP-2026-Q3-BENCH',
-    title: 'Rapport de Benchmark Concurrentiel — Q3 2026 (Orange vs MTN vs Camtel)',
-    type: 'benchmark',
-    client: 'Orange Cameroun',
-    brands: ['Orange TELCO', 'Orange Money', 'Orange Business'],
-    requester: { name: 'Patrick Tuete', role: 'Head of Digital Marketing', email: 'patrick.tuete@orange.cm', avatar: 'PT' },
-    clientContact: { name: 'Henriette Silo', role: 'Directrice Communication Marque', email: 'henriette.silo@orange.cm' },
-    assignee: { name: 'Steve BESSOUBE', role: 'Digital Web Analyst Lead', email: 'steve.bessoube@mccann.cm', avatar: 'SB' },
-    reviewer: { name: 'Victor F. AKOA', role: 'Directeur Conseil McCann', avatar: 'VA' },
-    priority: 'normale',
-    status: 'qualified',
-    submittedAt: '2026-08-10T11:00:00Z',
-    dueDate: '2026-08-25',
-    deliveredDate: null,
-    briefCompleteness: 90,
-    version: 'v0.5',
-    versions: [],
-    period: {
-      start: '2026-07-01',
-      end: '2026-09-30',
-      label: 'Benchmark Trimestriel Q3 2026',
-      comparisonType: 'meme_periode_annee_precedente',
-      comparisonLabel: 'vs Q3 2025 (N-1)',
-      dataTypes: 'organique_et_sponsorise',
-      channels: ['Facebook', 'Instagram', 'TikTok', 'LinkedIn', 'YouTube', 'X (Twitter)'],
-      region: 'Cameroun & Zone CEMAC',
-      currency: 'XAF',
+      "actionableRecos": [
+        "Diffuser un message de remerciement et une compensation symbolique data aux abonnés impactés.",
+        "Envoyer une note de synthèse personnalisée à tous les comptes VIP Orange Business."
+      ]
     },
-    context: {
-      campaignName: 'Veille Stratégique & Benchmark Telecom',
-      marketingObjective: 'Part de Voix, Positionnement & Analyse des Tendances',
-      businessQuestion: 'Quelles sont les parts de voix réelles, les investissements estimés et les stratégies de contenu des rivaux (MTN & Camtel) ?',
-      hypotheses: 'MTN concentre 45% de son budget sur le sponsoring TikTok tandis qu’Orange domine en engagement qualitatif.',
-      keyMoments: 'Lancement des offres rentrée scolaire et rentrée universitaire.',
-      attachments: []
-    },
-    selectedSections: ['cover', 'executive_summary', 'competitive_benchmark', 'qualitative_insights', 'sentiment_social_listening', 'actionable_recos', 'raw_data_annexes'],
-    comments: [],
-    auditLog: [
-      { timestamp: '2026-08-10 11:00', user: 'Patrick Tuete', action: 'Création', detail: 'Demande de benchmark trimestriel Q3' },
-      { timestamp: '2026-08-11 09:00', user: 'Victor F. AKOA', action: 'Qualification', detail: 'Planification pour livraison le 25 août' }
-    ],
-    data: {
-      executiveSummary: { highlights: ['Benchmark en cours de collecte des données Q3.'], alerts: [], priorityRecos: [] },
-      communityEvolution: { initialTotal: 0, finalTotal: 0, netGrowth: 0, growthPercent: 0, byPlatform: [] },
-      platformPerformance: [],
-      speeches: [],
-      benchmark: {
-        period: 'Q3 2026 (En cours)',
-        competitors: [
-          { name: 'MTN Cameroun', followers: '2.12M', engagement: '3.9%', postsPerWeek: 26, topFormat: 'Vidéos Skit TikTok', topCampaign: 'MoMo Zero Fees Promo', insight: 'Présence agressive sur TikTok.' },
-          { name: 'Camtel Blue', followers: '182K', engagement: '2.0%', postsPerWeek: 7, topFormat: 'Statique corporate', topCampaign: 'Fibre Blue Ultra', insight: 'Activité focalisée sur la fibre.' }
-        ],
-        orange: { name: 'Orange Cameroun', followers: '1.42M', engagement: '5.8%', postsPerWeek: 20, topFormat: 'Reels / TikTok & Carrousel' },
-        insights: ['Collecte automatisée via API et social listening en cours d’agrégation.']
+    "comments": [
+      {
+        "id": "c1",
+        "author": "Arnaud Kamdem",
+        "role": "Comms Lead",
+        "date": "2026-08-12 07:18",
+        "text": "Urgence absolue : document attendu pour la réunion du comité directeur à 16h30."
       },
-      bestPosts: [],
-      paidMedia: { budgetSpent: 0, paidReach: 0, impressions: 0, cpm: '0', cpc: '0', ctr: '0%', conversions: 0, cpa: '0', channelsBreakdown: [] },
-      sentimentAnalysis: { positive: 65, neutral: 25, negative: 10, topKeywords: [], riskMentions: [] },
-      recommendations: { editorial: [], media: [], creative: [], strategic: [] }
-    }
+      {
+        "id": "c2",
+        "author": "Steve BESSOUBE",
+        "role": "Digital Analyst",
+        "date": "2026-08-12 11:30",
+        "text": "Traitement en cours, social listening X et Facebook consolidé."
+      }
+    ],
+    "workflowHistory": [
+      {
+        "step": "submitted",
+        "label": "Demande urgente soumise",
+        "date": "2026-08-12 07:15",
+        "author": "Arnaud Kamdem"
+      },
+      {
+        "step": "qualified",
+        "label": "Qualifiée en urgence",
+        "date": "2026-08-12 07:45",
+        "author": "Steve BESSOUBE"
+      },
+      {
+        "step": "in_production",
+        "label": "Production accélérée",
+        "date": "2026-08-12 08:00",
+        "author": "Steve BESSOUBE"
+      }
+    ],
+    "auditLog": [
+      {
+        "action": "CREATION",
+        "author": "Arnaud Kamdem",
+        "date": "2026-08-12 07:15:00"
+      },
+      {
+        "action": "PRIORITY_SET_URGENT",
+        "author": "Arnaud Kamdem",
+        "date": "2026-08-12 07:15:00"
+      }
+    ]
   },
   {
-    id: 'REP-2026-EX-08',
-    title: 'Rapport Exécutif — Synthèse Direction & KPI Stratégiques Août 2026',
-    type: 'executif',
-    client: 'Orange Cameroun',
-    brands: ['Orange TELCO', 'Orange Money', 'Orange Business'],
-    requester: { name: 'Patrick Tuete', role: 'Head of Digital Marketing', email: 'patrick.tuete@orange.cm', avatar: 'PT' },
-    clientContact: { name: 'Henriette Silo', role: 'Directrice Communication Marque', email: 'henriette.silo@orange.cm' },
-    assignee: { name: 'Victor F. AKOA', role: 'Directeur Conseil McCann', email: 'victor.akoa@mccann.cm', avatar: 'VA' },
-    reviewer: { name: 'Steve BESSOUBE', role: 'Digital Web Analyst Lead', avatar: 'SB' },
-    priority: 'haute',
-    status: 'delivered',
-    submittedAt: '2026-08-05T08:00:00Z',
-    dueDate: '2026-08-10',
-    deliveredDate: '2026-08-09',
-    briefCompleteness: 100,
-    version: 'v2.0 Finale',
-    versions: [
-      { versionNumber: 'v1.0', date: '2026-08-08 12:00', author: 'Victor F. AKOA', changelog: 'Synthèse directoire' },
-      { versionNumber: 'v2.0', date: '2026-08-09 16:00', author: 'Victor F. AKOA', changelog: 'Validation et livraison officielle' }
+    "id": "REP-2026-0820-PULSE",
+    "title": "Rapport de Campagne — Ready Party & Good Deal (Vague Estivale 2026)",
+    "type": "campagne",
+    "client": "Orange Cameroun",
+    "brands": [
+      "Orange Pulse"
     ],
-    period: {
-      start: '2026-08-01',
-      end: '2026-08-31',
-      label: 'Synthèse Comité Direction — Août 2026',
-      comparisonType: 'periode_precedente',
-      comparisonLabel: 'vs Mois précédent',
-      dataTypes: 'mixte',
-      channels: ['Tous les canaux digitaux'],
-      region: 'Cameroun',
-      currency: 'XAF',
+    "status": "internal_review",
+    "version": "v1.0",
+    "priority": "haute",
+    "dueDate": "2026-08-22",
+    "createdAt": "2026-08-18T10:00:00Z",
+    "updatedAt": "2026-08-20T14:15:00Z",
+    "period": {
+      "start": "2026-08-01",
+      "end": "2026-08-18",
+      "label": "Activation Ready Party (1er au 18 Août 2026)",
+      "comparisonType": "periode_precedente"
     },
-    context: {
-      campaignName: 'Gouvernance Stratégique Digitale',
-      marketingObjective: 'Bilan exécutif et arbitrage des investissements H2 2026',
-      businessQuestion: 'Quels sont les 5 enseignements majeurs et les arbitrages budgétaires prioritaires pour le second semestre ?',
-      hypotheses: 'Le basculement de 30% du mix média vers les formats vidéos courts engendre une réduction de 22% du coût par acquisition global.',
-      keyMoments: 'Comité de direction stratégique Orange Cameroun du 11 août 2026.',
-      attachments: [{ name: 'Executive_Deck_Comite_Aout2026.pptx', size: '5.6 MB', type: 'powerpoint' }]
+    "requester": {
+      "name": "Carole Ndom",
+      "role": "Brand Specialist Pulse",
+      "email": "carole.ndom@orange.cm"
     },
-    selectedSections: ['cover', 'executive_summary', 'qualitative_insights', 'competitive_benchmark', 'actionable_recos'],
-    comments: [],
-    auditLog: [
-      { timestamp: '2026-08-05 08:00', user: 'Patrick Tuete', action: 'Création', detail: 'Demande exécutif direction' },
-      { timestamp: '2026-08-09 16:00', user: 'Victor F. AKOA', action: 'Livraison Finale', detail: 'Validé et livré pour la réunion du comité' }
+    "assignee": {
+      "name": "Steve BESSOUBE",
+      "role": "Digital Analyst"
+    },
+    "clientContact": "Christian Ewane (Marketing Lead Pulse)",
+    "channels": [
+      "TikTok",
+      "Instagram",
+      "Facebook",
+      "YouTube",
+      "Site Web / Landing Page"
     ],
-    data: {
-      executiveSummary: {
-        highlights: [
-          'Performance globale du premier semestre supérieure de +14% aux objectifs fixés en début d’année.',
-          'Orange Money et Orange Pulse représentent désormais 58% de l’ensemble des interactions digitales.',
-          'L’optimisation du tunnel Maxit a permis d’abaisser le coût d’acquisition client de 420 FCFA à 304 FCFA.'
+    "sections": [
+      "cover",
+      "executive_summary",
+      "platform_performance",
+      "speeches_analysis",
+      "qualitative_insights",
+      "format_analysis",
+      "best_posts",
+      "paid_media_roi",
+      "actionable_recos"
+    ],
+    "context": {
+      "campaignName": "Ready Party — Gaming, Musique & Good Deal Jeunes",
+      "marketingObjective": "Engagement & Téléchargement Application Maxit Pulse",
+      "businessQuestion": "Comment l’événementiel physique couplé aux lives TikTok et Reels a boosté l’engagement des 15-24 ans ?",
+      "hypotheses": "Le challenge de danse TikTok génère plus de 2 millions de vues organiques.",
+      "keyMoments": "Concert Ready Party à Douala Bercy le 14 août avec retransmission live."
+    },
+    "data": {
+      "summaryKpis": {
+        "followers": 485000,
+        "followersGrowth": 28600,
+        "growthRate": 6.27,
+        "reach": 4120000,
+        "impressions": 8900000,
+        "engagements": 385000,
+        "engagementRate": 9.34,
+        "videoViews": 2450000,
+        "videoCompletionRate": 46.8,
+        "linkClicks": 58000,
+        "adSpend": 3400000,
+        "cpm": 382,
+        "cpc": 58,
+        "ctr": 3.48,
+        "cpa": 195
+      },
+      "speeches": [
+        {
+          "id": "SP-301",
+          "brand": "Orange Pulse",
+          "name": "Live Streaming Ready Party Douala",
+          "channel": "TikTok",
+          "format": "Live Interactif & Duos",
+          "objective": "Engagement & Branding",
+          "date": "2026-08-14",
+          "reach": 820000,
+          "impressions": 1950000,
+          "engagements": 145000,
+          "engagementRate": 11.2,
+          "videoViews": 780000,
+          "clicks": 22000,
+          "conversions": 4200,
+          "sentiment": "96% Positif",
+          "isPaid": true,
+          "spend": 800000,
+          "insight": "Pic d’audience à 34 000 spectateurs simultanés durant le set DJ."
+        }
+      ],
+      "bestPosts": [
+        {
+          "id": "BP-PULSE-01",
+          "channel": "TikTok",
+          "title": "Ambiance au Ready Party : qui a remporté le duel de breakdance ? 🔥",
+          "format": "Vidéo Reel 18s",
+          "date": "15 Août 2026",
+          "reach": "680 K",
+          "engagements": "72 K",
+          "rate": "10.58%",
+          "url": "https://tiktok.com/@orangepulse",
+          "successFactor": "Montage dynamique avec transitions rythmées et son exclusif Pulse."
+        }
+      ],
+      "qualitativeInsights": {
+        "drivers": [
+          "Format événementiel retransmis en direct sur TikTok : record absolu d’engagement de l’année pour Orange Pulse.",
+          "Coût par acquisition d’un utilisateur actif Maxit Pulse divisé par 2 (195 FCFA vs benchmark 400 FCFA)."
         ],
-        alerts: ['Nécessité de sécuriser les partenariats influenceurs annuels avant le rush du Q4.'],
-        priorityRecos: [
-          'Sanctuariser une enveloppe d’innovation de 15% pour les activations TikTok et IA conversationnelle.',
-          'Déployer le nouveau module Reporting & Insights en temps réel pour synchroniser les équipes Orange & McCann.'
+        "friction": [],
+        "learnings": [
+          "Le public jeune réclame la duplication du format dans d’autres villes (Yaoundé, Bafoussam)."
         ]
       },
-      communityEvolution: { initialTotal: 0, finalTotal: 0, netGrowth: 0, growthPercent: 0, byPlatform: [] },
-      platformPerformance: [],
-      speeches: [],
-      benchmark: { period: '', competitors: [], orange: {}, insights: [] },
-      bestPosts: [],
-      paidMedia: { budgetSpent: 0, paidReach: 0, impressions: 0, cpm: '0', cpc: '0', ctr: '0%', conversions: 0, cpa: '0', channelsBreakdown: [] },
-      sentimentAnalysis: { positive: 75, neutral: 20, negative: 5, topKeywords: [], riskMentions: [] },
-      recommendations: { editorial: [], media: [], creative: [], strategic: [] }
-    }
+      "actionableRecos": [
+        "Planifier la Vague 2 du Ready Party à Yaoundé pour la rentrée de septembre.",
+        "Monétiser l’engouement avec un bundle data spécial étudiants."
+      ]
+    },
+    "comments": [
+      {
+        "id": "c1",
+        "author": "Carole Ndom",
+        "role": "Brand Lead",
+        "date": "2026-08-18 10:05",
+        "text": "Merci de bien détailler le ROI des créateurs de contenu invités."
+      },
+      {
+        "id": "c2",
+        "author": "Steve BESSOUBE",
+        "role": "Digital Analyst",
+        "date": "2026-08-20 14:15",
+        "text": "Rapport prêt et finalisé. Soumis au reviewer interne pour validation."
+      }
+    ],
+    "workflowHistory": [
+      {
+        "step": "submitted",
+        "label": "Demande créée",
+        "date": "2026-08-18 10:00",
+        "author": "Carole Ndom"
+      },
+      {
+        "step": "qualified",
+        "label": "Périmètre validé",
+        "date": "2026-08-18 11:00",
+        "author": "Steve BESSOUBE"
+      },
+      {
+        "step": "in_production",
+        "label": "Analyse des KPI de campagne",
+        "date": "2026-08-19 09:00",
+        "author": "Steve BESSOUBE"
+      },
+      {
+        "step": "internal_review",
+        "label": "En revue interne McCann",
+        "date": "2026-08-20 14:15",
+        "author": "Steve BESSOUBE"
+      }
+    ],
+    "auditLog": [
+      {
+        "action": "CREATION",
+        "author": "Carole Ndom",
+        "date": "2026-08-18 10:00:00"
+      },
+      {
+        "action": "SUBMIT_INTERNAL_REVIEW",
+        "author": "Steve BESSOUBE",
+        "date": "2026-08-20 14:15:00"
+      }
+    ]
+  },
+  {
+    "id": "REP-2026-0815-BENCH",
+    "title": "Rapport de Benchmark Concurrentiel — Télécom & FinTech S32-S33",
+    "type": "benchmark",
+    "client": "Orange Cameroun",
+    "brands": [
+      "Orange TELCO",
+      "Orange Money (OM)"
+    ],
+    "status": "delivered",
+    "version": "v1.0",
+    "priority": "normale",
+    "dueDate": "2026-08-17",
+    "createdAt": "2026-08-10T14:00:00Z",
+    "updatedAt": "2026-08-16T17:00:00Z",
+    "period": {
+      "start": "2026-08-01",
+      "end": "2026-08-15",
+      "label": "Quinzaine du 1er au 15 Août 2026",
+      "comparisonType": "periode_precedente"
+    },
+    "requester": {
+      "name": "Patrick Tuete",
+      "role": "Head of Digital Marketing",
+      "email": "patrick.tuete@orange.cm"
+    },
+    "assignee": {
+      "name": "Steve BESSOUBE",
+      "role": "Digital Analyst"
+    },
+    "clientContact": "Patrick Tuete",
+    "channels": [
+      "Facebook",
+      "Instagram",
+      "TikTok",
+      "LinkedIn",
+      "YouTube",
+      "X (Twitter)"
+    ],
+    "sections": [
+      "cover",
+      "executive_summary",
+      "competitive_benchmark",
+      "qualitative_insights",
+      "sentiment_social_listening",
+      "actionable_recos",
+      "raw_data_annexes"
+    ],
+    "context": {
+      "campaignName": "Veille Concurrentielle & Parts de Voix Quinzaine",
+      "marketingObjective": "Surveillance de la concurrence & Parts de voix",
+      "businessQuestion": "Quelles sont les offensives tarifaires et activations de MTN Cameroun et Camtel en cette période de rentrée ?",
+      "hypotheses": "MTN mise fortement sur les offres voix illimitées tandis que Camtel pousse son offre Blue Home.",
+      "keyMoments": "Lancement de la campagne rentrée MTN Wan'De."
+    },
+    "data": {
+      "summaryKpis": {
+        "followers": 4300000,
+        "followersGrowth": 52000,
+        "growthRate": 1.22,
+        "reach": 9200000,
+        "impressions": 18500000,
+        "engagements": 760000,
+        "engagementRate": 8.26,
+        "videoViews": 4100000,
+        "videoCompletionRate": 42.1,
+        "linkClicks": 145000,
+        "adSpend": 0,
+        "cpm": 0,
+        "cpc": 0,
+        "ctr": 0,
+        "cpa": 0
+      },
+      "benchmark": {
+        "competitors": [
+          {
+            "name": "Orange Cameroun (Groupe)",
+            "shareOfVoice": "46.2%",
+            "interactions": "760 K",
+            "posts": 98,
+            "sentimentPositive": "83%"
+          },
+          {
+            "name": "MTN Cameroun (Groupe)",
+            "shareOfVoice": "39.5%",
+            "interactions": "580 K",
+            "posts": 84,
+            "sentimentPositive": "77%"
+          },
+          {
+            "name": "Blue by Camtel",
+            "shareOfVoice": "14.3%",
+            "interactions": "190 K",
+            "posts": 42,
+            "sentimentPositive": "73%"
+          }
+        ]
+      },
+      "qualitativeInsights": {
+        "drivers": [
+          "Orange conserve une avance confortable de +6.7 points de part de voix sur MTN sur les réseaux sociaux.",
+          "La campagne Good Deal Orange compense efficacement la pression publicitaire agressive de MTN Wan'De."
+        ],
+        "friction": [
+          "Blue by Camtel progresse rapidement sur le segment internet fixe / fibre résidentielle avec un discours prix très agressif."
+        ],
+        "learnings": [
+          "Maintenir une présence quotidienne en vidéo pour contrer la stratégie carrousel de MTN."
+        ]
+      },
+      "actionableRecos": [
+        "Préparer une riposte sur les forfaits mixtes Data + Voix pour fin août.",
+        "Renforcer le sponsoring des événements e-sport pour verrouiller le territoire gaming face à MTN."
+      ]
+    },
+    "comments": [
+      {
+        "id": "c1",
+        "author": "Patrick Tuete",
+        "role": "Client Lead",
+        "date": "2026-08-16 16:50",
+        "text": "Rapport très instructif, partagé avec la direction générale."
+      }
+    ],
+    "workflowHistory": [
+      {
+        "step": "submitted",
+        "label": "Demande initiée",
+        "date": "2026-08-10 14:00",
+        "author": "Patrick Tuete"
+      },
+      {
+        "step": "qualified",
+        "label": "Périmètre validé",
+        "date": "2026-08-11 09:00",
+        "author": "Steve BESSOUBE"
+      },
+      {
+        "step": "in_production",
+        "label": "Collecte & Analyse benchmark",
+        "date": "2026-08-12 10:00",
+        "author": "Steve BESSOUBE"
+      },
+      {
+        "step": "internal_review",
+        "label": "Revue interne McCann",
+        "date": "2026-08-15 15:00",
+        "author": "Steve BESSOUBE"
+      },
+      {
+        "step": "client_review",
+        "label": "Partagé pour validation",
+        "date": "2026-08-16 10:00",
+        "author": "Victor F. AKOA"
+      },
+      {
+        "step": "approved",
+        "label": "Validé par le client",
+        "date": "2026-08-16 16:50",
+        "author": "Patrick Tuete"
+      },
+      {
+        "step": "delivered",
+        "label": "Livrable final archivé",
+        "date": "2026-08-16 17:00",
+        "author": "Steve BESSOUBE"
+      }
+    ],
+    "auditLog": [
+      {
+        "action": "CREATION",
+        "author": "Patrick Tuete",
+        "date": "2026-08-10 14:00:00"
+      },
+      {
+        "action": "DELIVERY",
+        "author": "Steve BESSOUBE",
+        "date": "2026-08-16 17:00:00"
+      }
+    ]
+  },
+  {
+    "id": "REP-2026-0818-EXEC",
+    "title": "Synthèse Exécutive Direction Générale — T2 & Rentrée Stratégique",
+    "type": "executif",
+    "client": "Orange Cameroun",
+    "brands": [
+      "Orange TELCO",
+      "Orange Money (OM)",
+      "Orange Business"
+    ],
+    "status": "qualified",
+    "version": "v1.0",
+    "priority": "haute",
+    "dueDate": "2026-08-25",
+    "createdAt": "2026-08-18T16:00:00Z",
+    "updatedAt": "2026-08-18T16:30:00Z",
+    "period": {
+      "start": "2026-04-01",
+      "end": "2026-06-30",
+      "label": "Trimestre T2 & Perspectives Q3 2026",
+      "comparisonType": "meme_periode_annee_precedente"
+    },
+    "requester": {
+      "name": "Patrick Tuete",
+      "role": "Head of Digital Marketing",
+      "email": "patrick.tuete@orange.cm"
+    },
+    "assignee": {
+      "name": "Steve BESSOUBE",
+      "role": "Digital Analyst"
+    },
+    "clientContact": "Comité de Direction Orange",
+    "channels": [
+      "Tous les canaux"
+    ],
+    "sections": [
+      "cover",
+      "executive_summary",
+      "qualitative_insights",
+      "competitive_benchmark",
+      "actionable_recos"
+    ],
+    "context": {
+      "campaignName": "Gouvernance & Bilan Digital T2",
+      "marketingObjective": "Synthèse stratégique & Arbitrages Budgétaires Q3/Q4",
+      "businessQuestion": "Quels ont été les retours sur investissements digitaux au T2 et quelles sont les priorités d’allocations médias pour le S2 ?",
+      "hypotheses": "La réallocation de 30% du budget affichage vers TikTok et Meta Reels a amélioré le ROI de 24%.",
+      "keyMoments": "Conseil d’administration et présentation du plan stratégique annuel fin août."
+    },
+    "data": {
+      "summaryKpis": {
+        "followers": 4300000,
+        "followersGrowth": 142000,
+        "growthRate": 3.42,
+        "reach": 18500000,
+        "impressions": 42000000,
+        "engagements": 1950000,
+        "engagementRate": 7.15,
+        "videoViews": 12500000,
+        "videoCompletionRate": 44.5,
+        "linkClicks": 420000,
+        "adSpend": 24500000,
+        "cpm": 420,
+        "cpc": 58,
+        "ctr": 3.12,
+        "cpa": 285
+      },
+      "qualitativeInsights": {
+        "drivers": [
+          "Croissance continue du parc d’abonnés digitaux (+142 000 au T2).",
+          "Maturité croissante des audiences B2B sur LinkedIn avec un taux d’engagement record de 5.2%."
+        ],
+        "friction": [
+          "Besoins d’optimisation continue du tracking applicatif iOS face aux restrictions de confidentialité."
+        ],
+        "learnings": [
+          "L’écosystème Maxit représente désormais 42% du total des clics digitaux sortants."
+        ]
+      },
+      "actionableRecos": [
+        "Augmenter l’allocation budgétaire sur TikTok de 15% pour anticiper les activations jeunes de fin d’année.",
+        "Industrialiser les formats de vidéo snack (moins de 20s) pour toutes les Business Units."
+      ]
+    },
+    "comments": [
+      {
+        "id": "c1",
+        "author": "Patrick Tuete",
+        "role": "Client Lead",
+        "date": "2026-08-18 16:30",
+        "text": "Planning de production calé pour finalisation le 23 août."
+      }
+    ],
+    "workflowHistory": [
+      {
+        "step": "submitted",
+        "label": "Demande initiée",
+        "date": "2026-08-18 16:00",
+        "author": "Patrick Tuete"
+      },
+      {
+        "step": "qualified",
+        "label": "Demande qualifiée & assignée",
+        "date": "2026-08-18 16:30",
+        "author": "Steve BESSOUBE"
+      }
+    ],
+    "auditLog": [
+      {
+        "action": "CREATION",
+        "author": "Patrick Tuete",
+        "date": "2026-08-18 16:00:00"
+      },
+      {
+        "action": "QUALIFICATION",
+        "author": "Steve BESSOUBE",
+        "date": "2026-08-18 16:30:00"
+      }
+    ]
   }
 ];
 

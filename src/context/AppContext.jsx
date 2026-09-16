@@ -1311,7 +1311,6 @@ export function AppProvider({ children }) {
         const reportsCol = collection(db, 'reports');
         const unsubReports = onSnapshot(reportsCol, async (snapshot) => {
           if (snapshot.empty && !isInitializedRef.current) {
-            // Seed initial reports
             for (const report of INITIAL_REPORTS) {
               await setDoc(doc(db, 'reports', report.id), report);
             }
@@ -1319,6 +1318,8 @@ export function AppProvider({ children }) {
             const list = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
             if (list.length > 0) {
               dispatch({ type: 'SYNC_REPORTS', reports: list });
+            } else {
+              dispatch({ type: 'SYNC_REPORTS', reports: INITIAL_REPORTS });
             }
           }
         }, (err) => {

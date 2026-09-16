@@ -44,42 +44,41 @@ export default function ReportExportModal({ isOpen, onClose, report }) {
         link.click();
         document.body.removeChild(link);
       } else {
-        // Print / simulated high-res document output
         window.print();
       }
     }, 900);
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-      <div className="rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col cosmic-glass-card border border-white/20 shadow-[0_16px_48px_rgba(0,0,0,0.6)] overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
+      <div className="bg-white rounded-xl shadow-2xl border border-gray-200 max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden animate-scaleIn">
         
         {/* Header */}
-        <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-black/40">
+        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-mono font-black text-xs bg-[#FF6600]/20 text-[#FF8C00] px-2 py-0.5 rounded border border-[#FF6600]/30">
+              <span className="font-mono font-bold text-xs bg-orange-100 text-[#FF7900] px-2 py-0.5 rounded">
                 {report.id}
               </span>
-              <h2 className="text-base font-black text-white">
-                Centre d'Export & Partage Sécurisé
+              <h2 className="text-base font-bold text-dark">
+                Centre d'Export & Partage du Rapport
               </h2>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Génération des livrables conformes à la charte graphique McCann × Orange Cameroun
+            <p className="text-xs text-muted mt-0.5">
+              Génération des livrables conformes à la charte McCann × Orange Cameroun
             </p>
           </div>
 
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+            className="text-gray-400 hover:text-dark text-lg font-bold p-1"
           >
-            <X size={20} />
+            ✕
           </button>
         </div>
 
         {/* Format Selection Tabs */}
-        <div className="grid grid-cols-4 gap-2 p-3 bg-black/40 border-b border-white/10">
+        <div className="grid grid-cols-4 gap-2 p-3 bg-gray-50 border-b border-gray-100">
           {[
             { id: 'pdf', label: 'PDF Officiel', icon: <FileText size={18} /> },
             { id: 'ppt', label: 'PowerPoint (.PPTX)', icon: <Presentation size={18} /> },
@@ -91,55 +90,54 @@ export default function ReportExportModal({ isOpen, onClose, report }) {
               <button
                 key={f.id}
                 onClick={() => setActiveExportType(f.id)}
-                className={`p-3 rounded-xl border flex flex-col items-center justify-center text-center transition-all cursor-pointer ${
+                className={`p-2.5 rounded-lg border flex flex-col items-center justify-center text-center transition-all ${
                   isSel
-                    ? 'bg-gradient-to-r from-[#FF6600]/20 to-[#FF8C00]/20 border-[#FF6600] text-white font-black shadow-[0_0_15px_rgba(255,102,0,0.3)]'
-                    : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10 hover:text-white'
+                    ? 'bg-orange-50 border-[#FF7900] text-[#FF7900] font-bold shadow-xs'
+                    : 'bg-white border-gray-200 text-muted hover:text-dark hover:border-gray-300'
                 }`}
               >
-                <div className={isSel ? 'text-[#FF8C00]' : 'text-slate-400'}>{f.icon}</div>
-                <span className="text-xs mt-1.5 font-bold">{f.label}</span>
+                <div className={isSel ? 'text-[#FF7900]' : 'text-gray-500'}>{f.icon}</div>
+                <span className="text-xs mt-1 font-semibold">{f.label}</span>
               </button>
             );
           })}
         </div>
 
         {/* Export Body Preview */}
-        <div className="p-6 overflow-y-auto flex-1 space-y-5">
+        <div className="p-5 overflow-y-auto flex-1 space-y-4">
           
           {/* PDF Preview */}
           {activeExportType === 'pdf' && (
-            <div className="space-y-4 animate-fadeIn">
-              <div className="border-2 border-dashed border-white/20 rounded-2xl p-6 bg-black/30 text-center">
-                <FileText size={40} className="mx-auto text-[#FF6600] mb-2 drop-shadow-[0_0_12px_rgba(255,102,0,0.5)]" />
-                <h3 className="text-sm font-black text-white">
+            <div className="space-y-3">
+              <div className="border border-dashed border-orange-300 bg-orange-50/30 rounded-xl p-5 text-center">
+                <FileText size={36} className="mx-auto text-[#FF7900] mb-2" />
+                <h3 className="text-sm font-bold text-dark">
                   {report.title} — Livrable PDF Haute Définition
                 </h3>
-                <p className="text-xs text-slate-400 mt-1">
-                  Format A4 Paysage haute résolution • Charte McCann × Orange 2026 • 12 pages consolidées
+                <p className="text-xs text-muted mt-1">
+                  Format A4 Paysage • Charte McCann × Orange 2026 • 12 pages consolidées
                 </p>
               </div>
 
-              {/* Options */}
-              <div className="space-y-2.5 text-xs text-slate-300 bg-white/5 p-4 rounded-xl border border-white/10">
-                <label className="flex items-center gap-2.5 cursor-pointer">
+              <div className="space-y-2 text-xs text-dark bg-gray-50 p-3.5 rounded-lg border border-gray-100">
+                <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={includeSpeeches}
                     onChange={(e) => setIncludeSpeeches(e.target.checked)}
-                    className="rounded text-[#FF6600] focus:ring-[#FF6600]"
+                    className="rounded text-[#FF7900]"
                   />
                   <span>Inclure le détail complet des fiches de prises de parole</span>
                 </label>
 
-                <label className="flex items-center gap-2.5 cursor-pointer">
+                <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={includeBenchmark}
                     onChange={(e) => setIncludeBenchmark(e.target.checked)}
-                    className="rounded text-[#FF6600] focus:ring-[#FF6600]"
+                    className="rounded text-[#FF7900]"
                   />
-                  <span>Inclure la matrice concurrentielle cosmique (MTN vs Camtel)</span>
+                  <span>Inclure la matrice concurrentielle (MTN vs Camtel)</span>
                 </label>
               </div>
             </div>
@@ -147,21 +145,21 @@ export default function ReportExportModal({ isOpen, onClose, report }) {
 
           {/* PPT Preview */}
           {activeExportType === 'ppt' && (
-            <div className="space-y-4 animate-fadeIn">
-              <div className="border border-white/10 rounded-xl p-5 bg-black/40">
-                <div className="text-xs font-black text-[#FF8C00] mb-3 flex items-center gap-1.5 uppercase tracking-wider">
-                  <Presentation size={16} />
+            <div className="space-y-3">
+              <div className="border border-gray-200 rounded-xl p-4 bg-gray-50">
+                <div className="text-xs font-bold text-dark mb-2.5 flex items-center gap-1.5 uppercase">
+                  <Presentation size={15} className="text-[#FF7900]" />
                   <span>Structure de la Présentation PowerPoint (8 Slides) :</span>
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-xs text-slate-300">
-                  <div className="p-2.5 bg-white/5 rounded-lg border border-white/10">1. Slide de Titre & Périmètre</div>
-                  <div className="p-2.5 bg-white/5 rounded-lg border border-white/10">2. Résumé Exécutif & KPI Clés</div>
-                  <div className="p-2.5 bg-white/5 rounded-lg border border-white/10">3. Évolution des Communautés</div>
-                  <div className="p-2.5 bg-white/5 rounded-lg border border-white/10">4. Performance par Réseau Social</div>
-                  <div className="p-2.5 bg-white/5 rounded-lg border border-white/10">5. Top 5 Best Posts & Créas</div>
-                  <div className="p-2.5 bg-white/5 rounded-lg border border-white/10">6. Benchmark Orange vs MTN vs Camtel</div>
-                  <div className="p-2.5 bg-white/5 rounded-lg border border-white/10">7. Analyse Média & ROAS</div>
-                  <div className="p-2.5 bg-white/5 rounded-lg border border-white/10">8. Recommandations Stratégiques</div>
+                <div className="grid grid-cols-2 gap-2 text-xs text-dark">
+                  <div className="p-2 bg-white rounded border border-gray-200 font-medium">1. Titre & Périmètre</div>
+                  <div className="p-2 bg-white rounded border border-gray-200 font-medium">2. Synthèse Exécutive & KPIs</div>
+                  <div className="p-2 bg-white rounded border border-gray-200 font-medium">3. Évolution Communautés</div>
+                  <div className="p-2 bg-white rounded border border-gray-200 font-medium">4. Performance par Réseau</div>
+                  <div className="p-2 bg-white rounded border border-gray-200 font-medium">5. Top Publications & Formats</div>
+                  <div className="p-2 bg-white rounded border border-gray-200 font-medium">6. Benchmark Orange vs MTN vs Camtel</div>
+                  <div className="p-2 bg-white rounded border border-gray-200 font-medium">7. Bilan Média & Budget</div>
+                  <div className="p-2 bg-white rounded border border-gray-200 font-medium">8. Recommandations Stratégiques</div>
                 </div>
               </div>
             </div>
@@ -169,73 +167,61 @@ export default function ReportExportModal({ isOpen, onClose, report }) {
 
           {/* CSV Preview */}
           {activeExportType === 'csv' && (
-            <div className="space-y-4 animate-fadeIn">
-              <div className="p-5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-xs text-slate-200 space-y-1">
-                <div className="font-black text-emerald-400 text-sm">Export Tabulaire CSV / Excel Prêt</div>
-                <p className="leading-relaxed">Contient toutes les métriques brutes, la portée par canal, les engagements, les clics et les conversions pour traitement dans vos modèles décisionnels.</p>
+            <div className="space-y-3">
+              <div className="p-4 bg-green-50 border border-green-200 rounded-xl text-xs text-green-900 space-y-1">
+                <div className="font-bold text-sm">Export Tabulaire CSV / Excel Prêt</div>
+                <p>Contient toutes les métriques brutes, reach par plateforme, engagements, clics et conversions pour exploitation directe dans vos tableurs.</p>
               </div>
             </div>
           )}
 
           {/* Secure Web Link */}
           {activeExportType === 'link' && (
-            <div className="space-y-4 animate-fadeIn">
-              <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-                  Lien de Consultation Sécurisé & Chiffré
-                </label>
-                <div className="flex gap-2">
+            <div className="space-y-3">
+              <div className="border border-gray-200 rounded-xl p-4 bg-gray-50 text-xs">
+                <div className="font-bold text-dark mb-1">Lien de consultation sécurisé (Tokenisé)</div>
+                <div className="flex gap-2 mt-2">
                   <input
                     type="text"
                     readOnly
                     value={shareableUrl}
-                    className="flex-1 text-xs font-mono p-3 cosmic-glass-input text-[#00D4FF]"
+                    className="form-input flex-1 font-mono text-[11px] bg-white"
                   />
                   <button
+                    type="button"
                     onClick={handleCopyLink}
-                    className="flex items-center gap-1.5 px-5 py-2.5 cosmic-btn-primary text-white rounded-xl text-xs font-black transition-colors shrink-0 cursor-pointer"
+                    className="btn btn-orange text-xs font-bold px-3 py-1.5 rounded flex items-center gap-1"
                   >
                     {copied ? <Check size={14} /> : <Copy size={14} />}
                     <span>{copied ? 'Copié !' : 'Copier'}</span>
                   </button>
                 </div>
-              </div>
-
-              <div className="p-4 bg-black/40 border border-white/10 rounded-xl text-xs text-slate-300 space-y-1">
-                <div className="flex items-center gap-1.5 font-black text-emerald-400">
-                  <ShieldCheck size={16} />
-                  <span>Sécurité & Confidentialité Certifiée</span>
-                </div>
-                <p className="text-slate-400">Lien chiffré HTTPS valide pendant 30 jours. Consultation directe sans authentification requise.</p>
+                <p className="text-muted text-[11px] mt-2">Lien valable 30 jours, réservé aux collaborateurs Orange Cameroun et McCann.</p>
               </div>
             </div>
           )}
 
         </div>
 
-        {/* Footer Controls */}
-        <div className="px-6 py-4 border-t border-white/10 bg-black/40 flex items-center justify-between">
+        {/* Footer */}
+        <div className="px-5 py-3 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
           <button
+            type="button"
             onClick={onClose}
-            className="px-4 py-2 cosmic-btn-glass rounded-xl text-xs font-bold text-slate-300 hover:text-white transition-colors cursor-pointer"
+            className="btn btn-ghost border px-4 py-2 text-xs font-bold"
           >
             Fermer
           </button>
 
           {activeExportType !== 'link' && (
             <button
-              onClick={() => handleTriggerDownload(activeExportType)}
+              type="button"
               disabled={isGenerating}
-              className="flex items-center gap-2 px-6 py-2.5 cosmic-btn-primary rounded-xl text-xs font-black shadow-lg transition-all cursor-pointer"
+              onClick={() => handleTriggerDownload(activeExportType)}
+              className="btn btn-orange text-xs font-bold px-4 py-2 rounded flex items-center gap-1.5 shadow-sm"
             >
-              {isGenerating ? (
-                <span>Génération en cours...</span>
-              ) : (
-                <>
-                  <Download size={15} />
-                  <span>Télécharger ({activeExportType.toUpperCase()})</span>
-                </>
-              )}
+              <Download size={14} />
+              <span>{isGenerating ? 'Génération en cours...' : `Télécharger le fichier (${activeExportType.toUpperCase()})`}</span>
             </button>
           )}
         </div>

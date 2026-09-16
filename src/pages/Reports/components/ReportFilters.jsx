@@ -1,4 +1,4 @@
-import { Search, Filter, X, Download, RotateCcw, Building2, Tag, CheckSquare } from 'lucide-react';
+import { Search, X, RotateCcw, Download } from 'lucide-react';
 import { BRANDS_LIST, REPORT_TYPES, REPORT_STATUSES } from '../../../data/reportsData';
 
 export default function ReportFilters({
@@ -19,108 +19,114 @@ export default function ReportFilters({
   const hasActiveFilters = searchQuery || selectedBrand !== 'all' || selectedType !== 'all' || selectedStatus !== 'all' || selectedPriority !== 'all';
 
   return (
-    <div className="p-4 rounded-2xl cosmic-glass-card mb-5 border border-white/10">
-      <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
+    <div className="inf-search-panel" style={{ background: '#fff', borderRadius: 8, padding: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.05)', marginBottom: 16 }}>
+      <div className="inf-search-row" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
         
-        {/* Search Bar */}
-        <div className="relative flex-1 min-w-[260px]">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+        {/* Search input */}
+        <div style={{ flex: 2, minWidth: 240, position: 'relative' }}>
           <input
             type="text"
+            className="form-input"
+            placeholder="🔍 Rechercher par référence (REP-...), mot-clé, campagne, auteur..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Rechercher par référence (REP-...), mot-clé, campagne, auteur..."
-            className="w-full pl-9 pr-8 py-2.5 text-xs rounded-xl cosmic-glass-input text-slate-100 placeholder:text-slate-400"
+            style={{ width: '100%', paddingRight: 28 }}
           />
           {searchQuery && (
             <button
               onClick={() => onSearchChange('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-0.5 cursor-pointer"
+              style={{
+                position: 'absolute',
+                right: 8,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                color: '#888',
+                cursor: 'pointer',
+                fontSize: 14
+              }}
+              title="Effacer la recherche"
             >
-              <X size={14} />
+              ✕
             </button>
           )}
         </div>
 
-        {/* Filter dropdowns */}
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Brand Filter */}
-          <div className="flex items-center gap-1.5">
-            <select
-              value={selectedBrand}
-              onChange={(e) => onBrandChange(e.target.value)}
-              className="text-xs font-semibold py-2 px-3 rounded-xl cosmic-glass-input cursor-pointer"
-            >
-              <option value="all" className="bg-[#0A0E27] text-white">🏢 Toutes les Marques (4)</option>
-              {BRANDS_LIST.map((b) => (
-                <option key={b.id} value={b.name} className="bg-[#0A0E27] text-white">{b.name}</option>
-              ))}
-            </select>
-          </div>
+        {/* Brand select */}
+        <select
+          className="form-input"
+          value={selectedBrand}
+          onChange={(e) => onBrandChange(e.target.value)}
+          style={{ flex: 1, minWidth: 150 }}
+        >
+          <option value="all">Toutes marques ({BRANDS_LIST.length})</option>
+          {BRANDS_LIST.map((b) => (
+            <option key={b.id} value={b.name}>{b.name}</option>
+          ))}
+        </select>
 
-          {/* Type Filter */}
-          <div className="flex items-center gap-1.5">
-            <select
-              value={selectedType}
-              onChange={(e) => onTypeChange(e.target.value)}
-              className="text-xs font-semibold py-2 px-3 rounded-xl cosmic-glass-input cursor-pointer"
-            >
-              <option value="all" className="bg-[#0A0E27] text-white">📑 Tous les Types (6)</option>
-              {REPORT_TYPES.map((t) => (
-                <option key={t.id} value={t.id} className="bg-[#0A0E27] text-white">{t.icon} {t.label}</option>
-              ))}
-            </select>
-          </div>
+        {/* Type select */}
+        <select
+          className="form-input"
+          value={selectedType}
+          onChange={(e) => onTypeChange(e.target.value)}
+          style={{ flex: 1, minWidth: 160 }}
+        >
+          <option value="all">Tous types de rapport ({REPORT_TYPES.length})</option>
+          {REPORT_TYPES.map((t) => (
+            <option key={t.id} value={t.id}>{t.icon} {t.label}</option>
+          ))}
+        </select>
 
-          {/* Status Filter */}
-          <div className="flex items-center gap-1.5">
-            <select
-              value={selectedStatus}
-              onChange={(e) => onStatusChange(e.target.value)}
-              className="text-xs font-semibold py-2 px-3 rounded-xl cosmic-glass-input cursor-pointer"
-            >
-              <option value="all" className="bg-[#0A0E27] text-white">🔄 Tous les Statuts (12)</option>
-              {Object.entries(REPORT_STATUSES).map(([key, st]) => (
-                <option key={key} value={key} className="bg-[#0A0E27] text-white">{st.label}</option>
-              ))}
-            </select>
-          </div>
+        {/* Status select */}
+        <select
+          className="form-input"
+          value={selectedStatus}
+          onChange={(e) => onStatusChange(e.target.value)}
+          style={{ flex: 1, minWidth: 160 }}
+        >
+          <option value="all">Tous statuts workflow</option>
+          {Object.entries(REPORT_STATUSES).map(([key, st]) => (
+            <option key={key} value={key}>{st.label}</option>
+          ))}
+        </select>
 
-          {/* Priority Filter */}
-          <div className="flex items-center gap-1.5">
-            <select
-              value={selectedPriority}
-              onChange={(e) => onPriorityChange(e.target.value)}
-              className="text-xs font-semibold py-2 px-3 rounded-xl cosmic-glass-input cursor-pointer"
-            >
-              <option value="all" className="bg-[#0A0E27] text-white">⚡ Priorités</option>
-              <option value="urgente" className="bg-[#0A0E27] text-red-400">🔥 Urgente</option>
-              <option value="haute" className="bg-[#0A0E27] text-orange-400">🟠 Haute</option>
-              <option value="normale" className="bg-[#0A0E27] text-emerald-400">🟢 Normale</option>
-            </select>
-          </div>
+        {/* Priority select */}
+        <select
+          className="form-input"
+          value={selectedPriority}
+          onChange={(e) => onPriorityChange(e.target.value)}
+          style={{ flex: 1, minWidth: 130 }}
+        >
+          <option value="all">Toutes priorités</option>
+          <option value="urgente">🔥 Urgente (&lt;24h)</option>
+          <option value="haute">🟠 Haute (&lt;48h)</option>
+          <option value="normale">🟢 Normale (Standard)</option>
+        </select>
 
-          {/* Action buttons */}
-          {hasActiveFilters && (
-            <button
-              onClick={onReset}
-              className="flex items-center gap-1 text-xs font-bold text-slate-300 hover:text-[#FF6600] px-3 py-2 rounded-xl cosmic-btn-glass cursor-pointer"
-              title="Réinitialiser tous les filtres"
-            >
-              <RotateCcw size={13} />
-              <span>Reset</span>
-            </button>
-          )}
+        {/* Action buttons */}
+        {hasActiveFilters && (
+          <button
+            onClick={onReset}
+            className="btn btn-ghost border"
+            style={{ fontWeight: 600, fontSize: 12, padding: '8px 12px', background: '#fff' }}
+            title="Réinitialiser tous les filtres"
+          >
+            ✕ Réinitialiser
+          </button>
+        )}
 
+        {onExportCsv && (
           <button
             onClick={onExportCsv}
-            className="flex items-center gap-1 text-xs font-bold text-white px-3.5 py-2 rounded-xl cosmic-btn-glass cursor-pointer hover:border-[#00D4FF]"
+            className="btn btn-ghost border"
+            style={{ fontWeight: 600, fontSize: 12, padding: '8px 14px', background: '#fff' }}
             title="Exporter la sélection en CSV"
           >
-            <Download size={13} />
-            <span>Export ({totalResults})</span>
+            📥 Exporter ({totalResults})
           </button>
-        </div>
+        )}
       </div>
     </div>
   );
