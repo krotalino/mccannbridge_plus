@@ -1,0 +1,26 @@
+<svg viewBox="0 0 160 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="160" height="100" rx="14" fill="#FFFFFF" />
+  <defs>
+    <linearGradient id="chococam-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#481F0E" />
+      <stop offset="50%" stop-color="#321307" />
+      <stop offset="100%" stop-color="#1E0A03" />
+    </linearGradient>
+  </defs>
+  <polygon points="14,76 146,30 154,58 22,104" fill="#D42017" />
+  <polygon points="16,74 144,32 151,56 23,98" fill="#F6B833" />
+  <polygon points="18.5,72.5 141.5,34 148.5,54 25.5,92.5" fill="url(#chococam-grad)" />
+  <g transform="translate(85, 68) rotate(-17)">
+    <text x="0" y="2" fill="#80140A" font-size="25" font-weight="900" font-style="italic" font-family="'Arial Black', Impact, sans-serif" text-anchor="middle" letter-spacing="0.04em">CHOCOCAM</text>
+    <text x="0" y="0" fill="#FFFFFF" font-size="25" font-weight="900" font-style="italic" font-family="'Arial Black', Impact, sans-serif" text-anchor="middle" letter-spacing="0.04em">CHOCOCAM</text>
+  </g>
+  <g transform="translate(80, 36)">
+    <ellipse cx="0" cy="0" rx="17" ry="7" fill="#ECA72C" />
+    <circle cx="0" cy="0" r="11" fill="#C91B10" stroke="#F6B833" stroke-width="1.8" />
+    <text x="0" y="3.5" fill="#F6B833" font-size="10.5" font-weight="bold" font-style="italic" font-family="Georgia, serif" text-anchor="middle">Vtt</text>
+  </g>
+  <g transform="translate(143, 27)">
+    <circle cx="0" cy="0" r="4.5" fill="none" stroke="#D42017" stroke-width="0.8" />
+    <text x="0" y="2.3" fill="#D42017" font-size="5.5" font-weight="bold" text-anchor="middle" font-family="sans-serif">R</text>
+  </g>
+</svg>

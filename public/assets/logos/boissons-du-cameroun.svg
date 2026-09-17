@@ -1,0 +1,19 @@
+<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100" height="100" rx="14" fill="#FFFFFF" />
+  <g stroke="#717376" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M 26,24 L 22,25 L 23,29 L 19,31 L 21,35 L 16,38 L 19,42 L 15,46 L 18,50 L 15,54 L 19,58 L 16,62 L 21,65 L 19,69 L 23,71 L 22,75 L 26,76 A 26 26 0 0 0 45,69 M 45,31 A 26 26 0 0 0 26,24" />
+  </g>
+  <g fill="#E21E26" transform="translate(25, 49) scale(0.68)">
+    <path d="M 0,-18 C -3,-18 -5,-16 -6,-13 C -8,-10 -6,-7 -4,-6 C -6,-5 -7,-3 -7,-1 C -5,0 -3,-1 -1,-2 C -2,0 -2,3 -1,5 C 2,4 3,1 4,-1 C 6,-3 5,-6 4,-8 C 6,-9 6,-13 4,-15 C 3,-17 2,-18 0,-18 Z" />
+    <path d="M -3,-10 C -7,-6 -8,0 -7,6 C -5,11 -3,15 -1,18 C 1,16 2,11 2,6 C 1,0 0,-6 -3,-10 Z" />
+    <path d="M 2,-10 C 6,-11 11,-12 14,-10 C 15,-9 14,-7 12,-7 C 14,-6 15,-4 13,-4 C 10,-4 6,-7 3,-6 Z" />
+    <path d="M 1,-4 C 5,-5 9,-4 12,-1 C 13,0 12,2 10,1 C 11,3 11,5 9,4 C 6,3 3,0 1,-2 Z" />
+    <path d="M -5,12 C -8,14 -12,17 -13,21 C -12,23 -9,22 -8,20 C -7,18 -5,16 -4,14 Z" />
+    <path d="M -1,14 C 1,17 3,20 4,23 C 6,24 8,23 7,21 C 5,18 2,15 0,13 Z" />
+    <path d="M -6,6 C -11,4 -15,1 -16,-4 C -17,-8 -15,-12 -13,-15 C -11,-17 -9,-14 -10,-12 C -11,-8 -12,-4 -10,0 C -8,3 -6,5 -5,6 Z" />
+    <circle cx="-13" cy="-15" r="2.2" />
+  </g>
+  <text x="44" y="48" fill="#E21E26" font-size="14.5" font-weight="800" font-family="system-ui, -apple-system, sans-serif" letter-spacing="-0.02em">Boissons</text>
+  <circle cx="63.2" cy="38" r="2.2" fill="#F8BA00" />
+  <text x="44" y="63" fill="#52555A" font-size="10.8" font-weight="700" font-family="system-ui, -apple-system, sans-serif" letter-spacing="-0.02em">du Cameroun</text>
+</svg>

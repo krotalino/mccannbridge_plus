@@ -1,39 +1,40 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import DynamicClientLogo from '../components/ClientLogos';
 
-// Grands comptes pilotés dans Bridge (identique à https://ocmgrowthbridge.thekoutoswiss.com/login)
+// Grands comptes pilotés dans Bridge (Orange Cameroun, Boissons du Cameroun, Chococam, Orange Burkina Faso)
 const CLIENTS_LIST = [
   {
     id: 'orange-cm',
     name: 'Orange Cameroun',
     desc: 'Télécommunications · Compte historique',
-    mark: 'orange',
-    bg: '#FF7900',
-    fg: '#fff',
-  },
-  {
-    id: 'orange-bf',
-    name: 'Orange Burkina Faso',
-    desc: 'Télécommunications · Marché UEMOA',
-    mark: 'orange',
-    bg: '#FF7900',
+    mark: 'orange-cm',
+    bg: '#000000',
     fg: '#fff',
   },
   {
     id: 'sabc',
     name: 'Boissons du Cameroun',
     desc: 'Agro-alimentaire · SABC (Groupe Castel)',
-    mark: 'SABC',
-    bg: 'linear-gradient(135deg, #0E8A45, #D4A017)',
+    mark: 'sabc',
+    bg: '#ffffff',
     fg: '#fff',
   },
   {
     id: 'chococam',
     name: 'Chococam',
     desc: 'Confiserie & chocolaterie · Groupe Tiger Brands',
-    mark: 'COCO',
-    bg: 'linear-gradient(135deg, #5B3A1E, #8A5A2B)',
+    mark: 'chococam',
+    bg: '#ffffff',
+    fg: '#fff',
+  },
+  {
+    id: 'orange-bf',
+    name: 'Orange Burkina Faso',
+    desc: 'Télécommunications · Marché UEMOA',
+    mark: 'orange-bf',
+    bg: '#FF7900',
     fg: '#fff',
   },
 ];
@@ -68,40 +69,14 @@ const STEPS = [
   { id: 3, label: 'Côté client' },
 ];
 
-// Composant Logo Client SVG / Textuel
-function ClientLogo({ client, size = 44, radius = 12, fontSize = 11 }) {
-  const containerStyle = {
-    width: size,
-    height: size,
-    borderRadius: radius,
-    background: client.bg,
-    color: client.fg,
-    fontSize,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontWeight: 800,
-    letterSpacing: '0.02em',
-    flexShrink: 0,
-    boxShadow: '0 4px 14px rgba(0,0,0,0.35)',
-  };
-
-  if (client.mark === 'orange') {
-    return (
-      <div style={containerStyle} aria-hidden="true">
-        <svg width={size * 0.62} height={size * 0.62} viewBox="0 0 24 24" fill="none">
-          <rect x="2" y="2" width="20" height="20" rx="5" stroke="#fff" strokeWidth="2" />
-          <path d="M7 15c1.2 1.6 3 2.6 5 2.6s3.8-1 5-2.6" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
-          <circle cx="12" cy="9" r="2.6" fill="#fff" />
-        </svg>
-      </div>
-    );
-  }
-
+// Composant Logo Client Authentique (Orange Cameroun "est là", Boissons du Cameroun, Chococam)
+function ClientLogo({ client, size = 44, radius = 12 }) {
   return (
-    <div style={containerStyle} aria-hidden="true">
-      {client.mark}
-    </div>
+    <DynamicClientLogo
+      client={client}
+      size={size}
+      radius={radius}
+    />
   );
 }
 
