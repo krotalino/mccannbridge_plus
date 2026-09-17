@@ -272,8 +272,10 @@ export function BoissonsDuCamerounLogo({ size = 44, radius = 12, className = '' 
 }
 
 /**
- * 4. Logo Orange Burkina Faso
- * Matching the Orange brand identity with Burkina Faso flag ribbon accent
+ * 4. Logo Orange Burkina Faso ("Orange est là")
+ * Exact match to user-uploaded `logo_orange_burkina.png`:
+ * Black background square, central Orange square with white horizontal bar,
+ * and the iconic white "est là" wordmark underneath.
  */
 export function OrangeBurkinaLogo({ size = 44, radius = 12, className = '' }) {
   return (
@@ -283,10 +285,10 @@ export function OrangeBurkinaLogo({ size = 44, radius = 12, className = '' }) {
         width: size,
         height: size,
         borderRadius: radius,
-        backgroundColor: '#FF7900',
-        boxShadow: '0 4px 14px rgba(255, 121, 0, 0.45)',
+        backgroundColor: '#000000',
+        boxShadow: '0 4px 14px rgba(0, 0, 0, 0.45)',
       }}
-      aria-label="Orange Burkina Faso"
+      aria-label="Orange Burkina Faso est là"
     >
       <svg
         viewBox="0 0 100 100"
@@ -295,29 +297,25 @@ export function OrangeBurkinaLogo({ size = 44, radius = 12, className = '' }) {
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        {/* White Bar at bottom */}
-        <rect x="22" y="52" width="56" height="13" rx="2" fill="#FFFFFF" />
+        {/* Central Orange Square */}
+        <rect x="18" y="7" width="64" height="58" rx="2" fill="#FF7900" />
 
-        {/* "BURKINA" text */}
+        {/* White Bar at bottom of the orange square */}
+        <rect x="25.5" y="47" width="49" height="10" rx="1" fill="#FFFFFF" />
+
+        {/* Brand signature "est là" in white bold sans-serif */}
         <text
           x="50"
-          y="87"
+          y="89"
           fill="#FFFFFF"
-          fontSize="15"
+          fontSize="24"
           fontWeight="900"
-          fontFamily="system-ui, -apple-system, sans-serif"
+          fontFamily="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
           textAnchor="middle"
-          letterSpacing="0.08em"
+          letterSpacing="-0.035em"
         >
-          BURKINA
+          est là
         </text>
-
-        {/* Top small Burkina flag ribbon accent (Red / Green with yellow star) */}
-        <g transform="translate(38, 12)">
-          <rect x="0" y="0" width="24" height="4" fill="#EF2B2D" rx="1" />
-          <rect x="0" y="4" width="24" height="4" fill="#009E49" rx="1" />
-          <polygon points="12,1.5 13.2,5 10.2,2.8 13.8,2.8 10.8,5" fill="#FCD116" />
-        </g>
       </svg>
     </div>
   );

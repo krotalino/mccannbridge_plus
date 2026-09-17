@@ -34,7 +34,7 @@ const CLIENTS_LIST = [
     name: 'Orange Burkina Faso',
     desc: 'Télécommunications · Marché UEMOA',
     mark: 'orange-bf',
-    bg: '#FF7900',
+    bg: '#000000',
     fg: '#fff',
   },
 ];
