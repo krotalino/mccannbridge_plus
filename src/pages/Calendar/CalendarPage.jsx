@@ -546,24 +546,16 @@ function CmValidation() {
 }
 
 function CmSponsoring({ onNavigate }) {
-  const { publications = [] } = useApp();
-  const sponsoredPosts = publications.filter(p => p.isSponsored || p.boosted);
   return (
     <div className="cm-section-card">
       <div className="cm-section-head">
         <div className="cm-tag-header cm-tag-orange">PILOTAGE ADS & SPONSORING</div>
-        <span className="tag tag-green">ROAS 5.2x</span>
       </div>
-      <div className="cm-sponso-budget">
-        <span>Budget Consommé : <strong style={{ color: '#fff' }}>28.45M / 35M FCFA</strong></span>
-        <span className="font-bold text-orange-400">6 Campagnes actives</span>
-      </div>
-      <div style={{ fontSize: 12, color: '#94a3b8', margin: '10px 0', lineHeight: 1.4 }}>
-        Contrôle en temps réel du Cap Cost, CPA moyen (412 FCFA), pacing anti-dérive et Creative Fatigue sur Meta, TikTok, LinkedIn, X, WhatsApp & Display.
+      <div style={{ fontSize: 13, color: '#94a3b8', margin: '14px 0', lineHeight: 1.4 }}>
+        Aucune donnée active dans le cockpit Ads / Sponsoring.
       </div>
       <div className="cm-sponso-actions">
-        <button className="btn btn-ghost btn-sm" onClick={() => onNavigate?.('ads')}>Voir détails KPI</button>
-        <button className="btn btn-orange btn-sm" onClick={() => onNavigate?.('ads')}>Ouvrir Cockpit Ads 📢</button>
+        <button className="btn btn-ghost btn-sm" onClick={() => onNavigate?.('ads')}>Ouvrir Ads / Sponsoring</button>
       </div>
     </div>
   );
