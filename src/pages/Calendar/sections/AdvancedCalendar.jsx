@@ -2,6 +2,7 @@ import { useState, useMemo, useRef } from 'react';
 import { CM_DATA } from '../../../data/community';
 import { useApp } from '../../../context/AppContext';
 import PublicationImageManager, { processImageFile, BRAND_IMAGE_PRESETS } from './PublicationImageManager';
+import PostSponsoringSection, { getNormalizedSponsoring } from './PostSponsoringSection';
 import './calendar.css';
 
 export default function AdvancedCalendar({ onOpenArchive }) {
@@ -203,12 +204,13 @@ export default function AdvancedCalendar({ onOpenArchive }) {
   const handleOpenCreateModal = (presetDate = null, presetTime = '10:00') => {
     const targetDate = presetDate ? formatDateToYMD(presetDate) : formatDateToYMD(currentDate);
     const dayNumber = presetDate ? presetDate.getDate() : currentDate.getDate();
+    const defaultClient = filterClient !== 'All' ? filterClient : 'Orange Telco';
 
     setEditModalState({
       mode: 'create',
       data: {
         title: '',
-        client: filterClient !== 'All' ? filterClient : 'Orange Telco',
+        client: defaultClient,
         canal: filterCanal !== 'All' ? filterCanal : 'Facebook',
         type: 'Feed',
         format: 'Paysage',
@@ -221,11 +223,38 @@ export default function AdvancedCalendar({ onOpenArchive }) {
         image: '',
         campaign: '',
         url: '',
+        isSponsored: false,
+        sponsoring: {
+          isSponsored: false,
+          budget: 150000,
+          budgetSpent: 140000,
+          currency: 'FCFA',
+          dailyBudget: 21400,
+          startDate: targetDate,
+          endDate: '',
+          durationDays: 7,
+          status: 'active',
+          objective: 'Engagement & Conversions',
+          platformAdAccount: `Meta Ads · ${defaultClient}`,
+          reach: 345000,
+          impressions: 512000,
+          frequency: 1.48,
+          cpm: 293,
+          targetAudience: '18-35 ans · Cameroun (Douala, Yaoundé) · Intérêts Fintech & Télécoms',
+          clicks: 18400,
+          ctr: '3.59',
+          cpc: '7.74',
+          conversions: 1240,
+          conversionRate: '6.74',
+          cpa: '114.9',
+          roas: '4.8x'
+        }
       }
     });
   };
 
   const handleOpenEditModal = (post) => {
+    const normalizedSp = getNormalizedSponsoring(post);
     setEditModalState({
       mode: 'edit',
       data: {
@@ -234,6 +263,8 @@ export default function AdvancedCalendar({ onOpenArchive }) {
         day: post.day || (post.date ? parseInt(post.date.split('-')[2], 10) : 19),
         desc: post.desc || post.description || '',
         url: post.url || post.link || '',
+        isSponsored: normalizedSp.isSponsored,
+        sponsoring: normalizedSp,
       }
     });
     if (viewModalPost) {
@@ -247,10 +278,17 @@ export default function AdvancedCalendar({ onOpenArchive }) {
     if (!formData.title.trim()) return;
 
     const dayParsed = formData.date ? parseInt(formData.date.split('-')[2], 10) : formData.day || 19;
+    const isSponsored = Boolean(formData.sponsoring?.isSponsored || formData.isSponsored);
+    const normalizedSponsoring = {
+      ...(formData.sponsoring || {}),
+      isSponsored
+    };
 
     if (editModalState.mode === 'create') {
       const newPost = {
         ...formData,
+        isSponsored,
+        sponsoring: normalizedSponsoring,
         day: dayParsed,
         url: (formData.url || '').trim(),
         createdAt: new Date().toISOString(),
@@ -273,6 +311,8 @@ export default function AdvancedCalendar({ onOpenArchive }) {
       // Edit mode
       await updateCalendarPost(formData.id, {
         ...formData,
+        isSponsored,
+        sponsoring: normalizedSponsoring,
         url: (formData.url || '').trim(),
         day: dayParsed,
         updatedAt: new Date().toISOString()
@@ -346,6 +386,20 @@ export default function AdvancedCalendar({ onOpenArchive }) {
     if (viewModalPost && viewModalPost.id === postId) {
       setViewModalPost(prev => ({ ...prev, status: newStatus }));
     }
+  };
+
+  const handleUpdatePostSponsoring = async (newSponsoringData) => {
+    if (!viewModalPost) return;
+    const isSponsored = Boolean(newSponsoringData?.isSponsored);
+    const updates = {
+      sponsoring: newSponsoringData,
+      isSponsored
+    };
+    await updateCalendarPost(viewModalPost.id, updates);
+    setViewModalPost(prev => ({
+      ...prev,
+      ...updates
+    }));
   };
 
   const handleCopyDescription = (text) => {
@@ -718,6 +772,11 @@ export default function AdvancedCalendar({ onOpenArchive }) {
                         <span className="adv-client-pill">{post.client}</span>
                         {post.format && <span className="tag-micro tag-blue">{post.format}</span>}
                         {post.campaign && <span className="adv-campaign-tag">{post.campaign}</span>}
+                        {(post.isSponsored || (post.sponsoring && (post.sponsoring.isSponsored || post.sponsoring > 0))) && (
+                          <span className="tag-micro" style={{ background: 'rgba(249, 115, 22, 0.2)', color: '#fb923c', border: '1px solid rgba(249, 115, 22, 0.45)' }} title="Publication sponsorisée">
+                            ⚡ Ads
+                          </span>
+                        )}
                       </div>
                       
                       <div className="adv-post-body">
@@ -877,6 +936,11 @@ export default function AdvancedCalendar({ onOpenArchive }) {
                                       {post.generation === 'AI' ? '🤖 IA' : '✍️ MANUEL'}
                                     </span>
                                     {post.campaign && <span className="adv-campaign-tag">{post.campaign}</span>}
+                                    {(post.isSponsored || (post.sponsoring && (post.sponsoring.isSponsored || post.sponsoring > 0))) && (
+                                      <span className="tag-micro" style={{ background: 'rgba(249, 115, 22, 0.2)', color: '#fb923c', border: '1px solid rgba(249, 115, 22, 0.45)' }}>
+                                        ⚡ Ads
+                                      </span>
+                                    )}
                                   </div>
                                   
                                   <div 
@@ -999,6 +1063,15 @@ export default function AdvancedCalendar({ onOpenArchive }) {
                     </span>
                     {viewModalPost.campaign && (
                       <span className="adv-campaign-tag">🎯 {viewModalPost.campaign}</span>
+                    )}
+                    {(viewModalPost.isSponsored || (viewModalPost.sponsoring && (viewModalPost.sponsoring.isSponsored || viewModalPost.sponsoring > 0))) ? (
+                      <span className="tag-micro" style={{ background: 'rgba(249, 115, 22, 0.2)', color: '#fb923c', border: '1px solid rgba(249, 115, 22, 0.5)', fontWeight: 700 }}>
+                        ⚡ Sponsoring Activé
+                      </span>
+                    ) : (
+                      <span className="tag-micro" style={{ background: 'rgba(148, 163, 184, 0.1)', color: '#94a3b8', border: '1px solid rgba(148, 163, 184, 0.2)' }}>
+                        🌱 Portée Organique
+                      </span>
                     )}
                   </div>
                 </div>
@@ -1326,6 +1399,12 @@ export default function AdvancedCalendar({ onOpenArchive }) {
                 </div>
               </div>
 
+              {/* ─── SECTION SPONSORING & MÉDIA PAYANT (BUDGET, AUDIENCE, CONVERSION) ─── */}
+              <PostSponsoringSection 
+                post={viewModalPost} 
+                onUpdateSponsoring={handleUpdatePostSponsoring} 
+              />
+
               {/* Quick status change */}
               <div>
                 <div className="text-xs font-bold text-slate-400 uppercase mb-8">
@@ -1615,6 +1694,170 @@ export default function AdvancedCalendar({ onOpenArchive }) {
                   <div className="text-right text-xs text-slate-400 mt-4">
                     {(editModalState.data.desc || '').length} caractères
                   </div>
+                </div>
+
+                {/* ─── SPONSORING & ADS TOGGLE DANS LE FORMULAIRE ─── */}
+                <div className="pub-form-group bg-[#131722] p-3.5 rounded-xl border border-white/10">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                        <span className="text-orange-400">⚡</span>
+                        <span>Campagne Sponsorisée (Ads / Média Payant)</span>
+                        {Boolean(editModalState.data.isSponsored || editModalState.data.sponsoring?.isSponsored) && (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-500/20 text-orange-400 border border-orange-500/30">
+                            Actif
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[11px] text-slate-400 mt-0.5">
+                        Indiquer si cette publication bénéficie d'un budget Ads et définir ses paramètres
+                      </div>
+                    </div>
+
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(editModalState.data.isSponsored || editModalState.data.sponsoring?.isSponsored)}
+                        onChange={e => {
+                          const isSp = e.target.checked;
+                          setEditModalState(prev => ({
+                            ...prev,
+                            data: {
+                              ...prev.data,
+                              isSponsored: isSp,
+                              sponsoring: {
+                                ...(prev.data.sponsoring || {}),
+                                isSponsored: isSp
+                              }
+                            }
+                          }));
+                        }}
+                        className="sr-only peer"
+                      />
+                      <div className="w-10 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-orange-500"></div>
+                    </label>
+                  </div>
+
+                  {Boolean(editModalState.data.isSponsored || editModalState.data.sponsoring?.isSponsored) && (
+                    <div className="mt-3 pt-3 border-t border-white/10 space-y-3 animate-fade">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                          <label className="block text-[10px] font-semibold text-slate-300 mb-1">
+                            Budget Alloué ({editModalState.data.sponsoring?.currency || 'FCFA'})
+                          </label>
+                          <input
+                            type="number"
+                            value={editModalState.data.sponsoring?.budget ?? 150000}
+                            onChange={e => setEditModalState(prev => ({
+                              ...prev,
+                              data: {
+                                ...prev.data,
+                                sponsoring: {
+                                  ...(prev.data.sponsoring || {}),
+                                  budget: parseFloat(e.target.value) || 0
+                                }
+                              }
+                            }))}
+                            className="w-full bg-[#0d1017] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-orange-400 font-bold font-mono focus:border-orange-500 outline-none"
+                            placeholder="150000"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-semibold text-slate-300 mb-1">
+                            Durée (Jours)
+                          </label>
+                          <input
+                            type="number"
+                            value={editModalState.data.sponsoring?.durationDays ?? 7}
+                            onChange={e => setEditModalState(prev => ({
+                              ...prev,
+                              data: {
+                                ...prev.data,
+                                sponsoring: {
+                                  ...(prev.data.sponsoring || {}),
+                                  durationDays: parseInt(e.target.value, 10) || 1
+                                }
+                              }
+                            }))}
+                            className="w-full bg-[#0d1017] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono focus:border-orange-500 outline-none"
+                            placeholder="7"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-semibold text-slate-300 mb-1">
+                            Statut de diffusion
+                          </label>
+                          <select
+                            value={editModalState.data.sponsoring?.status || 'active'}
+                            onChange={e => setEditModalState(prev => ({
+                              ...prev,
+                              data: {
+                                ...prev.data,
+                                sponsoring: {
+                                  ...(prev.data.sponsoring || {}),
+                                  status: e.target.value
+                                }
+                              }
+                            }))}
+                            className="w-full bg-[#0d1017] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white focus:border-orange-500 outline-none"
+                          >
+                            <option value="active">🟢 En cours de diffusion</option>
+                            <option value="scheduled">⏱️ Planifié / En attente</option>
+                            <option value="completed">✅ Terminé</option>
+                            <option value="paused">⏸️ En pause</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[10px] font-semibold text-slate-300 mb-1">
+                            Objectif Principal de Campagne
+                          </label>
+                          <input
+                            type="text"
+                            value={editModalState.data.sponsoring?.objective || 'Engagement & Conversions'}
+                            onChange={e => setEditModalState(prev => ({
+                              ...prev,
+                              data: {
+                                ...prev.data,
+                                sponsoring: {
+                                  ...(prev.data.sponsoring || {}),
+                                  objective: e.target.value
+                                }
+                              }
+                            }))}
+                            className="w-full bg-[#0d1017] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white focus:border-orange-500 outline-none"
+                            placeholder="Ex: Trafic web, Téléchargement d'app, Ventes"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-semibold text-slate-300 mb-1">
+                            Audience Cible / Géographie
+                          </label>
+                          <input
+                            type="text"
+                            value={editModalState.data.sponsoring?.targetAudience || '18-35 ans · Cameroun · Intérêts Télécoms & Tech'}
+                            onChange={e => setEditModalState(prev => ({
+                              ...prev,
+                              data: {
+                                ...prev.data,
+                                sponsoring: {
+                                  ...(prev.data.sponsoring || {}),
+                                  targetAudience: e.target.value
+                                }
+                              }
+                            }))}
+                            className="w-full bg-[#0d1017] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white focus:border-orange-500 outline-none"
+                            placeholder="Ex: 25-45 ans · Douala, Yaoundé · Intérêts business"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
