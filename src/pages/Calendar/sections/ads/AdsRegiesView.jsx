@@ -119,7 +119,7 @@ export default function AdsRegiesView({ onOpenApiModal, onQuickSync }) {
       )}
 
       {/* Grille des régies connectées */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 14 }}>
         {regies.map((regie) => (
           <div 
             key={regie.id}

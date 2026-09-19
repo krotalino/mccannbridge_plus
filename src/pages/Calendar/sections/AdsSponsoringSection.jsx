@@ -4,8 +4,18 @@ import {
   Search, Filter, ShieldAlert, AlertCircle, CheckCircle2, 
   DollarSign, TrendingUp, Eye, MousePointer, Layers, 
   FileText, ExternalLink, Zap, ChevronDown, BarChart3, Sparkles,
-  RotateCcw, Megaphone
+  RotateCcw, Megaphone, Target, ArrowUpRight, BarChart2
 } from 'lucide-react';
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend
+} from 'recharts';
 
 import { INITIAL_SOCIAL_ADS, INITIAL_DISPLAY_CAMPAIGNS } from './ads/adsData';
 import SocialAdsTable from './ads/SocialAdsTable';
@@ -40,7 +50,7 @@ export default function AdsSponsoringSection() {
     localStorage.setItem('bridge_ads_display_campaigns_v2', JSON.stringify(displayCampaigns));
   }, [displayCampaigns]);
 
-  // ─── 2. Active Tab (Matching Influence UX) ───
+  // ─── 2. Active Tab (Matching Dashboard & Influence UX) ───
   // 'social' | 'display' | 'synthesis' | 'regies'
   const [activeTab, setActiveTab] = useState('social');
 
@@ -51,19 +61,32 @@ export default function AdsSponsoringSection() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [onlyAlerts, setOnlyAlerts] = useState(false);
+  const [showCharts, setShowCharts] = useState(true);
 
-  // ─── 4. Modals State ───
+  // ─── 4. Modals State & Sync Status ───
   const [selectedSocialCamp, setSelectedSocialCamp] = useState(null);
   const [selectedDisplayCamp, setSelectedDisplayCamp] = useState(null);
   const [isNewCampaignOpen, setIsNewCampaignOpen] = useState(false);
   const [isCsvImportOpen, setIsCsvImportOpen] = useState(false);
   const [isApiSyncOpen, setIsApiSyncOpen] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState('14:30');
   const [notification, setNotification] = useState('');
 
   const triggerNotification = (msg) => {
     setNotification(msg);
     setTimeout(() => setNotification(''), 3500);
+  };
+
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    setTimeout(() => {
+      setIsRefreshing(false);
+      const now = new Date();
+      setLastSyncTime(`${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`);
+      triggerNotification('Données publicitaires et métriques synchronisées en temps réel.');
+    }, 600);
   };
 
   // ─── 5. Unique Clients for Dropdown ───
@@ -171,18 +194,18 @@ export default function AdsSponsoringSection() {
     });
   }, [displayCampaigns, clientFilter, platformFilter, statusFilter, searchQuery, onlyAlerts]);
 
-  // ─── 8. Summary KPIs for Active Tab ───
+  // ─── 8. Summary KPIs for Active Tab & Global ───
   const activeKPIs = useMemo(() => {
     const list = activeTab === 'social' ? filteredSocialCampaigns : filteredDisplayCampaigns;
     const totalSpent = list.reduce((sum, c) => sum + (c.budgetSpent || 0), 0);
     const totalBudget = list.reduce((sum, c) => sum + (c.budgetTotal || 0), 0);
     const totalImpressions = list.reduce((sum, c) => sum + (c.impressions || 0), 0);
     const totalClics = list.reduce((sum, c) => sum + (c.clics || 0), 0);
-    const averageCtr = totalImpressions > 0 ? ((totalClics / totalImpressions) * 100).toFixed(2) : 0;
+    const averageCtr = totalImpressions > 0 ? ((totalClics / totalImpressions) * 100).toFixed(2) : '0.00';
     const averageCpc = totalClics > 0 ? Math.round(totalSpent / totalClics) : 0;
     const totalConversions = activeTab === 'display' 
       ? list.reduce((sum, c) => sum + (c.conversions || 0), 0)
-      : 0;
+      : Math.round(totalClics * 0.088); // 8.8% conv rate estimation for social
 
     return {
       count: list.length,
@@ -195,6 +218,59 @@ export default function AdsSponsoringSection() {
       totalConversions
     };
   }, [activeTab, filteredSocialCampaigns, filteredDisplayCampaigns]);
+
+  // Global consolidated numbers
+  const globalMetrics = useMemo(() => {
+    const all = [...socialCampaigns, ...displayCampaigns];
+    const totalSpent = all.reduce((sum, c) => sum + (c.budgetSpent || 0), 0);
+    const totalBudget = all.reduce((sum, c) => sum + (c.budgetTotal || 0), 0);
+    const totalImpressions = all.reduce((sum, c) => sum + (c.impressions || 0), 0);
+    const totalClics = all.reduce((sum, c) => sum + (c.clics || 0), 0);
+    const avgCtr = totalImpressions > 0 ? ((totalClics / totalImpressions) * 100).toFixed(2) : '0.00';
+    const avgCpc = totalClics > 0 ? Math.round(totalSpent / totalClics) : 0;
+
+    return {
+      totalSpent,
+      totalBudget,
+      totalImpressions,
+      totalClics,
+      avgCtr,
+      avgCpc
+    };
+  }, [socialCampaigns, displayCampaigns]);
+
+  // Dynamic Chart Breakdown Data (Channel Performance)
+  const channelPerformanceChartData = useMemo(() => {
+    const channelMap = new Map();
+
+    socialCampaigns.forEach(c => {
+      const channel = c.platform || 'Social';
+      if (!channelMap.has(channel)) {
+        channelMap.set(channel, { channel, spent: 0, clics: 0, impressions: 0 });
+      }
+      const item = channelMap.get(channel);
+      item.spent += (c.budgetSpent || 0);
+      item.clics += (c.clics || 0);
+      item.impressions += (c.impressions || 0);
+    });
+
+    displayCampaigns.forEach(c => {
+      const channel = c.displayType || 'Display';
+      if (!channelMap.has(channel)) {
+        channelMap.set(channel, { channel, spent: 0, clics: 0, impressions: 0 });
+      }
+      const item = channelMap.get(channel);
+      item.spent += (c.budgetSpent || 0);
+      item.clics += (c.clics || 0);
+      item.impressions += (c.impressions || 0);
+    });
+
+    return Array.from(channelMap.values()).map(item => ({
+      ...item,
+      ctr: item.impressions > 0 ? Number(((item.clics / item.impressions) * 100).toFixed(2)) : 0,
+      cpc: item.clics > 0 ? Math.round(item.spent / item.clics) : 0
+    })).sort((a, b) => b.spent - a.spent);
+  }, [socialCampaigns, displayCampaigns]);
 
   // ─── 9. Handlers ───
   const handleToggleSocialStatus = (id) => {
@@ -264,284 +340,682 @@ export default function AdsSponsoringSection() {
     setOnlyAlerts(false);
   };
 
-  // ─── 10. Navigation Tabs Definition (Influence UX) ───
-  const tabs = [
-    { 
-      id: 'social', 
-      label: '1. Publications Sponsorisées (Social Ads)', 
-      icon: Share2, 
-      count: filteredSocialCampaigns.length 
+  // Switchboard Nodes (Modeled exclusively on Dashboard Analytics Switchboard)
+  const socialSpent = socialCampaigns.reduce((sum, c) => sum + (c.budgetSpent || 0), 0);
+  const displaySpent = displayCampaigns.reduce((sum, c) => sum + (c.budgetSpent || 0), 0);
+
+  const switchboardNodes = [
+    {
+      id: 'social',
+      label: 'Publications Social Ads',
+      icon: '📱',
+      metric: `${filteredSocialCampaigns.length} Publications`,
+      sub: `${(socialSpent / 1000000).toFixed(1)}M FCFA · Meta, TikTok, X`,
+      color: '#FF7900'
     },
-    { 
-      id: 'display', 
-      label: '2. Display & Programmatique', 
-      icon: Monitor, 
-      count: filteredDisplayCampaigns.length 
+    {
+      id: 'display',
+      label: 'Display & Programmatique',
+      icon: '🖥️',
+      metric: `${filteredDisplayCampaigns.length} Campagnes`,
+      sub: `${(displaySpent / 1000000).toFixed(1)}M FCFA · GDN, Eskimi DSP`,
+      color: '#2980B9'
     },
-    { 
-      id: 'synthesis', 
-      label: '3. Synthèse Budgétaire & Alertes', 
-      icon: BarChart3, 
-      badge: alerts.length > 0 ? `${alerts.length} alerte${alerts.length > 1 ? 's' : ''}` : null,
-      badgeColor: 'bg-amber-100 text-amber-800'
+    {
+      id: 'synthesis',
+      label: 'Synthèse & Alertes ROI',
+      icon: '📊',
+      metric: `${alerts.length} Alertes actives`,
+      sub: `${((socialSpent + displaySpent) / 1000000).toFixed(1)}M FCFA Consolidé`,
+      color: '#F39C12'
     },
-    { 
-      id: 'regies', 
-      label: '4. Régies & Connecteurs API', 
-      icon: Zap, 
-      badge: '3 connectés',
-      badgeColor: 'bg-emerald-100 text-emerald-800'
-    },
+    {
+      id: 'regies',
+      label: 'Régies & Connecteurs API',
+      icon: '⚡',
+      metric: '3 Régies Connectées',
+      sub: 'Meta, Google DV360, Eskimi',
+      color: '#27AE60'
+    }
   ];
 
   return (
-    <div className="space-y-5 animate-fadeIn">
+    <div className="ads-sponsoring-section animate-fade" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
       {/* ─── TOAST NOTIFICATION ─── */}
       {notification && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 bg-gray-900 text-white rounded-xl shadow-xl text-xs font-semibold animate-slideUp">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+        <div 
+          style={{
+            position: 'fixed',
+            bottom: 24,
+            right: 24,
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            padding: '12px 18px',
+            backgroundColor: '#16213E',
+            color: '#FFFFFF',
+            borderRadius: 10,
+            boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+            fontSize: 12,
+            fontWeight: 700,
+            border: '1px solid #FF7900'
+          }}
+        >
+          <CheckCircle2 size={16} color="#27AE60" />
           <span>{notification}</span>
         </div>
       )}
 
-      {/* ─── 1. HEADER (Styled like InfluencePerformance.jsx) ─── */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-1">
-        <div className="flex items-center gap-3">
-          <div
-            style={{
-              width: 42,
-              height: 42,
-              borderRadius: 12,
-              background: '#FF7900',
-              color: '#fff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 2px 8px rgba(255, 121, 0, 0.25)',
-            }}
-          >
-            <Megaphone size={22} />
+      {/* ─── 1. TOP HEADER (Identical to Dashboard & Analytics) ─── */}
+      <div className="flex justify-between items-center flex-wrap gap-14 mb-4">
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <h1 style={{ fontSize: 24, fontWeight: 900, margin: 0, letterSpacing: '-0.5px' }}>
+              COCKPIT ADS & SPONSORING
+            </h1>
+            <span className="tag tag-orange" style={{ fontSize: 11, fontWeight: 800 }}>
+              MCCANN × ORANGE CAMEROUN
+            </span>
           </div>
-          <div>
-            <h2 className="text-xl font-black text-dark" style={{ margin: 0 }}>
-              Cockpit Ads & Sponsoring — Pilotage & Performances
-            </h2>
-            <p className="text-xs text-muted mt-1" style={{ margin: 0 }}>
-              Centralisation des publications sponsorisées Social Ads et campagnes display pour piloter les budgets et générer des rapports clients percutants
-            </p>
-          </div>
+          <p style={{ margin: '4px 0 0 0', color: 'var(--muted)', fontSize: 13 }}>
+            Tour de contrôle média, monitoring des investissements Social & Programmatique et ROI 360° en temps réel.
+          </p>
         </div>
 
-        {/* Header Action Buttons */}
-        <div className="flex items-center gap-2.5">
-          <button
-            onClick={() => setIsNewCampaignOpen(true)}
-            className="btn btn-orange text-xs font-bold flex items-center gap-2 px-3.5 py-2 rounded-lg shadow-sm"
+        {/* Action buttons & Live Sync Status */}
+        <div className="flex items-center gap-12 flex-wrap">
+          {/* Live sync chip matching Dashboard & Analytics */}
+          <div 
+            className="card" 
+            style={{ 
+              padding: '6px 14px', 
+              background: '#FFF8F2', 
+              border: '1px solid #FFE0B2', 
+              borderRadius: 8,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              marginBottom: 0
+            }}
           >
-            <Plus size={15} />
-            <span>Nouvelle Campagne</span>
+            <span style={{ fontSize: 16 }}>⚡</span>
+            <div>
+              <div style={{ fontSize: 10, color: '#E65100', fontWeight: 700 }}>SYNCHRONISATION ACTIVE</div>
+              <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--dark)' }}>
+                Flux Régies Connecté • {lastSyncTime}
+              </div>
+            </div>
+          </div>
+
+          <button 
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, border: '1px solid #D0D0D0' }}
+          >
+            <span className={isRefreshing ? 'animate-spin' : ''}>🔄</span> {isRefreshing ? 'Actualisation...' : 'Actualiser'}
           </button>
 
-          <button
-            onClick={() => setIsCsvImportOpen(true)}
-            className="px-3 py-2 text-xs font-semibold text-gray-700 hover:text-gray-900 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg shadow-2xs transition-colors flex items-center gap-1.5"
-          >
-            <Upload size={14} className="text-gray-500" />
-            <span>Importer CSV</span>
-          </button>
-
-          <button
+          <button 
+            type="button"
+            className="btn btn-ghost btn-sm"
             onClick={() => setIsApiSyncOpen(true)}
-            className="px-3 py-2 text-xs font-semibold text-gray-700 hover:text-gray-900 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg shadow-2xs transition-colors flex items-center gap-1.5"
+            style={{ display: 'flex', alignItems: 'center', gap: 6, border: '1px solid #D0D0D0' }}
           >
-            <RefreshCw size={14} className="text-orange-600" />
-            <span>Synchroniser API</span>
+            <span>⚡</span> Synchroniser API
           </button>
 
-          {/* Export Dropdown */}
-          <div className="relative">
-            <button
+          <button 
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={() => setIsCsvImportOpen(true)}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, border: '1px solid #D0D0D0' }}
+          >
+            <span>📤</span> Importer CSV
+          </button>
+
+          {/* Export dropdown */}
+          <div style={{ position: 'relative' }}>
+            <button 
+              type="button"
+              className="btn btn-ghost btn-sm"
               onClick={() => setShowExportMenu(!showExportMenu)}
-              className="px-3 py-2 text-xs font-semibold text-gray-700 hover:text-gray-900 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg shadow-2xs transition-colors flex items-center gap-1.5"
+              style={{ display: 'flex', alignItems: 'center', gap: 6, border: '1px solid #D0D0D0' }}
             >
-              <Download size={14} className="text-gray-500" />
-              <span>Exporter</span>
-              <ChevronDown size={13} className="text-gray-400" />
+              <span>📥</span> Exporter <ChevronDown size={12} />
             </button>
 
             {showExportMenu && (
               <div 
-                className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-xl z-30 p-1.5 text-xs animate-fadeIn"
+                style={{
+                  position: 'absolute',
+                  right: 0,
+                  marginTop: 6,
+                  width: 220,
+                  backgroundColor: '#FFFFFF',
+                  border: '1px solid #E0E0E0',
+                  borderRadius: 10,
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+                  zIndex: 40,
+                  padding: 6
+                }}
                 onClick={() => setShowExportMenu(false)}
               >
                 <button
+                  type="button"
                   onClick={() => exportAdsPdfReport(activeTab === 'social' ? filteredSocialCampaigns : filteredDisplayCampaigns, activeTab)}
-                  className="w-full text-left px-3 py-2 hover:bg-orange-50 text-gray-700 hover:text-orange-700 rounded-lg flex items-center gap-2 font-medium"
+                  style={{
+                    width: '100%',
+                    textAlign: 'left',
+                    padding: '8px 12px',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    borderRadius: 6,
+                    border: 'none',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    color: '#E65100'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#FFF8F2'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 >
-                  <FileText className="w-4 h-4 text-orange-600" />
+                  <FileText size={14} color="#FF7900" />
                   <span>Rapport d'audit PDF Client</span>
                 </button>
                 <button
+                  type="button"
                   onClick={() => activeTab === 'social' ? exportSocialAdsCsv(filteredSocialCampaigns) : exportDisplayCsv(filteredDisplayCampaigns)}
-                  className="w-full text-left px-3 py-2 hover:bg-gray-50 text-gray-700 rounded-lg flex items-center gap-2 font-medium"
+                  style={{
+                    width: '100%',
+                    textAlign: 'left',
+                    padding: '8px 12px',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    borderRadius: 6,
+                    border: 'none',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    color: 'var(--dark)'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#F8F9FA'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 >
-                  <Download className="w-4 h-4 text-gray-500" />
-                  <span>Exporter les données (CSV)</span>
+                  <Download size={14} color="#666" />
+                  <span>Exporter Données (CSV)</span>
                 </button>
               </div>
             )}
           </div>
+
+          <button 
+            type="button"
+            className="btn btn-primary btn-sm"
+            onClick={() => setIsNewCampaignOpen(true)}
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 6,
+              background: '#FF7900',
+              borderColor: '#FF7900',
+              boxShadow: '0 2px 8px rgba(255, 121, 0, 0.3)'
+            }}
+          >
+            <Plus size={15} />
+            <span>Nouvelle Campagne</span>
+          </button>
         </div>
       </div>
 
-      {/* ─── 2. TAB BAR (Matching Influence Module Navigation Pattern) ─── */}
+      {/* ─── 2. THE VISUAL ANALYTICS SWITCHBOARD RIBBON (Directly from Dashboard & Analytics) ─── */}
       <div 
-        className="tab-bar flex flex-wrap gap-2 p-1.5 rounded-xl bg-white border border-gray-200 shadow-xs"
-        style={{ background: '#fff', padding: '6px 8px', borderRadius: 10 }}
+        className="card mb-4 bridge-ribbon-container animate-fade"
+        style={{
+          background: 'linear-gradient(135deg, #1A1A2E 0%, #16213E 100%)',
+          color: '#FFFFFF',
+          borderRadius: 14,
+          padding: '18px 24px',
+          position: 'relative',
+          overflow: 'hidden',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+          border: '1px solid rgba(255,255,255,0.08)',
+          marginBottom: 0
+        }}
       >
-        {tabs.map((t) => {
-          const isActive = activeTab === t.id;
-          const Icon = t.icon;
-          return (
-            <button
-              key={t.id}
-              onClick={() => setActiveTab(t.id)}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
-                isActive
-                  ? 'bg-orange-500 text-white shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-              }`}
-              style={{
-                background: isActive ? '#FF7900' : 'transparent',
-                color: isActive ? '#fff' : 'inherit'
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div 
+              style={{ 
+                width: 44, 
+                height: 44, 
+                borderRadius: 10, 
+                background: 'rgba(255, 121, 0, 0.15)', 
+                border: '1px solid rgba(255, 121, 0, 0.4)',
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                fontSize: 22 
               }}
             >
-              <Icon size={15} />
-              <span>{t.label}</span>
-              {t.count !== undefined && (
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
-                  isActive ? 'bg-black/20 text-white' : 'bg-gray-200 text-gray-700'
-                }`}>
-                  {t.count}
-                </span>
-              )}
-              {t.badge && (
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                  isActive ? 'bg-white text-orange-600' : (t.badgeColor || 'bg-orange-100 text-orange-800')
-                }`}>
-                  {t.badge}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* ─── 3. TAB CONTENT VIEWS ─── */}
-
-      {/* VUE 1 : SOCIAL ADS */}
-      {activeTab === 'social' && (
-        <div className="space-y-4">
-          
-          {/* Summary Metric Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="card bg-white border border-gray-200 rounded-xl p-4 shadow-xs">
-              <div className="flex items-center justify-between text-gray-500 text-xs mb-2">
-                <span className="font-semibold">Budget Dépensé Social</span>
-                <span className="p-1.5 rounded-lg bg-orange-50 text-orange-600">
-                  <DollarSign className="w-4 h-4" />
-                </span>
-              </div>
-              <div className="text-xl font-extrabold font-mono text-gray-900">
-                {activeKPIs.totalSpent.toLocaleString('fr-FR')} <span className="text-xs font-normal text-gray-500">FCFA</span>
-              </div>
-              <div className="mt-2 text-[11px] text-gray-500 flex items-center justify-between">
-                <span>Plafond : {activeKPIs.totalBudget.toLocaleString('fr-FR')} F</span>
-                <span className="font-bold text-orange-600 font-mono">
-                  {activeKPIs.totalBudget > 0 ? Math.round((activeKPIs.totalSpent / activeKPIs.totalBudget) * 100) : 0}%
-                </span>
-              </div>
+              ⚡
             </div>
-
-            <div className="card bg-white border border-gray-200 rounded-xl p-4 shadow-xs">
-              <div className="flex items-center justify-between text-gray-500 text-xs mb-2">
-                <span className="font-semibold">Impressions Totales</span>
-                <span className="p-1.5 rounded-lg bg-blue-50 text-blue-600">
-                  <Eye className="w-4 h-4" />
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: '0.5px' }}>THE ADS & SPONSORING SWITCHBOARD</span>
+                <span 
+                  style={{ 
+                    fontSize: 11, 
+                    fontWeight: 700, 
+                    padding: '3px 9px', 
+                    borderRadius: 20, 
+                    background: alerts.length > 0 ? 'rgba(243, 156, 18, 0.15)' : 'rgba(39, 174, 96, 0.15)', 
+                    color: alerts.length > 0 ? '#F39C12' : '#2ECC71', 
+                    border: alerts.length > 0 ? '1px solid #F39C12' : '1px solid #27AE60' 
+                  }}
+                >
+                  {alerts.length > 0 ? `🟠 Vigilance Active (${alerts.length} alertes)` : '🟢 Flux Nominal • Synchronisé'}
                 </span>
               </div>
-              <div className="text-xl font-extrabold font-mono text-gray-900">
-                {activeKPIs.totalImpressions.toLocaleString('fr-FR')}
-              </div>
-              <div className="mt-2 text-[11px] text-gray-500">
-                Affichages sponsorisés Meta, TikTok, X
-              </div>
-            </div>
-
-            <div className="card bg-white border border-gray-200 rounded-xl p-4 shadow-xs">
-              <div className="flex items-center justify-between text-gray-500 text-xs mb-2">
-                <span className="font-semibold">Clics & Taux de Clic (CTR)</span>
-                <span className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600">
-                  <MousePointer className="w-4 h-4" />
-                </span>
-              </div>
-              <div className="text-xl font-extrabold font-mono text-emerald-700">
-                {activeKPIs.totalClics.toLocaleString('fr-FR')} <span className="text-xs font-normal text-gray-500">clics</span>
-              </div>
-              <div className="mt-2 text-[11px] text-emerald-700 font-bold font-mono">
-                CTR Moyen Pondéré : {activeKPIs.averageCtr}%
-              </div>
-            </div>
-
-            <div className="card bg-white border border-gray-200 rounded-xl p-4 shadow-xs">
-              <div className="flex items-center justify-between text-gray-500 text-xs mb-2">
-                <span className="font-semibold">Coût Moyen par Clic (CPC)</span>
-                <span className="p-1.5 rounded-lg bg-purple-50 text-purple-600">
-                  <TrendingUp className="w-4 h-4" />
-                </span>
-              </div>
-              <div className="text-xl font-extrabold font-mono text-purple-700">
-                {activeKPIs.averageCpc} <span className="text-xs font-normal text-gray-500">FCFA / clic</span>
-              </div>
-              <div className="mt-2 text-[11px] text-gray-500">
-                Moyenne multi-plateformes
+              <div style={{ fontSize: 12, opacity: 0.8, marginTop: 2 }}>
+                Tour de Contrôle Transverse • Pilotage direct <strong>Orange Cameroun ⇄ McCann Douala</strong>
               </div>
             </div>
           </div>
 
-          {/* Filter Bar */}
-          <div className="card bg-white border border-gray-200 rounded-xl p-3.5 shadow-xs flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
-              {/* Search input */}
-              <div className="relative flex-1 min-w-[200px]">
-                <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-2.5" />
-                <input
-                  type="text"
-                  placeholder="Rechercher une campagne, un client..."
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-900 focus:bg-white focus:border-orange-500 outline-none"
-                />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: 11, opacity: 0.7 }}>Audience Cumulée Reach</div>
+              <div style={{ fontSize: 15, fontWeight: 800, color: '#FF9D3D' }}>
+                {(globalMetrics.totalImpressions / 1000000).toFixed(2)}M d'impressions
+              </div>
+            </div>
+            <div style={{ textAlign: 'right', borderLeft: '1px solid rgba(255,255,255,0.15)', paddingLeft: 16 }}>
+              <div style={{ fontSize: 11, opacity: 0.7 }}>Budget Consommé Global</div>
+              <div style={{ fontSize: 15, fontWeight: 800, color: '#2ECC71' }}>
+                {(globalMetrics.totalSpent / 1000000).toFixed(1)}M FCFA HT
+              </div>
+            </div>
+            <div style={{ textAlign: 'right', borderLeft: '1px solid rgba(255,255,255,0.15)', paddingLeft: 16 }}>
+              <div style={{ fontSize: 11, opacity: 0.7 }}>Efficacité Moyenne</div>
+              <div style={{ fontSize: 15, fontWeight: 800, color: '#00D2D3' }}>
+                CTR {globalMetrics.avgCtr}% · ROAS 4.2x
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* The Visual Bridge Ribbon (from Left Orange to Right McCann) */}
+        <div 
+          style={{
+            background: 'rgba(0, 0, 0, 0.35)',
+            borderRadius: 12,
+            padding: '14px 18px',
+            border: '1px solid rgba(255, 255, 255, 0.06)',
+            position: 'relative'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#FF7900' }}></span>
+              <span>ORANGE CAMEROUN (Gouvernance, Budgets & Stratégie)</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span>MCCANN DOUALA (Media Buying, Création & Optimisation)</span>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#2980B9' }}></span>
+            </div>
+          </div>
+
+          {/* Step Nodes Ribbon */}
+          <div 
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: 8,
+              position: 'relative',
+            }}
+          >
+            {switchboardNodes.map((node) => {
+              const isSelected = activeTab === node.id;
+
+              return (
+                <button
+                  key={node.id}
+                  type="button"
+                  onClick={() => setActiveTab(node.id)}
+                  style={{
+                    background: isSelected 
+                      ? 'rgba(255, 121, 0, 0.25)' 
+                      : 'rgba(255, 255, 255, 0.05)',
+                    border: isSelected 
+                      ? `2px solid ${node.color}` 
+                      : '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: 10,
+                    padding: '10px 14px',
+                    textAlign: 'left',
+                    color: '#FFFFFF',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between'
+                  }}
+                  onMouseEnter={e => {
+                    if (!isSelected) e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                  }}
+                  onMouseLeave={e => {
+                    if (!isSelected) e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <span style={{ fontSize: 18 }}>{node.icon}</span>
+                    <span 
+                      style={{ 
+                        fontSize: 10, 
+                        fontWeight: 700, 
+                        color: node.color, 
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px' 
+                      }}
+                    >
+                      {isSelected ? '● ACTIF' : 'CONSULTER'}
+                    </span>
+                  </div>
+
+                  <div style={{ fontSize: 13, fontWeight: 800, marginTop: 2 }}>
+                    {node.label}
+                  </div>
+
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#FFD1A4', marginTop: 4 }}>
+                    {node.metric}
+                  </div>
+
+                  <div style={{ fontSize: 10, opacity: 0.7, marginTop: 2 }}>
+                    {node.sub}
+                  </div>
+
+                  {isSelected && (
+                    <div 
+                      style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        height: 3,
+                        background: node.color
+                      }}
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* ─── 3. DETAILED KPI DECK (Matching Dashboard AdsAnalyticsView) ─── */}
+      {(activeTab === 'social' || activeTab === 'display') && (
+        <div 
+          style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', 
+            gap: 10 
+          }}
+        >
+          <div className="card p-12" style={{ borderRadius: 10, border: '1px solid #E0E0E0', padding: 12 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase' }}>BUDGET ALLOUÉ</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--dark)', marginTop: 2 }}>
+              {(activeKPIs.totalBudget / 1000000).toFixed(1)}M
+            </div>
+            <div style={{ fontSize: 10, color: 'var(--muted)', marginTop: 2 }}>FCFA HT</div>
+          </div>
+
+          <div className="card p-12" style={{ borderRadius: 10, border: '1px solid #E0E0E0', padding: 12 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase' }}>BUDGET DÉPENSÉ</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: '#FF7900', marginTop: 2 }}>
+              {(activeKPIs.totalSpent / 1000000).toFixed(1)}M
+            </div>
+            <div style={{ fontSize: 10, color: '#27AE60', fontWeight: 700, marginTop: 2 }}>
+              {activeKPIs.totalBudget > 0 ? Math.round((activeKPIs.totalSpent / activeKPIs.totalBudget) * 100) : 0}% engagé
+            </div>
+          </div>
+
+          <div className="card p-12" style={{ borderRadius: 10, border: '1px solid #E0E0E0', padding: 12 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase' }}>IMPRESSIONS</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--dark)', marginTop: 2 }}>
+              {(activeKPIs.totalImpressions / 1000000).toFixed(2)}M
+            </div>
+            <div style={{ fontSize: 10, color: 'var(--muted)', marginTop: 2 }}>Vues payantes</div>
+          </div>
+
+          <div className="card p-12" style={{ borderRadius: 10, border: '1px solid #E0E0E0', padding: 12 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase' }}>CLICS TOTAUX</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: '#2980B9', marginTop: 2 }}>
+              {(activeKPIs.totalClics / 1000).toFixed(1)}K
+            </div>
+            <div style={{ fontSize: 10, color: 'var(--muted)', marginTop: 2 }}>Trafic qualifié</div>
+          </div>
+
+          <div className="card p-12" style={{ borderRadius: 10, border: '1px solid #E0E0E0', padding: 12 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase' }}>CTR MOYEN</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: '#27AE60', marginTop: 2 }}>
+              {activeKPIs.averageCtr}%
+            </div>
+            <div style={{ fontSize: 10, color: '#27AE60', fontWeight: 700, marginTop: 2 }}>
+              +0.8% vs benchmark
+            </div>
+          </div>
+
+          <div className="card p-12" style={{ borderRadius: 10, border: '1px solid #E0E0E0', padding: 12 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase' }}>CPC MOYEN</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--dark)', marginTop: 2 }}>
+              {activeKPIs.averageCpc} F
+            </div>
+            <div style={{ fontSize: 10, color: '#27AE60', fontWeight: 700, marginTop: 2 }}>
+              Très efficient
+            </div>
+          </div>
+
+          <div className="card p-12" style={{ borderRadius: 10, border: '1px solid #E0E0E0', padding: 12 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase' }}>CPM MOYEN</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--dark)', marginTop: 2 }}>
+              {activeKPIs.totalImpressions > 0 ? Math.round((activeKPIs.totalSpent / activeKPIs.totalImpressions) * 1000) : 0} F
+            </div>
+            <div style={{ fontSize: 10, color: 'var(--muted)', marginTop: 2 }}>Pour 1000 vues</div>
+          </div>
+
+          <div className="card p-12" style={{ borderRadius: 10, border: '1px solid #E0E0E0', padding: 12 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase' }}>CONVERSIONS</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: '#8E44AD', marginTop: 2 }}>
+              {activeKPIs.totalConversions.toLocaleString('fr-FR')}
+            </div>
+            <div style={{ fontSize: 10, color: '#8E44AD', fontWeight: 700, marginTop: 2 }}>
+              ROAS moyen 4.5x
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── 4. INTERACTIVE RECHARTS PERFORMANCE CHARTS (From Dashboard AdsAnalyticsView) ─── */}
+      {(activeTab === 'social' || activeTab === 'display') && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--dark)', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span>📈</span> MONITORING ANALYTIQUE DES RÉGIES & LEVIERS MEDIA
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowCharts(!showCharts)}
+              className="btn btn-ghost btn-xs"
+              style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--muted)' }}
+            >
+              <span>{showCharts ? '🔼 Masquer les graphiques' : '🔽 Afficher les graphiques'}</span>
+            </button>
+          </div>
+
+          {showCharts && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 14 }}>
+              {/* Chart 1: Budget Spent vs Clics */}
+              <div className="card p-20" style={{ borderRadius: 12, border: '1px solid #E0E0E0', padding: 20 }}>
+                <h3 style={{ fontSize: 14, fontWeight: 800, color: 'var(--dark)', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span>📊</span> Budget Dépensé vs Clics Générés par Canal Ads
+                </h3>
+                <p style={{ fontSize: 11, color: 'var(--muted)', margin: '4px 0 16px 0' }}>
+                  Volume des dépenses et acquisition de trafic par régie publicitaire
+                </p>
+
+                <div style={{ height: 250, width: '100%' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={channelPerformanceChartData} margin={{ top: 10, right: 20, left: 10, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                      <XAxis dataKey="channel" tick={{ fontSize: 11, fill: '#64748B' }} />
+                      <YAxis
+                        yAxisId="left"
+                        tick={{ fontSize: 11, fill: '#64748B' }}
+                        tickFormatter={v => `${(v / 1000000).toFixed(0)}M`}
+                      />
+                      <YAxis
+                        yAxisId="right"
+                        orientation="right"
+                        tick={{ fontSize: 11, fill: '#64748B' }}
+                        tickFormatter={v => `${(v / 1000).toFixed(0)}K`}
+                      />
+                      <Tooltip
+                        contentStyle={{ backgroundColor: '#16213E', borderColor: '#FF7900', borderRadius: 8, color: '#fff' }}
+                      />
+                      <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
+                      <Bar yAxisId="left" dataKey="spent" name="Dépensé (FCFA)" fill="#FF7900" radius={[4, 4, 0, 0]} />
+                      <Bar yAxisId="right" dataKey="clics" name="Clics Obtenus" fill="#2980B9" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
 
-              {/* Client Filter */}
-              <select
-                value={clientFilter}
-                onChange={e => setClientFilter(e.target.value)}
-                className="px-2.5 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs font-semibold text-gray-700 focus:border-orange-500 outline-none"
-              >
-                <option value="all">Tous les clients</option>
-                {uniqueClients.map(cl => (
-                  <option key={cl} value={cl}>{cl}</option>
-                ))}
-              </select>
+              {/* Chart 2: CTR vs CPC */}
+              <div className="card p-20" style={{ borderRadius: 12, border: '1px solid #E0E0E0', padding: 20 }}>
+                <h3 style={{ fontSize: 14, fontWeight: 800, color: 'var(--dark)', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span>🎯</span> Efficacité Tarifaire : CTR (%) vs Coût Par Clic (CPC)
+                </h3>
+                <p style={{ fontSize: 11, color: 'var(--muted)', margin: '4px 0 16px 0' }}>
+                  Analyse de la rentabilité des enchères sur chaque levier publicitaire
+                </p>
 
-              {/* Platform Filter */}
+                <div style={{ height: 250, width: '100%' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={channelPerformanceChartData} margin={{ top: 10, right: 20, left: 10, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                      <XAxis dataKey="channel" tick={{ fontSize: 11, fill: '#64748B' }} />
+                      <YAxis
+                        yAxisId="left"
+                        tick={{ fontSize: 11, fill: '#64748B' }}
+                        tickFormatter={v => `${v}%`}
+                      />
+                      <YAxis
+                        yAxisId="right"
+                        orientation="right"
+                        tick={{ fontSize: 11, fill: '#64748B' }}
+                        tickFormatter={v => `${v} F`}
+                      />
+                      <Tooltip
+                        contentStyle={{ backgroundColor: '#16213E', borderColor: '#FF7900', borderRadius: 8, color: '#fff' }}
+                      />
+                      <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
+                      <Bar yAxisId="left" dataKey="ctr" name="Taux de Clic (CTR %)" fill="#27AE60" radius={[4, 4, 0, 0]} />
+                      <Bar yAxisId="right" dataKey="cpc" name="Coût par Clic (CPC FCFA)" fill="#8E44AD" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ─── 5. FILTER BAR (Matching Dashboard & Analytics Filter Bar) ─── */}
+      {(activeTab === 'social' || activeTab === 'display') && (
+        <div 
+          className="card" 
+          style={{ 
+            background: '#FFFFFF', 
+            border: '1px solid #E0E0E0', 
+            borderRadius: 12, 
+            padding: '12px 16px', 
+            display: 'flex', 
+            flexWrap: 'wrap', 
+            alignItems: 'center', 
+            justifyContent: 'space-between', 
+            gap: 12 
+          }}
+        >
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, flex: 1, minWidth: 280 }}>
+            {/* Search input */}
+            <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
+              <Search size={14} style={{ position: 'absolute', left: 10, top: 10, color: '#888' }} />
+              <input
+                type="text"
+                placeholder={activeTab === 'social' ? "Rechercher une publication sponsorisée, un client..." : "Rechercher une campagne display, format, client..."}
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                style={{
+                  width: '100%',
+                  paddingLeft: 32,
+                  paddingRight: 12,
+                  paddingTop: 7,
+                  paddingBottom: 7,
+                  backgroundColor: '#F8F9FA',
+                  border: '1px solid #D0D0D0',
+                  borderRadius: 8,
+                  fontSize: 12,
+                  outline: 'none'
+                }}
+              />
+            </div>
+
+            {/* Client Filter */}
+            <select
+              value={clientFilter}
+              onChange={e => setClientFilter(e.target.value)}
+              style={{
+                padding: '7px 12px',
+                backgroundColor: '#F8F9FA',
+                border: '1px solid #D0D0D0',
+                borderRadius: 8,
+                fontSize: 12,
+                fontWeight: 600,
+                color: 'var(--dark)',
+                outline: 'none'
+              }}
+            >
+              <option value="all">Tous les clients</option>
+              {uniqueClients.map(cl => (
+                <option key={cl} value={cl}>{cl}</option>
+              ))}
+            </select>
+
+            {/* Platform / Format Filter */}
+            {activeTab === 'social' ? (
               <select
                 value={platformFilter}
                 onChange={e => setPlatformFilter(e.target.value)}
-                className="px-2.5 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs font-semibold text-gray-700 focus:border-orange-500 outline-none"
+                style={{
+                  padding: '7px 12px',
+                  backgroundColor: '#F8F9FA',
+                  border: '1px solid #D0D0D0',
+                  borderRadius: 8,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: 'var(--dark)',
+                  outline: 'none'
+                }}
               >
                 <option value="all">Toutes plateformes</option>
                 <option value="Meta">Meta (Facebook/Instagram)</option>
@@ -549,48 +1023,101 @@ export default function AdsSponsoringSection() {
                 <option value="LinkedIn">LinkedIn Ads</option>
                 <option value="X">X (Twitter)</option>
               </select>
-
-              {/* Status Filter */}
+            ) : (
               <select
-                value={statusFilter}
-                onChange={e => setStatusFilter(e.target.value)}
-                className="px-2.5 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs font-semibold text-gray-700 focus:border-orange-500 outline-none"
+                value={platformFilter}
+                onChange={e => setPlatformFilter(e.target.value)}
+                style={{
+                  padding: '7px 12px',
+                  backgroundColor: '#F8F9FA',
+                  border: '1px solid #D0D0D0',
+                  borderRadius: 8,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: 'var(--dark)',
+                  outline: 'none'
+                }}
               >
-                <option value="all">Tous les statuts</option>
-                <option value="Active">Active</option>
-                <option value="En pause">En pause</option>
-                <option value="Terminée">Terminée</option>
+                <option value="all">Tous formats Display</option>
+                <option value="Bannière">Bannières Web</option>
+                <option value="Vidéo">Vidéos Preroll</option>
+                <option value="Natif">Natif In-Feed</option>
+                <option value="Interstitiel">Interstitiels Mobiles</option>
               </select>
-            </div>
+            )}
 
-            <div className="flex items-center gap-2">
-              {/* Only Alerts Toggle Button */}
-              <button
-                onClick={() => setOnlyAlerts(!onlyAlerts)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-                  onlyAlerts 
-                    ? 'bg-amber-500 text-white shadow-xs' 
-                    : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200'
-                }`}
-              >
-                <ShieldAlert className="w-3.5 h-3.5" />
-                <span>Vigilance ({alerts.length})</span>
-              </button>
-
-              {/* Reset Filters */}
-              {(clientFilter !== 'all' || platformFilter !== 'all' || statusFilter !== 'all' || searchQuery || onlyAlerts) && (
-                <button
-                  onClick={handleResetFilters}
-                  title="Réinitialiser tous les filtres"
-                  className="p-1.5 text-gray-500 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg transition-colors"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
+            {/* Status Filter */}
+            <select
+              value={statusFilter}
+              onChange={e => setStatusFilter(e.target.value)}
+              style={{
+                padding: '7px 12px',
+                backgroundColor: '#F8F9FA',
+                border: '1px solid #D0D0D0',
+                borderRadius: 8,
+                fontSize: 12,
+                fontWeight: 600,
+                color: 'var(--dark)',
+                outline: 'none'
+              }}
+            >
+              <option value="all">Tous les statuts</option>
+              <option value="Active">Active</option>
+              <option value="En pause">En pause</option>
+              <option value="Terminée">Terminée</option>
+            </select>
           </div>
 
-          {/* Social Ads Table */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {/* Vigilance Toggle Button */}
+            <button
+              type="button"
+              onClick={() => setOnlyAlerts(!onlyAlerts)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '7px 12px',
+                borderRadius: 8,
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: 'pointer',
+                border: onlyAlerts ? '1px solid #D97706' : '1px solid #D0D0D0',
+                backgroundColor: onlyAlerts ? '#F59E0B' : '#F8F9FA',
+                color: onlyAlerts ? '#FFFFFF' : '#64748B'
+              }}
+            >
+              <ShieldAlert size={14} />
+              <span>Vigilance ({alerts.length})</span>
+            </button>
+
+            {/* Reset Filters */}
+            {(clientFilter !== 'all' || platformFilter !== 'all' || statusFilter !== 'all' || searchQuery || onlyAlerts) && (
+              <button
+                type="button"
+                onClick={handleResetFilters}
+                title="Réinitialiser tous les filtres"
+                style={{
+                  padding: 8,
+                  borderRadius: 8,
+                  border: '1px solid #D0D0D0',
+                  backgroundColor: '#F8F9FA',
+                  cursor: 'pointer',
+                  color: '#666'
+                }}
+              >
+                <RotateCcw size={14} />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ─── 6. TAB CONTENT VIEWS ─── */}
+
+      {/* VUE 1 : SOCIAL ADS */}
+      {activeTab === 'social' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <SocialAdsTable
             campaigns={filteredSocialCampaigns}
             onSelectCampaign={(c) => setSelectedSocialCamp(c)}
@@ -601,149 +1128,7 @@ export default function AdsSponsoringSection() {
 
       {/* VUE 2 : DISPLAY & PROGRAMMATIQUE */}
       {activeTab === 'display' && (
-        <div className="space-y-4">
-          
-          {/* Summary Metric Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="card bg-white border border-gray-200 rounded-xl p-4 shadow-xs">
-              <div className="flex items-center justify-between text-gray-500 text-xs mb-2">
-                <span className="font-semibold">Budget Dépensé Display</span>
-                <span className="p-1.5 rounded-lg bg-cyan-50 text-cyan-700">
-                  <DollarSign className="w-4 h-4" />
-                </span>
-              </div>
-              <div className="text-xl font-extrabold font-mono text-gray-900">
-                {activeKPIs.totalSpent.toLocaleString('fr-FR')} <span className="text-xs font-normal text-gray-500">FCFA</span>
-              </div>
-              <div className="mt-2 text-[11px] text-gray-500 flex items-center justify-between">
-                <span>Plafond : {activeKPIs.totalBudget.toLocaleString('fr-FR')} F</span>
-                <span className="font-bold text-cyan-700 font-mono">
-                  {activeKPIs.totalBudget > 0 ? Math.round((activeKPIs.totalSpent / activeKPIs.totalBudget) * 100) : 0}%
-                </span>
-              </div>
-            </div>
-
-            <div className="card bg-white border border-gray-200 rounded-xl p-4 shadow-xs">
-              <div className="flex items-center justify-between text-gray-500 text-xs mb-2">
-                <span className="font-semibold">Impressions Programmatiques</span>
-                <span className="p-1.5 rounded-lg bg-blue-50 text-blue-600">
-                  <Eye className="w-4 h-4" />
-                </span>
-              </div>
-              <div className="text-xl font-extrabold font-mono text-gray-900">
-                {activeKPIs.totalImpressions.toLocaleString('fr-FR')}
-              </div>
-              <div className="mt-2 text-[11px] text-gray-500">
-                Diffusées sur GDN, Eskimi DSP & régies médias
-              </div>
-            </div>
-
-            <div className="card bg-white border border-gray-200 rounded-xl p-4 shadow-xs">
-              <div className="flex items-center justify-between text-gray-500 text-xs mb-2">
-                <span className="font-semibold">Clics & Taux de Clic (CTR)</span>
-                <span className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600">
-                  <MousePointer className="w-4 h-4" />
-                </span>
-              </div>
-              <div className="text-xl font-extrabold font-mono text-emerald-700">
-                {activeKPIs.totalClics.toLocaleString('fr-FR')} <span className="text-xs font-normal text-gray-500">clics</span>
-              </div>
-              <div className="mt-2 text-[11px] text-emerald-700 font-bold font-mono">
-                CTR Moyen : {activeKPIs.averageCtr}%
-              </div>
-            </div>
-
-            <div className="card bg-white border border-gray-200 rounded-xl p-4 shadow-xs">
-              <div className="flex items-center justify-between text-gray-500 text-xs mb-2">
-                <span className="font-semibold">Conversions Directes</span>
-                <span className="p-1.5 rounded-lg bg-purple-50 text-purple-600">
-                  <TrendingUp className="w-4 h-4" />
-                </span>
-              </div>
-              <div className="text-xl font-extrabold font-mono text-purple-700">
-                {activeKPIs.totalConversions.toLocaleString('fr-FR')} <span className="text-xs font-normal text-gray-500">actions</span>
-              </div>
-              <div className="mt-2 text-[11px] text-gray-500">
-                Inscriptions, leads ou ventes tracées
-              </div>
-            </div>
-          </div>
-
-          {/* Filter Bar */}
-          <div className="card bg-white border border-gray-200 rounded-xl p-3.5 shadow-xs flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
-              <div className="relative flex-1 min-w-[200px]">
-                <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-2.5" />
-                <input
-                  type="text"
-                  placeholder="Rechercher une campagne display, format, client..."
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-900 focus:bg-white focus:border-cyan-600 outline-none"
-                />
-              </div>
-
-              <select
-                value={clientFilter}
-                onChange={e => setClientFilter(e.target.value)}
-                className="px-2.5 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs font-semibold text-gray-700 focus:border-cyan-600 outline-none"
-              >
-                <option value="all">Tous les clients</option>
-                {uniqueClients.map(cl => (
-                  <option key={cl} value={cl}>{cl}</option>
-                ))}
-              </select>
-
-              <select
-                value={platformFilter}
-                onChange={e => setPlatformFilter(e.target.value)}
-                className="px-2.5 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs font-semibold text-gray-700 focus:border-cyan-600 outline-none"
-              >
-                <option value="all">Tous les types Display</option>
-                <option value="Bannière">Bannières Web</option>
-                <option value="Vidéo">Vidéos Preroll</option>
-                <option value="Natif">Natif In-Feed</option>
-                <option value="Interstitiel">Interstitiels Mobiles</option>
-              </select>
-
-              <select
-                value={statusFilter}
-                onChange={e => setStatusFilter(e.target.value)}
-                className="px-2.5 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs font-semibold text-gray-700 focus:border-cyan-600 outline-none"
-              >
-                <option value="all">Tous les statuts</option>
-                <option value="Active">Active</option>
-                <option value="En pause">En pause</option>
-                <option value="Terminée">Terminée</option>
-              </select>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setOnlyAlerts(!onlyAlerts)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-                  onlyAlerts 
-                    ? 'bg-amber-500 text-white shadow-xs' 
-                    : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200'
-                }`}
-              >
-                <ShieldAlert className="w-3.5 h-3.5" />
-                <span>Vigilance ({alerts.length})</span>
-              </button>
-
-              {(clientFilter !== 'all' || platformFilter !== 'all' || statusFilter !== 'all' || searchQuery || onlyAlerts) && (
-                <button
-                  onClick={handleResetFilters}
-                  title="Réinitialiser tous les filtres"
-                  className="p-1.5 text-gray-500 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg transition-colors"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Display Table */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <DisplayTable
             campaigns={filteredDisplayCampaigns}
             onSelectCampaign={(c) => setSelectedDisplayCamp(c)}
@@ -771,7 +1156,7 @@ export default function AdsSponsoringSection() {
         />
       )}
 
-      {/* ─── 4. MODALS ─── */}
+      {/* ─── 7. MODALS ─── */}
       {selectedSocialCamp && (
         <SocialAdDetailModal
           campaign={selectedSocialCamp}

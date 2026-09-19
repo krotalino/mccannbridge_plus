@@ -155,7 +155,7 @@ export default function AdsSynthesisView({
             <span>Points de Vigilance & Alertes Automatisées ({alerts.length})</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12 }}>
             {alerts.map((a, idx) => (
               <div 
                 key={idx}
@@ -186,7 +186,7 @@ export default function AdsSynthesisView({
       )}
 
       {/* 2. Cartes de synthèse financière */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
         <div className="card bg-white border border-gray-200 rounded-xl p-4 shadow-xs">
           <div className="flex items-center justify-between text-gray-500 text-xs mb-2">
             <span className="font-semibold">Budget Consommé Total</span>

@@ -35,6 +35,7 @@ function ProtectedRoutes() {
           <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/validation" element={<ValidationPage />} />
           <Route path="/influence" element={<InfluencePage />} />
+          <Route path="/influence/:talentId" element={<InfluencePage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/finance" element={<FinancePage />} />
 
