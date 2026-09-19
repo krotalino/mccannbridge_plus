@@ -25,6 +25,7 @@ export default function DirectoryDashboardView({
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [viewMode, setViewMode] = useState('table'); // 'table' | 'cards'
   const [actionMenuOpenId, setActionMenuOpenId] = useState(null);
+  const safeViewProfile = typeof onViewProfile === 'function' ? onViewProfile : () => {};
 
   // Statistics calculation
   const stats = useMemo(() => {
@@ -452,7 +453,7 @@ export default function DirectoryDashboardView({
                         <td className="p-3.5">
                           <div 
                             className="flex items-center gap-2.5 cursor-pointer group"
-                            onClick={() => onViewProfile(u)}
+                            onClick={() => safeViewProfile(u)}
                           >
                             <div 
                               className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 shadow-sm ${
@@ -537,7 +538,7 @@ export default function DirectoryDashboardView({
                               <FileText className="w-4 h-4" />
                             </button>
                             <button
-                              onClick={() => onViewProfile(u)}
+                              onClick={() => safeViewProfile(u)}
                               className="p-1.5 rounded-lg text-white/40 hover:text-orange-400 hover:bg-white/5 transition-colors"
                               title="Voir Profil Détaillé"
                             >
@@ -667,7 +668,7 @@ export default function DirectoryDashboardView({
 
                 <div className="flex items-center gap-2 pt-2 border-t border-white/5">
                   <button
-                    onClick={() => onViewProfile(u)}
+                    onClick={() => safeViewProfile(u)}
                     className="flex-1 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white font-bold text-xs border border-white/10 transition-colors"
                   >
                     Profil

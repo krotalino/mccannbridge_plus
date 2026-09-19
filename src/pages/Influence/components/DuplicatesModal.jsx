@@ -44,7 +44,7 @@ export default function DuplicatesModal({ issues, data, onMerge, onKeepSeparate,
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <Badge tone="ifx-b-yellow">Candidat {index + 1} / {unresolvedIssues.length}</Badge>
                     <span className="mono" style={{ fontSize: 11.5, color: 'var(--muted)' }}>
-                      {talentA.source_sheet} L{talentA.source_row} ↔ {talentB.source_sheet} L{talentB.source_row}
+                      Profil #{talentA.id.replace('TAL-', '').replace('AMB-', '')} ↔ Profil #{talentB.id.replace('TAL-', '').replace('AMB-', '')}
                     </span>
                   </div>
                   <div style={{ display: 'flex', gap: 8 }}>

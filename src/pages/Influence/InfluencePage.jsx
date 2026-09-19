@@ -80,7 +80,7 @@ export default function InfluencePage() {
 
   const tabs = [
     { id: 'cockpit', label: 'Vue d’ensemble 360°', icon: '📊', badge: null },
-    { id: 'talents', label: 'Talents & Ambassadeurs', icon: '👥', badge: (data.talents || []).length },
+    { id: 'talents', label: 'Talents & Ambassadeurs', icon: '👥', badge: (influencers || []).length },
     { id: 'campagnes', label: 'Campagnes & Activations', icon: '🗂', badge: (data.campaigns || []).length },
     { id: 'livrables', label: 'Livrables & Validations', icon: '📄', badge: (data.deliverables || []).length },
     { id: 'reporting', label: 'Reporting & Analyses', icon: '📈', badge: `${kpis.rate || '4.8'}%` },
@@ -193,6 +193,15 @@ export default function InfluencePage() {
 
           <button
             type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={() => setShowAdd(true)}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#FFF3E8', color: '#E65100', border: '1px solid #FFD8BE', fontWeight: 700 }}
+          >
+            <span>+</span> Nouvel influenceur
+          </button>
+
+          <button
+            type="button"
             className="btn btn-primary btn-sm"
             onClick={() => setIsExportModalOpen(true)}
             style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#FF7900', color: '#FFF' }}
@@ -284,6 +293,10 @@ export default function InfluencePage() {
       {activeTab === 'talents' && (
         <TalentsAmbassadeurs
           data={data}
+          influencers={influencers}
+          onEdit={(inf) => setEditInf(inf)}
+          onAdd={() => setShowAdd(true)}
+          onDelete={(id) => handleDelete(id)}
           onMerge={mergeTalents}
           onKeepSeparate={keepTalentsSeparate}
         />
@@ -382,6 +395,7 @@ export default function InfluencePage() {
               influencers={influencers}
               filters={filters}
               setFilters={setFilters}
+              onViewProfile={setProfileInf}
               onSelect={setProfileInf}
               onEdit={setEditInf}
               onDelete={handleDelete}

@@ -18,6 +18,7 @@ export default function UsersDirectoryTab({
 }) {
   // Active fast filter pill: 'tous' | 'mccann' | 'orange'
   const [fastFilter, setFastFilter] = useState(activeTenancyFilter || 'tous');
+  const safeViewProfile = typeof onViewProfile === 'function' ? onViewProfile : () => {};
 
   React.useEffect(() => {
     if (activeTenancyFilter) {
@@ -512,7 +513,7 @@ export default function UsersDirectoryTab({
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-3">
                         <div 
-                          onClick={() => onViewProfile(u)}
+                          onClick={() => safeViewProfile(u)}
                           className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs text-white shadow-md flex-shrink-0 cursor-pointer border"
                           style={{
                             backgroundColor: isAgency ? '#2A180E' : '#0B2236',
@@ -524,7 +525,7 @@ export default function UsersDirectoryTab({
                         </div>
                         <div>
                           <div 
-                            onClick={() => onViewProfile(u)}
+                            onClick={() => safeViewProfile(u)}
                             className="font-bold text-white text-sm hover:text-[#00D4FF] cursor-pointer transition-colors"
                           >
                             {u.name}
@@ -614,7 +615,7 @@ export default function UsersDirectoryTab({
                           <KeyRound className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => onViewProfile(u)}
+                          onClick={() => safeViewProfile(u)}
                           title="Menu actions"
                           className="p-1.5 rounded hover:bg-white/10 hover:text-white transition-colors"
                         >

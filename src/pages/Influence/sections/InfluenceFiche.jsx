@@ -79,12 +79,20 @@ function MiniSparkline({ data, width = 80, height = 24 }) {
   );
 }
 
-export default function InfluenceFiche({ influencers, setInfluencers, onViewProfile, onEdit, onDelete, onAdd, filters, setFilters }) {
+export default function InfluenceFiche({ influencers, setInfluencers, onViewProfile, onSelect, onEdit, onDelete, onAdd, filters, setFilters }) {
   const [sharingInf, setSharingInf] = useState(null);
   const [isExportingAll, setIsExportingAll] = useState(false);
   const [exportingSingleId, setExportingSingleId] = useState(null);
   const [toastMessage, setToastMessage] = useState('');
   const [expandedCards, setExpandedCards] = useState({});
+
+  const handleViewProfile = (inf) => {
+    if (typeof onViewProfile === 'function') {
+      onViewProfile(inf);
+    } else if (typeof onSelect === 'function') {
+      onSelect(inf);
+    }
+  };
 
   const toggleExpandCard = (id) => {
     setExpandedCards(prev => ({ ...prev, [id]: !prev[id] }));
@@ -530,7 +538,7 @@ export default function InfluenceFiche({ influencers, setInfluencers, onViewProf
 
                 {/* Actions */}
                 <div className="flex gap-4 items-center">
-                  <button onClick={() => onViewProfile(inf)} className="btn btn-orange btn-sm" style={{ flex: 2 }}>
+                  <button onClick={() => handleViewProfile(inf)} className="btn btn-orange btn-sm" style={{ flex: 2 }}>
                     👁️ Voir fiche
                   </button>
                   <button
