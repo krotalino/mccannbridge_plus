@@ -1,11 +1,21 @@
 import { useState } from 'react';
 import { 
-  TrendingUp, Users, Eye, Zap, Target, DollarSign, Award, 
-  ArrowUpRight, ArrowDownRight, Sparkles, BarChart2, ShieldCheck, 
-  Layers, Compass, Flame, AlertTriangle, CheckCircle2, ChevronRight,
-  PieChart, Activity, Globe, Send, BarChart3
+  Users, Flame, Zap, DollarSign, BarChart3, ChevronRight, CheckCircle2,
+  Calendar, ArrowUpRight, TrendingUp, ShieldCheck
 } from 'lucide-react';
-import { BRANDS_LIST } from '../../../data/reportsData';
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend
+} from 'recharts';
+import MiniSparkline from './MiniSparkline';
 
 export default function ReportExecutiveCockpit({
   reports = [],
@@ -15,7 +25,7 @@ export default function ReportExecutiveCockpit({
   onSelectReport
 }) {
   const [selectedTimeframe, setSelectedTimeframe] = useState('month'); // 'week' | 'month' | 'quarter' | 'ytd'
-  const [activeBrandFilter, setActiveBrandFilter] = useState('all');
+  const [chartMetric, setChartMetric] = useState('reach'); // 'reach' | 'engagements' | 'rate'
 
   const handleOpenNew = onOpenNewReport || onCreateReport;
   const handleNavigate = (tab) => {
@@ -30,52 +40,60 @@ export default function ReportExecutiveCockpit({
   const inReviewReports = reports.filter(r => r.status === 'client_review' || r.status === 'internal_review').length;
   const urgentCount = reports.filter(r => r.priority === 'urgente' && r.status !== 'delivered').length;
 
-  // Global Social Media & Performance Metrics (Aug 2026 consolidation)
+  // Global Social Media & Performance Metrics (Consolidated)
   const macroKPIs = [
     {
       id: 'reach',
-      label: 'Audience Totale Touchée (Reach 360°)',
+      label: 'Audience Totale Touchée',
+      tag: 'Reach 360°',
       value: '14.82 M',
       change: '+18.4%',
       isPositive: true,
       subtext: 'vs M-1 (12.52 M) • 4 Marques',
-      icon: <Users size={20} />,
-      borderLeft: '4px solid #0099FF',
-      color: '#0099FF'
+      sparkline: [9.8, 10.5, 11.2, 12.5, 13.1, 14.2, 14.82],
+      color: '#2980B9'
     },
     {
       id: 'engagements',
-      label: 'Volume Total Interactions & Clics',
+      label: 'Volume Total Interactions',
+      tag: 'Clics & Partages',
       value: '1 248 500',
       change: '+22.6%',
       isPositive: true,
       subtext: 'Record historique T3 2026',
-      icon: <Flame size={20} />,
-      borderLeft: '4px solid #FF7900',
+      sparkline: [820, 890, 940, 1050, 1120, 1190, 1248],
       color: '#FF7900'
     },
     {
       id: 'engagement_rate',
-      label: 'Taux d’Engagement Global Mixte',
+      label: 'Taux d’Engagement Global',
+      tag: 'Mixte Organique + Ads',
       value: '5.84 %',
       change: '+1.1 pt',
       isPositive: true,
       subtext: 'Leader national vs MTN (3.9%)',
-      icon: <Zap size={20} />,
-      borderLeft: '4px solid #28A745',
-      color: '#28A745'
+      sparkline: [4.2, 4.5, 4.9, 5.1, 5.4, 5.6, 5.84],
+      color: '#27AE60'
     },
     {
       id: 'paid_efficiency',
-      label: 'Efficacité Paid Media (CPM Moyen)',
+      label: 'Efficacité Paid Media',
+      tag: 'CPM Moyen',
       value: '420 FCFA',
       change: '-14.2%',
       isPositive: true,
       subtext: 'Économie budgétaire : 4.8M FCFA',
-      icon: <DollarSign size={20} />,
-      borderLeft: '4px solid #6C757D',
-      color: '#6C757D'
+      sparkline: [580, 540, 510, 480, 450, 435, 420],
+      color: '#8E44AD'
     }
+  ];
+
+  // Dynamic Historical Data for Recharts
+  const evolutionData = [
+    { name: 'Sem 1', reach: 2.8, engagements: 240, rate: 4.8 },
+    { name: 'Sem 2', reach: 3.4, engagements: 310, rate: 5.1 },
+    { name: 'Sem 3', reach: 4.1, engagements: 380, rate: 5.6 },
+    { name: 'Sem 4', reach: 4.5, engagements: 318, rate: 5.9 },
   ];
 
   // Brand breakdown performance
@@ -101,7 +119,7 @@ export default function ReportExecutiveCockpit({
       topFormat: 'Quiz Interactifs & Reels Promo',
       growth: '+28.5%',
       share: 28,
-      color: '#0099FF',
+      color: '#2980B9',
       activeCampaign: 'Frais Zéro & Réductions Marchands'
     },
     {
@@ -140,40 +158,50 @@ export default function ReportExecutiveCockpit({
   ];
 
   return (
-    <div className="space-y-5 animate-fadeIn pb-10">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 18, paddingBottom: 30 }}>
       
-      {/* En-tête de section avec navigation claire (Style Influence) */}
-      <div className="flex flex-wrap items-center justify-between gap-16 mb-16">
-        <div className="flex items-center gap-10">
+      {/* ─── EN-TÊTE DE SECTION (Dashboard Analytics Style) ─── */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div
             style={{
-              width: 40,
-              height: 40,
+              width: 38,
+              height: 38,
               borderRadius: 10,
               background: '#FF7900',
-              color: '#fff',
+              color: '#FFF',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 2px 8px rgba(255, 121, 0, 0.25)',
+              fontSize: 18,
+              boxShadow: '0 2px 8px rgba(255, 121, 0, 0.3)'
             }}
           >
-            <BarChart3 size={22} />
+            📊
           </div>
           <div>
-            <h2 className="text-xl font-black text-dark" style={{ margin: 0 }}>
-              2. Cockpit Exécutif 360° — Pilotage Stratégique & Live KPIs
+            <h2 style={{ fontSize: 18, fontWeight: 900, color: 'var(--dark)', margin: 0 }}>
+              Cockpit Exécutif 360° — Pilotage Stratégique & Live KPIs
             </h2>
-            <p className="text-xs text-muted mt-2" style={{ margin: 0 }}>
+            <p style={{ fontSize: 12, color: 'var(--muted)', margin: 0, marginTop: 2 }}>
               Consolidation multi-marques Orange Cameroun × Agence McCann • Période active : Août 2026
             </p>
           </div>
         </div>
 
         {/* Boutons d'action rapide */}
-        <div className="flex items-center gap-8 flex-wrap">
-          {/* Timeframe selector */}
-          <div className="flex items-center p-1 rounded-lg bg-white border border-gray-200" style={{ boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          {/* Timeframe selector pills */}
+          <div 
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              padding: 3, 
+              borderRadius: 8, 
+              background: '#FFF', 
+              border: '1px solid #E5E7EB' 
+            }}
+          >
             {[
               { id: 'week', label: 'Semaine' },
               { id: 'month', label: 'Mois (Août)' },
@@ -182,12 +210,19 @@ export default function ReportExecutiveCockpit({
             ].map(tf => (
               <button
                 key={tf.id}
+                type="button"
                 onClick={() => setSelectedTimeframe(tf.id)}
-                className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
-                  selectedTimeframe === tf.id
-                    ? 'bg-orange-600 text-white shadow-sm'
-                    : 'text-muted hover:text-dark'
-                }`}
+                style={{
+                  padding: '4px 10px',
+                  borderRadius: 6,
+                  fontSize: 11.5,
+                  fontWeight: selectedTimeframe === tf.id ? 800 : 600,
+                  border: 'none',
+                  background: selectedTimeframe === tf.id ? '#FF7900' : 'transparent',
+                  color: selectedTimeframe === tf.id ? '#FFFFFF' : 'var(--muted)',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
               >
                 {tf.label}
               </button>
@@ -195,128 +230,230 @@ export default function ReportExecutiveCockpit({
           </div>
 
           <button
+            type="button"
             onClick={handleOpenNew}
-            className="btn btn-orange text-xs font-semibold flex items-center gap-6 px-14 py-8 rounded-lg shadow-sm"
+            className="btn btn-primary btn-sm"
+            style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#FF7900', color: '#FFF' }}
           >
-            <span>+</span>
-            <span>Nouvelle Demande</span>
+            <span>+</span> Nouvelle Demande
           </button>
         </div>
       </div>
 
-      {/* 4 Macro KPI Cards (Style Influence) */}
-      <div className="grid grid-4 gap-12 mb-16">
+      {/* ─── 4 MACRO KPI CARDS (Dashboard Analytics Style) ─── */}
+      <div 
+        style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', 
+          gap: 14 
+        }}
+      >
         {macroKPIs.map((kpi) => (
           <div
             key={kpi.id}
             className="card p-16"
             style={{ 
-              background: '#fff', 
-              borderRadius: 8, 
-              borderLeft: kpi.borderLeft, 
-              boxShadow: '0 1px 3px rgba(0,0,0,0.05)' 
+              borderRadius: 12, 
+              border: '1px solid #E0E0E0', 
+              background: '#FFF',
+              display: 'flex', 
+              flexDirection: 'column', 
+              justifyContent: 'space-between' 
             }}
           >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-muted font-bold uppercase tracking-wider">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase' }}>
                 {kpi.label}
               </span>
-              <span style={{ color: kpi.color }}>
-                {kpi.icon}
+              <span className="tag" style={{ fontSize: 10.5, background: `${kpi.color}15`, color: kpi.color, border: `1px solid ${kpi.color}30` }}>
+                {kpi.tag}
               </span>
             </div>
 
-            <div className="flex items-baseline gap-2 mb-1">
-              <div className="text-2xl font-black text-dark tracking-tight">
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 8 }}>
+              <div style={{ fontSize: 26, fontWeight: 900, color: 'var(--dark)' }}>
                 {kpi.value}
               </div>
-              <span 
-                className="text-xs font-bold px-1.5 py-0.5 rounded"
-                style={{ 
-                  background: kpi.isPositive ? '#28A74515' : '#DC354515', 
-                  color: kpi.isPositive ? '#28A745' : '#DC3545' 
-                }}
-              >
-                {kpi.change}
-              </span>
+              <MiniSparkline data={kpi.sparkline} color={kpi.color} />
             </div>
 
-            <p className="text-xs text-muted">
-              {kpi.subtext}
-            </p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11, paddingTop: 8, borderTop: '1px solid #F0F0F0' }}>
+              <span style={{ color: kpi.isPositive ? '#27AE60' : '#DC3545', fontWeight: 700 }}>
+                ▲ {kpi.change}
+              </span>
+              <span style={{ color: 'var(--muted)' }}>
+                {kpi.subtext}
+              </span>
+            </div>
           </div>
         ))}
       </div>
 
-      {/* Grid: Matrice de Performance par Marque + Répartition Canaux */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      {/* ─── INTERACTIVE EVOLUTION CHART (Dashboard Analytics Chart Card) ─── */}
+      <div className="card p-16" style={{ borderRadius: 12, border: '1px solid #E0E0E0', background: '#FFF' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 14 }}>
+          <div>
+            <h3 style={{ fontSize: 14, fontWeight: 800, color: 'var(--dark)', margin: 0 }}>
+              📈 Trajectoire de Performance & Dynamique Hebdomadaire
+            </h3>
+            <p style={{ fontSize: 11.5, color: 'var(--muted)', margin: 0, marginTop: 2 }}>
+              Évolution consolidée multi-canaux (Orange Telco, OM, Pulse, B2B)
+            </p>
+          </div>
+
+          {/* Metric selector pills */}
+          <div style={{ display: 'flex', gap: 6 }}>
+            {[
+              { id: 'reach', label: 'Portée (Millions)', color: '#2980B9' },
+              { id: 'engagements', label: 'Interactions (k)', color: '#FF7900' },
+              { id: 'rate', label: 'Taux d’Engagement (%)', color: '#27AE60' }
+            ].map(m => (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => setChartMetric(m.id)}
+                style={{
+                  padding: '4px 10px',
+                  borderRadius: 6,
+                  fontSize: 11,
+                  fontWeight: chartMetric === m.id ? 800 : 600,
+                  border: chartMetric === m.id ? `1px solid ${m.color}` : '1px solid #E5E7EB',
+                  background: chartMetric === m.id ? `${m.color}15` : '#FFF',
+                  color: chartMetric === m.id ? m.color : '#4B5563',
+                  cursor: 'pointer'
+                }}
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ width: '100%', height: 240 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={evolutionData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id="chartGradOrange" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#FF7900" stopOpacity={0.4} />
+                  <stop offset="95%" stopColor="#FF7900" stopOpacity={0.0} />
+                </linearGradient>
+                <linearGradient id="chartGradBlue" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#2980B9" stopOpacity={0.4} />
+                  <stop offset="95%" stopColor="#2980B9" stopOpacity={0.0} />
+                </linearGradient>
+                <linearGradient id="chartGradGreen" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#27AE60" stopOpacity={0.4} />
+                  <stop offset="95%" stopColor="#27AE60" stopOpacity={0.0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" vertical={false} />
+              <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#888' }} axisLine={{ stroke: '#E5E7EB' }} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: '#888' }} axisLine={false} tickLine={false} />
+              <Tooltip 
+                contentStyle={{ 
+                  background: '#1A1A2E', 
+                  color: '#FFF', 
+                  borderRadius: 8, 
+                  border: 'none', 
+                  fontSize: 12,
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                }} 
+              />
+              <Area 
+                type="monotone" 
+                dataKey={chartMetric} 
+                stroke={chartMetric === 'reach' ? '#2980B9' : chartMetric === 'engagements' ? '#FF7900' : '#27AE60'} 
+                strokeWidth={3} 
+                fillOpacity={1} 
+                fill={chartMetric === 'reach' ? 'url(#chartGradBlue)' : chartMetric === 'engagements' ? 'url(#chartGradOrange)' : 'url(#chartGradGreen)'} 
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* ─── GRID: MATRICE DE PERFORMANCE PAR MARQUE + RÉPARTITION CANAUX ─── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16 }}>
         
-        {/* Colonne Gauche (2/3): Matrice Marques */}
-        <div className="lg:col-span-2 card p-20" style={{ background: '#fff', borderRadius: 8, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <div className="flex items-center justify-between mb-16 pb-12 border-b border-gray-100">
+        {/* Colonne Gauche: Matrice Marques */}
+        <div className="card p-16" style={{ borderRadius: 12, border: '1px solid #E0E0E0', background: '#FFF' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid #F0F0F0' }}>
             <div>
-              <h3 className="text-base font-bold text-dark flex items-center gap-2">
-                <span>🏢</span>
-                <span>Matrice de Performance par Entité de Marque</span>
+              <h3 style={{ fontSize: 14, fontWeight: 800, color: 'var(--dark)', margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span>🏢</span> Matrice de Performance par Entité de Marque
               </h3>
-              <p className="text-xs text-muted mt-1">
-                Suivi du reach, taux d'engagement et dynamique de croissance par ligne de business
+              <p style={{ fontSize: 11, color: 'var(--muted)', margin: 0, marginTop: 2 }}>
+                Suivi du reach, taux d'engagement et dynamique par ligne de business
               </p>
             </div>
-            <span className="text-xs font-bold text-muted bg-gray-100 px-2.5 py-1 rounded">
+            <span className="tag tag-orange" style={{ fontSize: 10.5 }}>
               4 Marques Actives
             </span>
           </div>
 
-          <div className="space-y-4">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {brandMetrics.map((brand) => (
               <div
                 key={brand.id}
-                className="p-14 rounded-lg border border-gray-100 hover:border-orange-300 hover:bg-orange-50/10 transition-all"
-                style={{ background: '#fafafa' }}
+                style={{
+                  padding: 12,
+                  borderRadius: 10,
+                  border: '1px solid #E5E7EB',
+                  background: '#F9FAFB'
+                }}
               >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-                  <div className="flex items-center gap-2.5">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexWrap: 'wrap', gap: 6 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span 
-                      className="w-3.5 h-3.5 rounded-full shrink-0"
-                      style={{ backgroundColor: brand.color }}
+                      style={{ 
+                        width: 10, 
+                        height: 10, 
+                        borderRadius: '50%', 
+                        background: brand.color, 
+                        display: 'inline-block' 
+                      }} 
                     />
                     <div>
-                      <h4 className="text-sm font-bold text-dark leading-tight">
+                      <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--dark)' }}>
                         {brand.name}
-                      </h4>
-                      <span className="text-xs text-muted">
+                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--muted)' }}>
                         {brand.tagline}
-                      </span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4 text-xs">
+                  <div style={{ display: 'flex', gap: 12, fontSize: 11 }}>
                     <div>
-                      <span className="text-muted text-[11px] block">Reach :</span>
-                      <strong className="text-dark font-bold">{brand.reach}</strong>
+                      <span style={{ color: 'var(--muted)', display: 'block' }}>Reach:</span>
+                      <strong style={{ color: 'var(--dark)' }}>{brand.reach}</strong>
                     </div>
                     <div>
-                      <span className="text-muted text-[11px] block">Engagement :</span>
-                      <strong className="text-dark font-bold">{brand.engagementRate}</strong>
+                      <span style={{ color: 'var(--muted)', display: 'block' }}>Eng.:</span>
+                      <strong style={{ color: 'var(--dark)' }}>{brand.engagementRate}</strong>
                     </div>
                     <div>
-                      <span className="text-muted text-[11px] block">Croissance :</span>
-                      <span className="font-bold text-green-600">{brand.growth}</span>
+                      <span style={{ color: 'var(--muted)', display: 'block' }}>Gain:</span>
+                      <strong style={{ color: '#27AE60' }}>{brand.growth}</strong>
                     </div>
                   </div>
                 </div>
 
-                {/* Progress bar and top format */}
-                <div className="space-y-1.5 pt-2 border-t border-gray-200/60">
-                  <div className="flex justify-between text-[11px] text-muted">
+                {/* Progress bar and campaign */}
+                <div style={{ paddingTop: 8, borderTop: '1px solid #E5E7EB' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10.5, color: 'var(--muted)', marginBottom: 4 }}>
                     <span>Part de voix globale ({brand.share}%)</span>
-                    <span>Campagne active : <strong className="text-dark">{brand.activeCampaign}</strong></span>
+                    <span>Campagne : <strong style={{ color: 'var(--dark)' }}>{brand.activeCampaign}</strong></span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                  <div style={{ width: '100%', height: 6, background: '#E5E7EB', borderRadius: 3, overflow: 'hidden' }}>
                     <div
-                      className="h-full rounded-full transition-all duration-500"
-                      style={{ width: `${brand.share}%`, backgroundColor: brand.color }}
+                      style={{
+                        height: '100%',
+                        borderRadius: 3,
+                        width: `${brand.share}%`,
+                        backgroundColor: brand.color,
+                        transition: 'width 0.4s ease'
+                      }}
                     />
                   </div>
                 </div>
@@ -325,32 +462,42 @@ export default function ReportExecutiveCockpit({
           </div>
         </div>
 
-        {/* Colonne Droite (1/3): Répartition par Canal & Gouvernance */}
-        <div className="space-y-5">
+        {/* Colonne Droite: Répartition Canaux & SLA Gouvernance */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           
           {/* Canaux Sociaux */}
-          <div className="card p-20" style={{ background: '#fff', borderRadius: 8, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-            <h3 className="text-sm font-bold text-dark mb-3 flex items-center gap-2">
-              <span>📱</span>
-              <span>Mix de Canaux & Diffusion</span>
-            </h3>
-            <p className="text-xs text-muted mb-4">
-              Répartition du volume d'impressions et de visibilité
-            </p>
+          <div className="card p-16" style={{ borderRadius: 12, border: '1px solid #E0E0E0', background: '#FFF' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <div>
+                <h3 style={{ fontSize: 14, fontWeight: 800, color: 'var(--dark)', margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span>📱</span> Mix de Canaux & Diffusion
+                </h3>
+                <p style={{ fontSize: 11, color: 'var(--muted)', margin: 0, marginTop: 2 }}>
+                  Répartition du volume d'impressions et de visibilité
+                </p>
+              </div>
+              <span className="tag tag-blue" style={{ fontSize: 10.5 }}>
+                5 Plateformes
+              </span>
+            </div>
 
-            <div className="space-y-3">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {channels.map((ch) => (
-                <div key={ch.name} className="space-y-1">
-                  <div className="flex justify-between text-xs font-semibold">
-                    <span className="text-dark">{ch.name}</span>
-                    <span className="text-muted">
-                      {ch.reach} • <strong className="text-green-600">{ch.growth}</strong>
+                <div key={ch.name}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5, fontWeight: 600, marginBottom: 4 }}>
+                    <span style={{ color: 'var(--dark)' }}>{ch.name}</span>
+                    <span style={{ color: 'var(--muted)' }}>
+                      {ch.reach} • <strong style={{ color: '#27AE60' }}>{ch.growth}</strong>
                     </span>
                   </div>
-                  <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                  <div style={{ width: '100%', height: 6, background: '#F3F4F6', borderRadius: 3, overflow: 'hidden' }}>
                     <div
-                      className="h-full rounded-full"
-                      style={{ width: `${ch.share}%`, backgroundColor: ch.color }}
+                      style={{
+                        height: '100%',
+                        borderRadius: 3,
+                        width: `${ch.share}%`,
+                        backgroundColor: ch.color
+                      }}
                     />
                   </div>
                 </div>
@@ -358,39 +505,40 @@ export default function ReportExecutiveCockpit({
             </div>
           </div>
 
-          {/* SLA & Gouvernance Workflow */}
-          <div className="card p-20" style={{ background: '#fff', borderRadius: 8, boxShadow: '0 1px 3px rgba(0,0,0,0.05)', borderLeft: '4px solid #28A745' }}>
-            <h3 className="text-sm font-bold text-dark mb-2 flex items-center gap-2">
-              <span>🛡️</span>
-              <span>Gouvernance & SLA Agence McCann</span>
-            </h3>
-            <p className="text-xs text-muted mb-4">
-              Suivi contractuel du délai de livraison des rapports d'analyses
+          {/* SLA & Gouvernance */}
+          <div className="card p-16" style={{ borderRadius: 12, border: '1px solid #E0E0E0', background: '#FFF' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <h3 style={{ fontSize: 14, fontWeight: 800, color: 'var(--dark)', margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span>🛡️</span> Gouvernance & SLA Agence McCann
+              </h3>
+              <span className="tag tag-green" style={{ fontSize: 10.5 }}>
+                Conformité 98.5%
+              </span>
+            </div>
+            <p style={{ fontSize: 11, color: 'var(--muted)', margin: 0, marginBottom: 12 }}>
+              Suivi contractuel du délai de livraison des bilans et analyses
             </p>
 
-            <div className="space-y-2.5 text-xs">
-              <div className="flex justify-between py-1.5 border-b border-gray-100">
-                <span className="text-muted">Rapports Livrés à date :</span>
-                <strong className="text-green-600 font-bold">{deliveredReports} livrés</strong>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 11.5 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: 6, borderBottom: '1px solid #F0F0F0' }}>
+                <span style={{ color: 'var(--muted)' }}>Rapports Livrés à date :</span>
+                <strong style={{ color: '#27AE60' }}>{deliveredReports} livrés</strong>
               </div>
-              <div className="flex justify-between py-1.5 border-b border-gray-100">
-                <span className="text-muted">En validation / review :</span>
-                <strong className="text-blue-600 font-bold">{inReviewReports} en cours</strong>
+              <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: 6, borderBottom: '1px solid #F0F0F0' }}>
+                <span style={{ color: 'var(--muted)' }}>En validation / revue :</span>
+                <strong style={{ color: '#2980B9' }}>{inReviewReports} en cours</strong>
               </div>
-              <div className="flex justify-between py-1.5 border-b border-gray-100">
-                <span className="text-muted">Demandes Urgentes :</span>
-                <strong className="text-orange-600 font-bold">{urgentCount} actives</strong>
-              </div>
-              <div className="flex justify-between pt-1">
-                <span className="text-muted">Conformité globale :</span>
-                <span className="font-black text-dark">98.5% respecté</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: 6, borderBottom: '1px solid #F0F0F0' }}>
+                <span style={{ color: 'var(--muted)' }}>Demandes Urgentes :</span>
+                <strong style={{ color: '#FF7900' }}>{urgentCount} actives</strong>
               </div>
             </div>
 
             <button
+              type="button"
               onClick={() => handleNavigate('demandes')}
-              className="mt-4 w-full btn btn-ghost border text-xs font-bold py-2 rounded-lg text-center"
-              style={{ background: '#fff' }}
+              className="btn btn-ghost btn-sm"
+              style={{ marginTop: 12, width: '100%', border: '1px solid #D0D0D0', textAlign: 'center', justifyContent: 'center' }}
             >
               Consulter le Registre Détaillé →
             </button>

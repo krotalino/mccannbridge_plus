@@ -1,11 +1,11 @@
 import { 
   Eye, CheckCircle, Clock, AlertCircle, FileText, Download, 
-  User, Calendar, Trash2, ArrowUpRight 
+  Calendar, Trash2
 } from 'lucide-react';
 import { REPORT_STATUSES, REPORT_TYPES, BRANDS_LIST } from '../../../data/reportsData';
 
 export default function ReportRequestsTable({
-  reports,
+  reports = [],
   onSelectReport,
   onOpenWorkflow,
   onOpenExport,
@@ -18,7 +18,7 @@ export default function ReportRequestsTable({
     return (
       <span
         key={brandName}
-        className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold"
+        className="inline-flex items-center px-2 py-0.5 rounded text-[10.5px] font-bold"
         style={{ backgroundColor: color + '15', color: color, border: `1px solid ${color}35` }}
       >
         {brandName.replace('Orange ', '')}
@@ -110,8 +110,8 @@ export default function ReportRequestsTable({
 
   if (reports.length === 0) {
     return (
-      <div className="card p-24 text-center" style={{ background: '#fff', borderRadius: 8, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-        <FileText size={40} className="mx-auto text-muted mb-3 opacity-50" />
+      <div className="card p-24 text-center" style={{ background: '#FFF', borderRadius: 12, border: '1px solid #E0E0E0' }}>
+        <FileText size={40} className="mx-auto text-muted mb-3 opacity-40" />
         <h3 className="text-base font-bold text-dark mb-1">Aucune demande trouvée</h3>
         <p className="text-xs text-muted max-w-md mx-auto">
           Aucun rapport ne correspond à vos filtres. Modifiez vos critères de recherche ou réinitialisez la sélection.
@@ -121,20 +121,20 @@ export default function ReportRequestsTable({
   }
 
   return (
-    <div className="card" style={{ background: '#fff', borderRadius: 8, boxShadow: '0 1px 3px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
+    <div className="card" style={{ background: '#FFF', borderRadius: 12, border: '1px solid #E0E0E0', overflow: 'hidden' }}>
       <div className="overflow-x-auto">
         <table className="table w-full">
           <thead>
-            <tr style={{ background: '#f8f9fa', borderBottom: '1px solid #e9ecef' }}>
-              <th className="py-10 px-12 text-xs font-bold text-muted uppercase tracking-wider text-left">Réf & Titre</th>
-              <th className="py-10 px-8 text-xs font-bold text-muted uppercase tracking-wider text-left">Type & Période</th>
-              <th className="py-10 px-8 text-xs font-bold text-muted uppercase tracking-wider text-left">Périmètre / Marques</th>
-              <th className="py-10 px-8 text-xs font-bold text-muted uppercase tracking-wider text-left">Demandeur / Analyste</th>
-              <th className="py-10 px-8 text-xs font-bold text-muted uppercase tracking-wider text-left">Échéance SLA</th>
-              <th className="py-10 px-8 text-xs font-bold text-muted uppercase tracking-wider text-center">Priorité</th>
-              <th className="py-10 px-8 text-xs font-bold text-muted uppercase tracking-wider text-left">Statut Workflow</th>
-              <th className="py-10 px-8 text-xs font-bold text-muted uppercase tracking-wider text-center">Complétude</th>
-              <th className="py-10 px-12 text-xs font-bold text-muted uppercase tracking-wider text-right">Actions</th>
+            <tr style={{ background: '#F8F9FA', borderBottom: '1px solid #E5E7EB' }}>
+              <th className="py-12 px-14 text-xs font-bold text-muted uppercase tracking-wider text-left">Réf & Titre</th>
+              <th className="py-12 px-10 text-xs font-bold text-muted uppercase tracking-wider text-left">Type & Période</th>
+              <th className="py-12 px-10 text-xs font-bold text-muted uppercase tracking-wider text-left">Périmètre / Marques</th>
+              <th className="py-12 px-10 text-xs font-bold text-muted uppercase tracking-wider text-left">Demandeur / Analyste</th>
+              <th className="py-12 px-10 text-xs font-bold text-muted uppercase tracking-wider text-left">Échéance SLA</th>
+              <th className="py-12 px-10 text-xs font-bold text-muted uppercase tracking-wider text-center">Priorité</th>
+              <th className="py-12 px-10 text-xs font-bold text-muted uppercase tracking-wider text-left">Statut Workflow</th>
+              <th className="py-12 px-10 text-xs font-bold text-muted uppercase tracking-wider text-center">Complétude</th>
+              <th className="py-12 px-14 text-xs font-bold text-muted uppercase tracking-wider text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -143,16 +143,22 @@ export default function ReportRequestsTable({
               return (
                 <tr 
                   key={report.id}
-                  className="border-b hover:bg-orange-50/20 transition-colors cursor-pointer"
-                  style={{ borderColor: '#f1f1f1' }}
+                  className="border-b transition-colors cursor-pointer"
+                  style={{ borderColor: '#F0F0F0' }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#FFF8F2';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }}
                   onClick={() => onSelectReport(report)}
                 >
                   {/* Reference & Title */}
-                  <td className="py-12 px-12">
+                  <td className="py-12 px-14">
                     <div className="flex items-center gap-2">
                       <span 
                         className="font-mono font-bold text-xs px-2 py-0.5 rounded"
-                        style={{ background: '#FFF0E5', color: 'var(--orange)', border: '1px solid #FFD0B3' }}
+                        style={{ background: '#FFF0E5', color: '#FF7900', border: '1px solid #FFD0B3' }}
                       >
                         {report.id}
                       </span>
@@ -168,7 +174,7 @@ export default function ReportRequestsTable({
                   </td>
 
                   {/* Type & Period */}
-                  <td className="py-12 px-8">
+                  <td className="py-12 px-10">
                     <div className="mb-1">{getTypeBadge(report.type)}</div>
                     <div className="text-xs text-muted line-clamp-1">
                       {report.period?.label || `${report.period?.start} au ${report.period?.end}`}
@@ -176,14 +182,14 @@ export default function ReportRequestsTable({
                   </td>
 
                   {/* Brands */}
-                  <td className="py-12 px-8">
+                  <td className="py-12 px-10">
                     <div className="flex flex-wrap gap-1 max-w-[170px]">
                       {report.brands?.map(b => getBrandChip(b))}
                     </div>
                   </td>
 
                   {/* Requester & Assignee */}
-                  <td className="py-12 px-8">
+                  <td className="py-12 px-10">
                     <div className="text-dark font-semibold text-xs flex items-center gap-1.5">
                       <span 
                         className="w-5 h-5 rounded-full flex items-center justify-center font-bold text-[9px]"
@@ -200,17 +206,17 @@ export default function ReportRequestsTable({
                   </td>
 
                   {/* SLA Due Date */}
-                  <td className="py-12 px-8">
+                  <td className="py-12 px-10">
                     {getSlaIndicator(report.dueDate, report.status, report.deliveredDate)}
                   </td>
 
                   {/* Priority */}
-                  <td className="py-12 px-8 text-center">
+                  <td className="py-12 px-10 text-center">
                     {getPriorityBadge(report.priority, report.urgentReason)}
                   </td>
 
                   {/* Workflow Status */}
-                  <td className="py-12 px-8">
+                  <td className="py-12 px-10">
                     <span 
                       className="tag"
                       style={{
@@ -227,16 +233,16 @@ export default function ReportRequestsTable({
                   </td>
 
                   {/* Completeness meter */}
-                  <td className="py-12 px-8 text-center">
+                  <td className="py-12 px-10 text-center">
                     <div className="inline-flex flex-col items-center gap-0.5">
                       <div className="w-14 bg-gray-200 rounded-full h-1.5 overflow-hidden">
                         <div 
                           className="h-full rounded-full transition-all"
                           style={{ 
                             width: `${report.briefCompleteness || 90}%`,
-                            backgroundColor: (report.briefCompleteness || 90) >= 80 ? '#28A745' : '#FF7900'
+                            backgroundColor: (report.briefCompleteness || 90) >= 80 ? '#27AE60' : '#FF7900'
                           }}
-                        ></div>
+                        />
                       </div>
                       <span className="text-[10px] font-bold text-muted">
                         {report.briefCompleteness || 90}%
@@ -245,13 +251,13 @@ export default function ReportRequestsTable({
                   </td>
 
                   {/* Actions */}
-                  <td className="py-12 px-12 text-right" onClick={(e) => e.stopPropagation()}>
+                  <td className="py-12 px-14 text-right" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center justify-end gap-1">
                       <button
                         type="button"
                         onClick={() => onSelectReport(report)}
                         className="btn btn-ghost"
-                        style={{ padding: '6px 8px', borderRadius: 6, color: '#0099FF' }}
+                        style={{ padding: '6px 8px', borderRadius: 6, color: '#2980B9' }}
                         title="Consulter le rapport complet"
                       >
                         <Eye size={15} />
@@ -260,7 +266,7 @@ export default function ReportRequestsTable({
                         type="button"
                         onClick={() => onOpenWorkflow(report)}
                         className="btn btn-ghost"
-                        style={{ padding: '6px 8px', borderRadius: 6, color: 'var(--orange)' }}
+                        style={{ padding: '6px 8px', borderRadius: 6, color: '#FF7900' }}
                         title="Gérer le workflow et validations"
                       >
                         <CheckCircle size={15} />
@@ -269,8 +275,8 @@ export default function ReportRequestsTable({
                         type="button"
                         onClick={() => onOpenExport(report)}
                         className="btn btn-ghost"
-                        style={{ padding: '6px 8px', borderRadius: 6, color: 'var(--green)' }}
-                        title="Télécharger / Exporter (PDF & Excel)"
+                        style={{ padding: '6px 8px', borderRadius: 6, color: '#27AE60' }}
+                        title="Télécharger / Exporter"
                       >
                         <Download size={15} />
                       </button>

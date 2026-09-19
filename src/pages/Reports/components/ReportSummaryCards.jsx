@@ -1,10 +1,8 @@
-import { 
-  FileText, Clock, AlertTriangle, CheckCircle2, UserCheck, 
-  Send, Layers, TrendingUp, Sparkles 
-} from 'lucide-react';
+import React from 'react';
 import { REPORT_STATUSES } from '../../../data/reportsData';
+import MiniSparkline from './MiniSparkline';
 
-export default function ReportSummaryCards({ reports, activeStatusFilter, onStatusFilterChange }) {
+export default function ReportSummaryCards({ reports = [], activeStatusFilter, onStatusFilterChange }) {
   const total = reports.length;
   
   const toProcess = reports.filter(r => r.status === 'submitted' || r.status === 'qualified').length;
@@ -26,6 +24,8 @@ export default function ReportSummaryCards({ reports, activeStatusFilter, onStat
   const onTimeCount = reports.filter(r => r.status === 'delivered' || (r.dueDate && r.dueDate >= todayStr)).length;
   const slaRate = total > 0 ? Math.round((onTimeCount / total) * 100) : 100;
 
+  const inProcessingTotal = inProd + internalReview + clientReview + toProcess;
+
   const statusPills = [
     {
       id: 'all',
@@ -39,7 +39,7 @@ export default function ReportSummaryCards({ reports, activeStatusFilter, onStat
       label: 'À qualifier',
       count: toProcess,
       badge: 'Assignation',
-      color: '#0099FF'
+      color: '#2980B9'
     },
     {
       id: 'in_production',
@@ -60,14 +60,14 @@ export default function ReportSummaryCards({ reports, activeStatusFilter, onStat
       label: 'Validation Client',
       count: clientReview,
       badge: 'Orange CM',
-      color: '#F59E0B'
+      color: '#F39C12'
     },
     {
       id: 'delivered',
       label: 'Validés & Livrés',
       count: approvedDelivered,
       badge: 'Clôturés',
-      color: '#28A745'
+      color: '#27AE60'
     },
     {
       id: 'late',
@@ -79,72 +79,210 @@ export default function ReportSummaryCards({ reports, activeStatusFilter, onStat
   ];
 
   return (
-    <div className="space-y-4 mb-5">
-      {/* 4-KPI Bandeau (Exactement le style Influence) */}
-      <div className="grid grid-4 gap-12">
-        <div className="card p-12" style={{ background: '#fff', borderRadius: 8, borderLeft: '4px solid #FF7900', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <div className="text-xs text-muted font-bold uppercase tracking-wider mb-4">Total Livrables Suivis</div>
-          <div className="text-xl font-bold text-dark">
-            {total} <span className="text-xs font-normal text-muted">rapports au registre</span>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 16 }}>
+      {/* ─── 4 KPI CARDS (Dashboard Analytics Style) ─── */}
+      <div 
+        style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', 
+          gap: 14 
+        }}
+      >
+        {/* KPI 1 : Total Demandes */}
+        <div 
+          className="card p-16" 
+          style={{ 
+            borderRadius: 12, 
+            border: '1px solid #E0E0E0', 
+            background: '#FFF',
+            display: 'flex', 
+            flexDirection: 'column', 
+            justifyContent: 'space-between' 
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase' }}>
+              DEMANDES & LIVRABLES
+            </span>
+            <span className="tag tag-orange" style={{ fontSize: 11 }}>
+              📋 Registre
+            </span>
           </div>
-        </div>
-
-        <div className="card p-12" style={{ background: '#fff', borderRadius: 8, borderLeft: '4px solid #0099FF', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <div className="text-xs text-muted font-bold uppercase tracking-wider mb-4">En Production & Revue</div>
-          <div className="text-xl font-bold" style={{ color: '#0099FF' }}>
-            {inProd + internalReview + clientReview} <span className="text-xs font-normal text-muted">en cours de traitement</span>
-          </div>
-        </div>
-
-        <div className="card p-12" style={{ background: '#fff', borderRadius: 8, borderLeft: '4px solid #28A745', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <div className="text-xs text-muted font-bold uppercase tracking-wider mb-4">Rapports Livrés & Validés</div>
-          <div className="text-xl font-bold" style={{ color: '#28A745' }}>
-            {approvedDelivered} <span className="text-xs font-normal text-muted">sur {total} livrables</span>
-          </div>
-        </div>
-
-        <div className="card p-12" style={{ background: '#fff', borderRadius: 8, borderLeft: '4px solid #6C757D', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <div className="text-xs text-muted font-bold uppercase tracking-wider mb-4">Respect SLA & Délais</div>
-          <div className="flex items-center justify-between">
-            <div className="text-xl font-bold text-dark">{slaRate}%</div>
-            <div style={{ flex: 1, maxWidth: 90, height: 6, background: '#e0e0e0', borderRadius: 3, marginLeft: 10, overflow: 'hidden' }}>
-              <div style={{ width: `${slaRate}%`, height: '100%', background: slaRate >= 80 ? '#28A745' : '#FF7900', borderRadius: 3 }} />
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 8 }}>
+            <div style={{ fontSize: 26, fontWeight: 900, color: 'var(--dark)' }}>
+              {total}
             </div>
+            <MiniSparkline data={[14, 18, 16, 22, 25, 24, total || 28]} color="#FF7900" />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11, paddingTop: 8, borderTop: '1px solid #F0F0F0' }}>
+            <span style={{ color: '#27AE60', fontWeight: 700 }}>
+              ▲ +15.8%
+            </span>
+            <span style={{ color: 'var(--muted)' }}>volumes demandés T3</span>
+          </div>
+        </div>
+
+        {/* KPI 2 : En Production & Revues */}
+        <div 
+          className="card p-16" 
+          style={{ 
+            borderRadius: 12, 
+            border: '1px solid #E0E0E0', 
+            background: '#FFF',
+            display: 'flex', 
+            flexDirection: 'column', 
+            justifyContent: 'space-between' 
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase' }}>
+              EN PRODUCTION & REVUE
+            </span>
+            <span className="tag tag-blue" style={{ fontSize: 11 }}>
+              ⚡ Pipeline
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 8 }}>
+            <div style={{ fontSize: 26, fontWeight: 900, color: '#2980B9' }}>
+              {inProcessingTotal}
+            </div>
+            <MiniSparkline data={[8, 11, 9, 14, 12, 10, inProcessingTotal || 12]} color="#2980B9" />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11, paddingTop: 8, borderTop: '1px solid #F0F0F0' }}>
+            <span style={{ color: '#2980B9', fontWeight: 700 }}>
+              {clientReview} chez Orange
+            </span>
+            <span style={{ color: 'var(--muted)' }}>{inProd + internalReview} chez McCann</span>
+          </div>
+        </div>
+
+        {/* KPI 3 : Validés & Livrés */}
+        <div 
+          className="card p-16" 
+          style={{ 
+            borderRadius: 12, 
+            border: '1px solid #E0E0E0', 
+            background: '#FFF',
+            display: 'flex', 
+            flexDirection: 'column', 
+            justifyContent: 'space-between' 
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase' }}>
+              RAPPORTS VALIDÉS & LIVRÉS
+            </span>
+            <span className="tag tag-green" style={{ fontSize: 11 }}>
+              ✅ Certifiés
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 8 }}>
+            <div style={{ fontSize: 26, fontWeight: 900, color: '#27AE60' }}>
+              {approvedDelivered}
+            </div>
+            <MiniSparkline data={[5, 8, 12, 14, 18, 20, approvedDelivered || 22]} color="#27AE60" />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11, paddingTop: 8, borderTop: '1px solid #F0F0F0' }}>
+            <span style={{ color: '#27AE60', fontWeight: 700 }}>
+              {total > 0 ? Math.round((approvedDelivered / total) * 100) : 0}% taux clôture
+            </span>
+            <span style={{ color: 'var(--muted)' }}>bilans signés Orange</span>
+          </div>
+        </div>
+
+        {/* KPI 4 : Respect SLA & Délais */}
+        <div 
+          className="card p-16" 
+          style={{ 
+            borderRadius: 12, 
+            border: '1px solid #E0E0E0', 
+            background: '#FFF',
+            display: 'flex', 
+            flexDirection: 'column', 
+            justifyContent: 'space-between' 
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase' }}>
+              RESPECT SLA & DÉLAIS
+            </span>
+            <span className="tag" style={{ fontSize: 11, background: slaRate >= 85 ? '#E8F8F0' : '#FFF3E8', color: slaRate >= 85 ? '#27AE60' : '#E65100' }}>
+              🎯 Ponctualité
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 8 }}>
+            <div style={{ fontSize: 26, fontWeight: 900, color: slaRate >= 85 ? '#27AE60' : '#E65100' }}>
+              {slaRate}%
+            </div>
+            <MiniSparkline data={[92, 94, 90, 96, 95, 98, slaRate || 95]} color={slaRate >= 85 ? '#27AE60' : '#E65100'} />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11, paddingTop: 8, borderTop: '1px solid #F0F0F0' }}>
+            <span style={{ color: slaRate >= 85 ? '#27AE60' : '#DC3545', fontWeight: 700 }}>
+              {lateReports === 0 ? '✓ Aucun retard' : `⚠️ ${lateReports} alerte(s)`}
+            </span>
+            <span style={{ color: 'var(--muted)' }}>engagement contractuel</span>
           </div>
         </div>
       </div>
 
-      {/* Quick filter pills by workflow status */}
-      <div className="flex flex-wrap items-center gap-2 p-2 rounded-lg" style={{ background: '#fff', border: '1px solid #e8e8e8', boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}>
-        <span className="text-xs font-bold text-muted px-2">Filtrer par étape :</span>
-        {statusPills.map(pill => {
-          const isSelected = activeStatusFilter === pill.id;
-          return (
-            <button
-              key={pill.id}
-              type="button"
-              onClick={() => onStatusFilterChange(isSelected && pill.id !== 'all' ? 'all' : pill.id)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer"
-              style={{
-                background: isSelected ? pill.color : '#f8f9fa',
-                color: isSelected ? '#ffffff' : '#495057',
-                border: isSelected ? `1px solid ${pill.color}` : '1px solid #e9ecef',
-                boxShadow: isSelected ? '0 1px 3px rgba(0,0,0,0.12)' : 'none'
-              }}
-            >
-              <span>{pill.label}</span>
-              <span 
-                className="px-1.5 py-0.2 rounded-full text-[10px] font-black"
+      {/* ─── WORKFLOW STATUS FILTER BAR (Dashboard Analytics Style) ─── */}
+      <div 
+        className="card"
+        style={{
+          background: '#FFF',
+          borderRadius: 10,
+          padding: '10px 14px',
+          border: '1px solid #E5E7EB',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          flexWrap: 'wrap'
+        }}
+      >
+        <span style={{ fontSize: 11.5, fontWeight: 800, color: 'var(--muted)', textTransform: 'uppercase', marginRight: 4 }}>
+          Filtrer par étape workflow :
+        </span>
+        
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {statusPills.map(pill => {
+            const isSelected = activeStatusFilter === pill.id;
+            return (
+              <button
+                key={pill.id}
+                type="button"
+                onClick={() => onStatusFilterChange(pill.id)}
                 style={{
-                  background: isSelected ? 'rgba(255,255,255,0.3)' : '#e9ecef',
-                  color: isSelected ? '#ffffff' : '#212529'
+                  padding: '5px 10px',
+                  borderRadius: 6,
+                  border: isSelected ? '1px solid #FF7900' : '1px solid #E5E7EB',
+                  background: isSelected ? '#FFF8F2' : '#FFFFFF',
+                  color: isSelected ? '#FF7900' : '#374151',
+                  fontWeight: isSelected ? 800 : 600,
+                  fontSize: 11.5,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  transition: 'all 0.15s ease'
                 }}
               >
-                {pill.count}
-              </span>
-            </button>
-          );
-        })}
+                <span>{pill.label}</span>
+                <span 
+                  style={{
+                    padding: '1px 6px',
+                    borderRadius: 10,
+                    background: isSelected ? '#FF7900' : '#F3F4F6',
+                    color: isSelected ? '#FFFFFF' : '#6B7280',
+                    fontSize: 10,
+                    fontWeight: 700
+                  }}
+                >
+                  {pill.count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

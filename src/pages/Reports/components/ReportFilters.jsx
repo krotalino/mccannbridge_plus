@@ -19,32 +19,65 @@ export default function ReportFilters({
   const hasActiveFilters = searchQuery || selectedBrand !== 'all' || selectedType !== 'all' || selectedStatus !== 'all' || selectedPriority !== 'all';
 
   return (
-    <div className="inf-search-panel" style={{ background: '#fff', borderRadius: 8, padding: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.05)', marginBottom: 16 }}>
-      <div className="inf-search-row" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+    <div 
+      className="card mb-16 p-14 animate-fade"
+      style={{
+        background: '#FFF',
+        borderRadius: 12,
+        border: '1px solid #E0E0E0',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 12
+      }}
+    >
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
         
         {/* Search input */}
-        <div style={{ flex: 2, minWidth: 240, position: 'relative' }}>
+        <div style={{ flex: '2 1 240px', position: 'relative' }}>
+          <span 
+            style={{ 
+              position: 'absolute', 
+              left: 12, 
+              top: '50%', 
+              transform: 'translateY(-50%)', 
+              color: 'var(--muted)', 
+              fontSize: 14,
+              pointerEvents: 'none'
+            }}
+          >
+            🔍
+          </span>
           <input
             type="text"
             className="form-input"
-            placeholder="🔍 Rechercher par référence (REP-...), mot-clé, campagne, auteur..."
+            placeholder="Rechercher par référence (REP-...), mot-clé, campagne, auteur..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            style={{ width: '100%', paddingRight: 28 }}
+            style={{
+              width: '100%',
+              paddingLeft: 34,
+              paddingRight: searchQuery ? 32 : 12,
+              height: 40,
+              fontSize: 12.5,
+              borderRadius: 8,
+              border: '1px solid #D1D5DB'
+            }}
           />
           {searchQuery && (
             <button
+              type="button"
               onClick={() => onSearchChange('')}
               style={{
                 position: 'absolute',
-                right: 8,
+                right: 10,
                 top: '50%',
                 transform: 'translateY(-50%)',
                 background: 'none',
                 border: 'none',
-                color: '#888',
+                color: '#9CA3AF',
                 cursor: 'pointer',
-                fontSize: 14
+                fontSize: 13,
+                padding: 4
               }}
               title="Effacer la recherche"
             >
@@ -58,7 +91,7 @@ export default function ReportFilters({
           className="form-input"
           value={selectedBrand}
           onChange={(e) => onBrandChange(e.target.value)}
-          style={{ flex: 1, minWidth: 150 }}
+          style={{ flex: '1 1 150px', height: 40, fontSize: 12.5, borderRadius: 8, border: '1px solid #D1D5DB' }}
         >
           <option value="all">Toutes marques ({BRANDS_LIST.length})</option>
           {BRANDS_LIST.map((b) => (
@@ -71,7 +104,7 @@ export default function ReportFilters({
           className="form-input"
           value={selectedType}
           onChange={(e) => onTypeChange(e.target.value)}
-          style={{ flex: 1, minWidth: 160 }}
+          style={{ flex: '1 1 160px', height: 40, fontSize: 12.5, borderRadius: 8, border: '1px solid #D1D5DB' }}
         >
           <option value="all">Tous types de rapport ({REPORT_TYPES.length})</option>
           {REPORT_TYPES.map((t) => (
@@ -84,7 +117,7 @@ export default function ReportFilters({
           className="form-input"
           value={selectedStatus}
           onChange={(e) => onStatusChange(e.target.value)}
-          style={{ flex: 1, minWidth: 160 }}
+          style={{ flex: '1 1 160px', height: 40, fontSize: 12.5, borderRadius: 8, border: '1px solid #D1D5DB' }}
         >
           <option value="all">Tous statuts workflow</option>
           {Object.entries(REPORT_STATUSES).map(([key, st]) => (
@@ -97,34 +130,52 @@ export default function ReportFilters({
           className="form-input"
           value={selectedPriority}
           onChange={(e) => onPriorityChange(e.target.value)}
-          style={{ flex: 1, minWidth: 130 }}
+          style={{ flex: '1 1 130px', height: 40, fontSize: 12.5, borderRadius: 8, border: '1px solid #D1D5DB' }}
         >
           <option value="all">Toutes priorités</option>
-          <option value="urgente">🔥 Urgente (&lt;24h)</option>
-          <option value="haute">🟠 Haute (&lt;48h)</option>
-          <option value="normale">🟢 Normale (Standard)</option>
+          <option value="urgente">🔴 Urgente</option>
+          <option value="haute">🟠 Haute</option>
+          <option value="normale">🟢 Normale</option>
+          <option value="basse">⚪ Basse</option>
         </select>
 
-        {/* Action buttons */}
+        {/* Reset button */}
         {hasActiveFilters && (
           <button
+            type="button"
             onClick={onReset}
-            className="btn btn-ghost border"
-            style={{ fontWeight: 600, fontSize: 12, padding: '8px 12px', background: '#fff' }}
+            className="btn btn-ghost btn-sm"
+            style={{ height: 40, display: 'flex', alignItems: 'center', gap: 6, border: '1px solid #D0D0D0', color: '#E65100' }}
             title="Réinitialiser tous les filtres"
           >
-            ✕ Réinitialiser
+            <RotateCcw size={13} />
+            <span>Effacer filtres</span>
           </button>
         )}
+      </div>
+
+      {/* Filter status strip & Results count */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, paddingTop: 8, borderTop: '1px solid #F3F4F6' }}>
+        <div style={{ color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span>
+            Affichage de <strong>{totalResults}</strong> livrable(s) selon les critères sélectionnés
+          </span>
+          {hasActiveFilters && (
+            <span className="tag tag-orange" style={{ fontSize: 10.5 }}>
+              Filtres actifs
+            </span>
+          )}
+        </div>
 
         {onExportCsv && (
           <button
+            type="button"
             onClick={onExportCsv}
-            className="btn btn-ghost border"
-            style={{ fontWeight: 600, fontSize: 12, padding: '8px 14px', background: '#fff' }}
-            title="Exporter la sélection en CSV"
+            className="btn btn-ghost btn-sm"
+            style={{ fontSize: 11.5, display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px' }}
           >
-            📥 Exporter ({totalResults})
+            <Download size={13} />
+            <span>Exporter vue CSV</span>
           </button>
         )}
       </div>
