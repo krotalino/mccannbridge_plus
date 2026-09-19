@@ -5,7 +5,11 @@ export default function GrowthKnowledge() {
   const [search, setSearch] = useState('');
   const [stageFilter, setStageFilter] = useState('all');
 
-  const resultMap = { winner: { label: 'Gagnant', color: 'var(--green)', icon: '✅' }, partial: { label: 'Partiel', color: 'var(--yellow)', icon: '⚡' }, loser: { label: 'Perdant', color: 'var(--red)', icon: '❌' } };
+  const resultMap = { 
+    winner: { label: 'Gagnant', color: '#27AE60', icon: '✅' }, 
+    partial: { label: 'Partiel', color: '#F39C12', icon: '⚡' }, 
+    loser: { label: 'Non concluant', color: '#E74C3C', icon: '❌' } 
+  };
   const stages = [...new Set(GROWTH_KNOWLEDGE.map(k => k.stage))];
 
   let items = GROWTH_KNOWLEDGE;
@@ -13,41 +17,122 @@ export default function GrowthKnowledge() {
   if (search) items = items.filter(k => k.title.toLowerCase().includes(search.toLowerCase()) || k.insight.toLowerCase().includes(search.toLowerCase()) || k.tags.some(t => t.toLowerCase().includes(search.toLowerCase())));
 
   return (
-    <div>
-      <div className="flex gap-12 mb-20">
-        <input className="form-input" style={{ flex: 1 }} placeholder="🔍 Rechercher dans les apprentissages..." value={search} onChange={e => setSearch(e.target.value)} />
-        <select className="form-input" style={{ width: 180 }} value={stageFilter} onChange={e => setStageFilter(e.target.value)}>
-          <option value="all">Toutes les étapes</option>
-          {stages.map(s => <option key={s} value={s}>{s}</option>)}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* ─── BARRE DE RECHERCHE & FILTRES (Style Influence) ─── */}
+      <div 
+        className="card p-14 animate-fade"
+        style={{
+          background: '#FFFFFF',
+          borderRadius: 12,
+          border: '1px solid #E0E0E0',
+          display: 'flex',
+          gap: 12,
+          alignItems: 'center',
+          flexWrap: 'wrap'
+        }}
+      >
+        <input 
+          className="form-input" 
+          style={{ flex: '1 1 260px', height: 40, borderRadius: 8, fontSize: 13 }} 
+          placeholder="🔍 Rechercher dans les playbooks, apprentissages, tags..." 
+          value={search} 
+          onChange={e => setSearch(e.target.value)} 
+        />
+
+        <select 
+          className="form-input" 
+          style={{ width: 190, height: 40, borderRadius: 8, fontSize: 13 }} 
+          value={stageFilter} 
+          onChange={e => setStageFilter(e.target.value)}
+        >
+          <option value="all">Toutes les étapes ({GROWTH_KNOWLEDGE.length})</option>
+          {stages.map(s => (
+            <option key={s} value={s}>{s}</option>
+          ))}
         </select>
       </div>
-      {items.map(kb => {
-        const r = resultMap[kb.result] || { label: kb.result, color: 'var(--muted)', icon: '📌' };
-        return (
-          <div key={kb.id} className="card mb-12" style={{ borderLeft: `4px solid ${r.color}` }}>
-            <div className="flex justify-between items-start mb-8">
-              <div>
-                <div className="flex items-center gap-8 mb-4">
-                  <span className="text-md font-bold text-dark">{r.icon} {kb.title}</span>
-                  <span className="tag" style={{ background: r.color + '18', color: r.color }}>{r.label}</span>
-                  <span className="tag tag-orange">{kb.uplift}</span>
+
+      {/* ─── LISTE DES PLAYBOOKS & LEARNINGS ─── */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {items.map(kb => {
+          const r = resultMap[kb.result] || { label: kb.result, color: '#7F8C8D', icon: '📌' };
+          return (
+            <div 
+              key={kb.id} 
+              className="card p-16 transition-all" 
+              style={{ 
+                background: '#FFFFFF',
+                borderRadius: 12,
+                border: '1px solid #E0E0E0',
+                borderLeft: `4px solid ${r.color}` 
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = r.color;
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.06)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = '#E0E0E0';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 10, marginBottom: 8 }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 15, fontWeight: 900, color: 'var(--dark)' }}>
+                      {r.icon} {kb.title}
+                    </span>
+                    <span 
+                      className="tag" 
+                      style={{ 
+                        background: r.color + '18', 
+                        color: r.color, 
+                        border: `1px solid ${r.color}35`,
+                        fontSize: 10.5, 
+                        fontWeight: 700 
+                      }}
+                    >
+                      {r.label}
+                    </span>
+                    <span className="tag tag-orange" style={{ fontSize: 10.5, fontWeight: 800 }}>
+                      {kb.uplift}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 2 }}>
+                    Étape : <strong>{kb.stage}</strong> • Expérience liée : <strong>{kb.experiment}</strong> • Date : {kb.date}
+                  </div>
                 </div>
-                <div className="text-xs text-muted">{kb.stage} • {kb.experiment} • {kb.date}</div>
+              </div>
+
+              {/* Insight */}
+              <div style={{ fontSize: 12.5, lineHeight: 1.6, background: '#F9FAFB', padding: '10px 14px', borderRadius: 8, border: '1px solid #F3F4F6', marginBottom: 8 }}>
+                <strong style={{ color: 'var(--dark)' }}>💡 Constat & Insight :</strong> {kb.insight}
+              </div>
+
+              {/* Décision Produit */}
+              <div style={{ fontSize: 12.5, lineHeight: 1.6, background: 'rgba(39,174,96,0.05)', padding: '10px 14px', borderRadius: 8, border: '1px solid #A3E4D7', borderLeft: '3px solid #27AE60', marginBottom: 10 }}>
+                <strong style={{ color: '#27AE60' }}>🎯 Règle & Décision Validée :</strong> {kb.decision}
+              </div>
+
+              {/* Tags */}
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {kb.tags.map(t => (
+                  <span key={t} className="tag tag-blue" style={{ fontSize: 10.5 }}>
+                    {t}
+                  </span>
+                ))}
               </div>
             </div>
-            <div className="text-sm mb-12" style={{ lineHeight: 1.7, background: '#f9f9f9', padding: '12px 14px', borderRadius: 6 }}>
-              <strong>Insight:</strong> {kb.insight}
-            </div>
-            <div className="text-sm mb-12" style={{ lineHeight: 1.7, background: 'rgba(39,174,96,0.04)', padding: '12px 14px', borderRadius: 6, borderLeft: '3px solid var(--green)' }}>
-              <strong>Décision:</strong> {kb.decision}
-            </div>
-            <div className="flex gap-6 flex-wrap">
-              {kb.tags.map(t => <span key={t} className="tag tag-blue">{t}</span>)}
+          );
+        })}
+
+        {items.length === 0 && (
+          <div className="card text-center p-24" style={{ borderRadius: 12, border: '1px solid #E0E0E0' }}>
+            <div style={{ color: 'var(--muted)', fontSize: 13 }}>
+              Aucun apprentissage trouvé pour les filtres sélectionnés.
             </div>
           </div>
-        );
-      })}
-      {items.length === 0 && <div className="card text-center" style={{ padding: 40 }}><div className="text-muted">Aucun apprentissage trouvé pour cette recherche.</div></div>}
+        )}
+      </div>
     </div>
   );
 }

@@ -5,65 +5,179 @@ export default function GrowthExperiments() {
   const [filter, setFilter] = useState('all');
   const [selected, setSelected] = useState(null);
 
-  const statusMap = { running: { label: 'En cours', color: 'var(--orange)' }, paused: { label: 'En pause', color: 'var(--yellow)' }, completed: { label: 'Terminée', color: 'var(--green)' }, stopped: { label: 'Arrêtée', color: 'var(--red)' } };
+  const statusMap = { 
+    running: { label: 'En cours', color: '#FF7900' }, 
+    paused: { label: 'En pause', color: '#F39C12' }, 
+    completed: { label: 'Terminée', color: '#27AE60' }, 
+    stopped: { label: 'Arrêtée', color: '#E74C3C' } 
+  };
+  
   const filtered = filter === 'all' ? GROWTH_EXPERIMENTS : GROWTH_EXPERIMENTS.filter(e => e.status === filter);
   const exp = selected ? GROWTH_EXPERIMENTS.find(e => e.id === selected) : null;
 
   if (exp) {
-    const st = statusMap[exp.status] || { label: exp.status, color: 'var(--muted)' };
+    const st = statusMap[exp.status] || { label: exp.status, color: '#7F8C8D' };
     return (
-      <div>
-        <button className="btn btn-ghost btn-sm mb-16" onClick={() => setSelected(null)}>← Retour à la liste</button>
-        <div className="flex justify-between items-start mb-16">
-          <div>
-            <h2 className="text-xl font-bold text-dark mb-4">{exp.name}</h2>
-            <div className="text-sm text-muted">{exp.stage} • {exp.owner} • {exp.startDate} → {exp.endDate}</div>
-          </div>
-          <span className="tag" style={{ background: st.color + '20', color: st.color, fontSize: 12 }}>{st.label}</span>
-        </div>
-        <div className="card mb-16">
-          <h3 className="text-base font-bold text-dark mb-8">Hypothèse</h3>
-          <p className="text-sm" style={{ lineHeight: 1.7 }}>{exp.hypothesis}</p>
-        </div>
-        <div className="grid grid-4 mb-16">
-          <div className="card kpi-card"><div className="kpi-label">Métrique</div><div className="text-md font-bold">{exp.metric}</div></div>
-          <div className="card kpi-card"><div className="kpi-label">Baseline</div><div className="kpi-value" style={{ fontSize: 22 }}>{exp.baseline}</div></div>
-          <div className="card kpi-card"><div className="kpi-label">Actuel</div><div className="kpi-value" style={{ fontSize: 22, color: 'var(--green)' }}>{exp.current}</div></div>
-          <div className="card kpi-card"><div className="kpi-label">Significativité</div><div className="kpi-value" style={{ fontSize: 22, color: exp.significance >= 95 ? 'var(--green)' : 'var(--yellow)' }}>{exp.significance}%</div></div>
-        </div>
-        <div className="card mb-16">
-          <h3 className="text-base font-bold text-dark mb-12">Variants</h3>
-          <table className="table">
-            <thead><tr><th>Variant</th><th className="text-center">Trafic</th><th className="text-center">Visiteurs</th><th className="text-center">Conversion</th></tr></thead>
-            <tbody>
-              {exp.variants.map((v, i) => (
-                <tr key={i}>
-                  <td className="font-bold">{v.name}</td>
-                  <td className="text-center">{v.traffic}%</td>
-                  <td className="text-center">{v.visitors.toLocaleString()}</td>
-                  <td className="text-center"><strong style={{ color: i > 0 && v.conversion > exp.variants[0].conversion ? 'var(--green)' : 'inherit' }}>{v.conversion}%</strong></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div className="grid grid-2 gap-12 mb-16">
-          <div className="card"><h3 className="text-base font-bold text-dark mb-8">Score ICE</h3>
-            <div className="flex gap-16">
-              <div><div className="text-xs text-muted">Impact</div><div className="text-lg font-bold">{exp.scoreICE.impact}</div></div>
-              <div><div className="text-xs text-muted">Confidence</div><div className="text-lg font-bold">{exp.scoreICE.confidence}</div></div>
-              <div><div className="text-xs text-muted">Ease</div><div className="text-lg font-bold">{exp.scoreICE.ease}</div></div>
-              <div><div className="text-xs text-muted">Total</div><div className="text-lg font-bold text-orange">{exp.scoreICE.total}</div></div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="animate-fade">
+        <button 
+          type="button"
+          className="btn btn-ghost btn-sm" 
+          onClick={() => setSelected(null)}
+          style={{ width: 'fit-content', border: '1px solid #D0D0D0', background: '#FFF' }}
+        >
+          ← Retour à la liste des expériences
+        </button>
+
+        {/* Header Fiche Expérience */}
+        <div 
+          className="card p-16"
+          style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E0E0E0' }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 10 }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                <span style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: 11.5, background: '#FFF0E5', color: '#FF7900', padding: '2px 6px', borderRadius: 4 }}>
+                  {exp.id}
+                </span>
+                <span className="tag" style={{ background: st.color + '18', color: st.color, border: `1px solid ${st.color}35`, fontSize: 11, fontWeight: 700 }}>
+                  ● {st.label}
+                </span>
+              </div>
+              <h2 style={{ fontSize: 18, fontWeight: 900, color: 'var(--dark)', margin: 0 }}>
+                {exp.name}
+              </h2>
+              <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4 }}>
+                Étape : <strong>{exp.stage}</strong> • Responsable : <strong>{exp.owner}</strong> • Période : {exp.startDate} → {exp.endDate}
+              </div>
+            </div>
+
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: 11, color: 'var(--muted)' }}>Significativité statistique</div>
+              <div style={{ fontSize: 24, fontWeight: 900, color: exp.significance >= 95 ? '#27AE60' : '#F39C12' }}>
+                {exp.significance}%
+              </div>
             </div>
           </div>
-          <div className="card"><h3 className="text-base font-bold text-dark mb-8">Tags</h3>
-            <div className="flex gap-6 flex-wrap">{exp.tags.map(t => <span key={t} className="tag tag-blue">{t}</span>)}</div>
+        </div>
+
+        {/* Hypothèse */}
+        <div 
+          className="card p-16"
+          style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E0E0E0' }}
+        >
+          <h3 style={{ fontSize: 14, fontWeight: 800, color: 'var(--dark)', marginBottom: 6 }}>
+            💡 Hypothèse formulée
+          </h3>
+          <p style={{ fontSize: 13, lineHeight: 1.6, color: '#4B5563', margin: 0 }}>
+            {exp.hypothesis}
+          </p>
+        </div>
+
+        {/* 4 KPIs Clés */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+          <div className="card p-14" style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E0E0E0' }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase' }}>Métrique de succès</div>
+            <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--dark)', marginTop: 4 }}>{exp.metric}</div>
+          </div>
+          <div className="card p-14" style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E0E0E0' }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase' }}>Baseline (Référence)</div>
+            <div style={{ fontSize: 20, fontWeight: 900, color: 'var(--dark)', marginTop: 4 }}>{exp.baseline}</div>
+          </div>
+          <div className="card p-14" style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E0E0E0' }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase' }}>Résultat Actuel</div>
+            <div style={{ fontSize: 20, fontWeight: 900, color: '#27AE60', marginTop: 4 }}>{exp.current}</div>
+          </div>
+          <div className="card p-14" style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E0E0E0' }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase' }}>Objectif Cible</div>
+            <div style={{ fontSize: 20, fontWeight: 900, color: '#FF7900', marginTop: 4 }}>{exp.target}</div>
           </div>
         </div>
+
+        {/* Tableau des Variants */}
+        <div 
+          className="card p-16"
+          style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E0E0E0', overflow: 'hidden' }}
+        >
+          <h3 style={{ fontSize: 14, fontWeight: 800, color: 'var(--dark)', marginBottom: 12 }}>
+            📊 Comparatif des Variants Testés
+          </h3>
+          <div className="overflow-x-auto">
+            <table className="table w-full">
+              <thead>
+                <tr style={{ background: '#F8F9FA' }}>
+                  <th className="py-8 px-12 text-left text-xs font-bold text-muted">Variant</th>
+                  <th className="py-8 px-12 text-center text-xs font-bold text-muted">Split Trafic</th>
+                  <th className="py-8 px-12 text-center text-xs font-bold text-muted">Visiteurs Échantillon</th>
+                  <th className="py-8 px-12 text-center text-xs font-bold text-muted">Taux de Conversion</th>
+                </tr>
+              </thead>
+              <tbody>
+                {exp.variants.map((v, i) => {
+                  const isWinning = i > 0 && v.conversion > exp.variants[0].conversion;
+                  return (
+                    <tr key={i} className="border-b" style={{ borderColor: '#F0F0F0' }}>
+                      <td className="py-10 px-12 font-bold text-dark text-sm">
+                        {v.name} {i === 0 ? '(Contrôle)' : ''}
+                      </td>
+                      <td className="py-10 px-12 text-center text-sm">{v.traffic}%</td>
+                      <td className="py-10 px-12 text-center text-sm">{v.visitors.toLocaleString()}</td>
+                      <td className="py-10 px-12 text-center text-sm">
+                        <strong style={{ color: isWinning ? '#27AE60' : 'inherit' }}>
+                          {v.conversion}%
+                        </strong>
+                        {isWinning && (
+                          <span className="tag ml-2" style={{ background: 'rgba(39, 174, 96, 0.15)', color: '#27AE60', fontSize: 10 }}>
+                            +{(v.conversion - exp.variants[0].conversion).toFixed(1)}%
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Score ICE & Tags */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 12 }}>
+          <div className="card p-14" style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E0E0E0' }}>
+            <h4 style={{ fontSize: 13, fontWeight: 800, color: 'var(--dark)', marginBottom: 8 }}>Score ICE</h4>
+            <div style={{ display: 'flex', gap: 16 }}>
+              <div><div style={{ fontSize: 10, color: 'var(--muted)' }}>Impact</div><div style={{ fontSize: 16, fontWeight: 800 }}>{exp.scoreICE.impact}</div></div>
+              <div><div style={{ fontSize: 10, color: 'var(--muted)' }}>Confiance</div><div style={{ fontSize: 16, fontWeight: 800 }}>{exp.scoreICE.confidence}</div></div>
+              <div><div style={{ fontSize: 10, color: 'var(--muted)' }}>Facilité</div><div style={{ fontSize: 16, fontWeight: 800 }}>{exp.scoreICE.ease}</div></div>
+              <div><div style={{ fontSize: 10, color: '#E65100', fontWeight: 700 }}>Total</div><div style={{ fontSize: 18, fontWeight: 900, color: '#FF7900' }}>{exp.scoreICE.total}</div></div>
+            </div>
+          </div>
+
+          <div className="card p-14" style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E0E0E0' }}>
+            <h4 style={{ fontSize: 13, fontWeight: 800, color: 'var(--dark)', marginBottom: 8 }}>Tags & Canaux</h4>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {exp.tags.map(t => (
+                <span key={t} className="tag tag-blue" style={{ fontSize: 11 }}>{t}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Apprentissage */}
         {exp.learning && (
-          <div className="card" style={{ borderLeft: '4px solid var(--green)', background: 'rgba(39,174,96,0.04)' }}>
-            <h3 className="text-base font-bold text-green mb-8">📚 Apprentissage</h3>
-            <p className="text-sm" style={{ lineHeight: 1.7 }}>{exp.learning}</p>
+          <div 
+            className="card p-16" 
+            style={{ 
+              background: 'rgba(39, 174, 96, 0.05)', 
+              borderRadius: 12, 
+              border: '1px solid #A3E4D7', 
+              borderLeft: '4px solid #27AE60' 
+            }}
+          >
+            <h4 style={{ fontSize: 14, fontWeight: 800, color: '#27AE60', marginBottom: 6 }}>
+              📚 Apprentissage & Décision Produit
+            </h4>
+            <p style={{ fontSize: 13, color: 'var(--dark)', lineHeight: 1.6, margin: 0 }}>
+              {exp.learning}
+            </p>
           </div>
         )}
       </div>
@@ -71,37 +185,159 @@ export default function GrowthExperiments() {
   }
 
   return (
-    <div>
-      <div className="flex gap-8 mb-20">
-        {['all', 'running', 'paused', 'completed'].map(f => (
-          <button key={f} className={`btn btn-sm ${filter === f ? 'btn-orange' : 'btn-ghost'}`} onClick={() => setFilter(f)}>
-            {f === 'all' ? 'Toutes' : statusMap[f]?.label}
-            {f !== 'all' && <span className="gh-count-badge">{GROWTH_EXPERIMENTS.filter(e => e.status === f).length}</span>}
-          </button>
-        ))}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* ─── FILTRES PIPELINE (Style Influence) ─── */}
+      <div 
+        className="card p-12"
+        style={{
+          background: '#FFFFFF',
+          borderRadius: 12,
+          border: '1px solid #E0E0E0',
+          display: 'flex',
+          gap: 8,
+          alignItems: 'center',
+          flexWrap: 'wrap'
+        }}
+      >
+        {['all', 'running', 'paused', 'completed'].map(f => {
+          const isSel = filter === f;
+          const count = f === 'all' ? GROWTH_EXPERIMENTS.length : GROWTH_EXPERIMENTS.filter(e => e.status === f).length;
+          return (
+            <button
+              key={f}
+              type="button"
+              className="btn btn-sm"
+              onClick={() => setFilter(f)}
+              style={{
+                background: isSel ? '#FF7900' : '#F3F4F6',
+                color: isSel ? '#FFFFFF' : 'var(--dark)',
+                fontWeight: 700,
+                borderRadius: 6,
+                padding: '6px 12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6
+              }}
+            >
+              <span>{f === 'all' ? 'Toutes' : statusMap[f]?.label}</span>
+              <span
+                style={{
+                  fontSize: 10,
+                  padding: '1px 6px',
+                  borderRadius: 10,
+                  background: isSel ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.06)',
+                  color: isSel ? '#FFF' : 'var(--dark)'
+                }}
+              >
+                {count}
+              </span>
+            </button>
+          );
+        })}
       </div>
-      <div className="gh-pipeline mb-20">
+
+      {/* ─── PIPELINE KANBAN (Style Influence) ─── */}
+      <div 
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: 16
+        }}
+      >
         {['running', 'paused', 'completed'].map(status => {
           const exps = GROWTH_EXPERIMENTS.filter(e => e.status === status);
           const st = statusMap[status];
           return (
-            <div key={status} className="gh-pipeline-col">
-              <div className="gh-pipeline-header" style={{ borderBottomColor: st.color }}>
-                <span className="status-dot" style={{ background: st.color }}></span>
-                <span className="text-sm font-bold">{st.label}</span>
-                <span className="text-xs text-muted">({exps.length})</span>
-              </div>
-              {exps.map(e => (
-                <div key={e.id} className="card gh-exp-card" onClick={() => setSelected(e.id)} style={{ cursor: 'pointer' }}>
-                  <div className="text-sm font-bold text-dark mb-4">{e.name}</div>
-                  <div className="text-xs text-muted mb-8">{e.stage} • {e.owner}</div>
-                  <div className="flex justify-between items-center">
-                    <div className="text-xs"><span className="text-muted">Sig:</span> <strong style={{ color: e.significance >= 95 ? 'var(--green)' : 'var(--yellow)' }}>{e.significance}%</strong></div>
-                    {e.daysLeft > 0 && <div className="text-xs text-muted">{e.daysLeft}j</div>}
-                    {e.result && <span className="tag" style={{ fontSize: 9, background: e.result === 'winner' ? 'rgba(39,174,96,0.15)' : 'rgba(243,156,18,0.15)', color: e.result === 'winner' ? 'var(--green)' : 'var(--yellow)' }}>{e.result === 'winner' ? '✓ Gagnant' : '~ Partiel'}</span>}
-                  </div>
+            <div
+              key={status}
+              style={{
+                background: '#F9FAFB',
+                borderRadius: 12,
+                border: '1px solid #E5E7EB',
+                padding: 14,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 10
+              }}
+            >
+              {/* Entête colonne */}
+              <div 
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between', 
+                  paddingBottom: 8, 
+                  borderBottom: `2px solid ${st.color}` 
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: st.color }}></span>
+                  <span style={{ fontSize: 13, fontWeight: 900, color: 'var(--dark)' }}>{st.label}</span>
                 </div>
-              ))}
+                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)' }}>({exps.length})</span>
+              </div>
+
+              {/* Cartes d'expériences */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {exps.map(e => (
+                  <div
+                    key={e.id}
+                    onClick={() => setSelected(e.id)}
+                    className="card p-12 transition-all"
+                    style={{
+                      background: '#FFFFFF',
+                      borderRadius: 10,
+                      border: '1px solid #E0E0E0',
+                      cursor: 'pointer',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = '#FF7900';
+                      e.currentTarget.style.boxShadow = '0 4px 10px rgba(255, 121, 0, 0.08)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = '#E0E0E0';
+                      e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)';
+                    }}
+                  >
+                    <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--dark)', marginBottom: 4, lineHeight: 1.3 }}>
+                      {e.name}
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 8 }}>
+                      {e.stage} • Resp: <strong>{e.owner}</strong>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 6, borderTop: '1px solid #F3F4F6' }}>
+                      <div style={{ fontSize: 11 }}>
+                        <span style={{ color: 'var(--muted)' }}>Sig : </span>
+                        <strong style={{ color: e.significance >= 95 ? '#27AE60' : '#F39C12' }}>
+                          {e.significance}%
+                        </strong>
+                      </div>
+
+                      {e.daysLeft > 0 && (
+                        <div style={{ fontSize: 11, color: 'var(--muted)' }}>
+                          ⏳ {e.daysLeft}j
+                        </div>
+                      )}
+
+                      {e.result && (
+                        <span 
+                          className="tag" 
+                          style={{ 
+                            fontSize: 10, 
+                            fontWeight: 700,
+                            background: e.result === 'winner' ? 'rgba(39, 174, 96, 0.15)' : 'rgba(243, 156, 18, 0.15)', 
+                            color: e.result === 'winner' ? '#27AE60' : '#F39C12' 
+                          }}
+                        >
+                          {e.result === 'winner' ? '✓ Gagnant' : '~ Partiel'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           );
         })}
