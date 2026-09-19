@@ -393,12 +393,14 @@ export default function InfluencePage() {
           {legacySubTab === 'fiche' && (
             <InfluenceFiche
               influencers={influencers}
+              setInfluencers={handleSetInfluencers}
               filters={filters}
               setFilters={setFilters}
               onViewProfile={setProfileInf}
               onSelect={setProfileInf}
               onEdit={setEditInf}
               onDelete={handleDelete}
+              onAdd={() => setShowAdd(true)}
             />
           )}
 
@@ -432,17 +434,21 @@ export default function InfluencePage() {
 
           {profileInf && (
             <ProfileModal
+              inf={profileInf}
               influencer={profileInf}
               onClose={() => setProfileInf(null)}
               onEdit={(inf) => {
                 setProfileInf(null);
                 setEditInf(inf);
               }}
+              onDelete={handleDelete}
+              setInfluencers={handleSetInfluencers}
             />
           )}
 
           {(editInf || showAdd) && (
             <EditModal
+              inf={editInf}
               influencer={editInf}
               onClose={() => {
                 setEditInf(null);

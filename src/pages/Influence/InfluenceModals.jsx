@@ -2,6 +2,8 @@ import { useState, useRef } from 'react';
 import InfluencerDeliverablesSection from './sections/fiche/InfluencerDeliverablesSection';
 import { exportInfluencerProfileToPdf } from './sections/fiche/InfluencerProfilePdfExport';
 import ShareProfileModal from './sections/fiche/ShareProfileModal';
+import { getTalentPhoto } from './utils/talentPhotos';
+import ErrorBoundary from '../../components/common/ErrorBoundary';
 
 export const CAMEROON_REGIONS = [
   'Centre',
@@ -40,11 +42,14 @@ function formatFollowers(n) {
 }
 
 /* ─── Profile Modal ─── */
-export function ProfileModal({ inf, onClose, onEdit, onDelete, setInfluencers }) {
+export function ProfileModal({ inf: propInf, influencer, onClose, onEdit, onDelete, setInfluencers }) {
+  const inf = propInf || influencer;
   const [profileTab, setProfileTab] = useState('overview');
   const [showShareModal, setShowShareModal] = useState(false);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
+
+  if (!inf) return null;
 
   const handleExportPdf = () => {
     setIsExportingPdf(true);
@@ -53,7 +58,7 @@ export function ProfileModal({ inf, onClose, onEdit, onDelete, setInfluencers })
       setToastMsg('✓ Fiche PDF Orange Cameroun générée');
       setTimeout(() => setToastMsg(''), 3500);
     } catch (e) {
-      console.error(e);
+      console.error('Erreur export PDF:', e);
     } finally {
       setIsExportingPdf(false);
     }
@@ -67,166 +72,218 @@ export function ProfileModal({ inf, onClose, onEdit, onDelete, setInfluencers })
     { id: 'contact', label: 'Contact & Legal', icon: '💬' },
   ];
 
+  const photoUrl = inf.photo || getTalentPhoto(inf);
+  const displayName = inf.display_name || inf.realName || `${inf.prenom || inf.first_name || ''} ${inf.nom || inf.last_name || ''}`.trim() || inf.name || inf.pseudo || 'Créateur';
+  const cleanPseudo = (inf.pseudo || inf.handle || inf.name || displayName || 'profil').replace(/^@/, '');
+  const initialLetter = (cleanPseudo || displayName || '?').charAt(0).toUpperCase();
+
+  // Unification des réseaux sociaux entre socialLinks et platform_profiles
+  const resolvedSocials = { ...(inf.socialLinks || {}) };
+  if (Array.isArray(inf.platform_profiles)) {
+    inf.platform_profiles.forEach(p => {
+      const key = p.platform === 'x' ? 'xtwitter' : p.platform;
+      if (!resolvedSocials[key] || (!resolvedSocials[key].url && !resolvedSocials[key].username)) {
+        resolvedSocials[key] = {
+          url: p.url || '',
+          username: (p.handle || cleanPseudo).replace(/^@/, ''),
+          followers: p.followers || 0
+        };
+      }
+    });
+  }
+
+  const categories = (Array.isArray(inf.categories) && inf.categories.length > 0
+    ? inf.categories
+    : [inf.niche || inf.segment || 'Lifestyle']).filter(Boolean);
+
   return (
     <div className="inf-modal-overlay" onClick={onClose}>
       <div className="inf-profile-modal" onClick={e => e.stopPropagation()}>
-        <button className="inf-modal-close" onClick={onClose}>✕</button>
-        {/* Header */}
-        <div className="inf-profile-banner" />
-        <div className="inf-profile-head">
-          <div className="inf-profile-avatar-wrap">
-            {inf.photo ? <img src={inf.photo} alt={inf.name} className="inf-profile-avatar" /> : <div className="inf-profile-avatar inf-avatar-placeholder">{(inf.pseudo || inf.name).charAt(0)}</div>}
-          </div>
-          <div className="inf-profile-info">
-            <div className="flex items-center gap-8 flex-wrap mb-4">
-              <h2 className="inf-profile-name m-0">@{inf.pseudo || inf.name}</h2>
-              <span className="tag tag-orange font-bold text-xs">{inf.type || 'Micro'}</span>
-              <span className="tag tag-ghost font-semibold text-xs">📍 {inf.city ? `${inf.city} (${inf.region})` : inf.region || 'Cameroun'}</span>
-            </div>
-            <div className="text-sm text-muted mb-6">{inf.prenom || ''} {inf.nom || inf.realName}</div>
-            <div className="inf-profile-tags">
-              <span className="tag tag-blue font-semibold">{inf.platform || 'Multi-plateforme'}</span>
-              {(inf.categories || [inf.niche]).map((cat, i) => (
-                <span key={i} className="tag tag-ghost" style={{ fontSize: 11 }}>{cat}</span>
-              ))}
-            </div>
-            <div className="inf-profile-stats mt-8">
-              <span>👥 <strong>{inf.followers}</strong> abonnés globaux</span>
-              <span>♡ <strong>{inf.engagement}</strong> engagement</span>
-              <span>👁 <strong>{inf.avgViews}</strong> vues moy.</span>
-            </div>
-          </div>
-          <div className="inf-profile-actions flex items-center gap-6 flex-wrap">
-            <button
-              className="btn btn-sm flex items-center gap-4"
-              style={{ background: '#FF7900', color: '#fff', border: 'none', fontWeight: 700 }}
-              onClick={handleExportPdf}
-              disabled={isExportingPdf}
-              title="Exporter la fiche officielle au format PDF Orange Cameroun"
-            >
-              <span>📄</span>
-              <span>{isExportingPdf ? 'Export...' : 'PDF Fiche'}</span>
-            </button>
-            <button
-              className="btn btn-ghost btn-sm flex items-center gap-4"
-              onClick={() => setShowShareModal(true)}
-              title="Partager le profil ou copier le lien"
-            >
-              <span>🔗</span>
-              <span>Partager</span>
-            </button>
-            <button className="btn btn-ghost btn-sm" onClick={() => onEdit(inf)} title="Modifier">✏️ Modifier</button>
-            <button className="btn btn-ghost btn-sm" onClick={() => onDelete(inf.id)} title="Supprimer" style={{ color: 'var(--red)' }}>🗑</button>
-          </div>
-        </div>
+        <button className="inf-modal-close" onClick={onClose} aria-label="Fermer">✕</button>
 
-        {toastMsg && (
-          <div style={{ background: '#e8f5e9', color: '#2e7d32', padding: '6px 16px', fontSize: 12, fontWeight: 600, borderBottom: '1px solid #a5d6a7' }}>
-            {toastMsg}
+        <ErrorBoundary onClose={onClose}>
+          {/* Header */}
+          <div className="inf-profile-banner" />
+          <div className="inf-profile-head">
+            <div className="inf-profile-avatar-wrap">
+              {photoUrl ? (
+                <img
+                  src={photoUrl}
+                  alt={displayName}
+                  className="inf-profile-avatar"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    const fallback = e.target.parentElement.querySelector('.inf-avatar-placeholder');
+                    if (fallback) fallback.style.display = 'flex';
+                  }}
+                />
+              ) : null}
+              <div
+                className="inf-profile-avatar inf-avatar-placeholder"
+                style={{ display: photoUrl ? 'none' : 'flex' }}
+              >
+                {initialLetter}
+              </div>
+            </div>
+            <div className="inf-profile-info">
+              <div className="flex items-center gap-8 flex-wrap mb-4">
+                <h2 className="inf-profile-name m-0">@{cleanPseudo}</h2>
+                <span className="tag tag-orange font-bold text-xs">{inf.type || 'Macro'}</span>
+                <span className="tag tag-ghost font-semibold text-xs">📍 {inf.city ? `${inf.city} (${inf.region || 'Littoral'})` : inf.region || 'Cameroun'}</span>
+              </div>
+              <div className="text-sm text-muted mb-6">{displayName}</div>
+              <div className="inf-profile-tags">
+                <span className="tag tag-blue font-semibold">{inf.platform || 'Multi-plateforme'}</span>
+                {categories.map((cat, i) => (
+                  <span key={i} className="tag tag-ghost" style={{ fontSize: 11 }}>{cat}</span>
+                ))}
+              </div>
+              <div className="inf-profile-stats mt-8">
+                <span>👥 <strong>{inf.followers || '0'}</strong> abonnés globaux</span>
+                <span>♡ <strong>{inf.engagement || '0%'}</strong> engagement</span>
+                <span>👁 <strong>{inf.avgViews || '0'}</strong> vues moy.</span>
+              </div>
+            </div>
+            <div className="inf-profile-actions flex items-center gap-6 flex-wrap">
+              <button
+                className="btn btn-sm flex items-center gap-4"
+                style={{ background: '#FF7900', color: '#fff', border: 'none', fontWeight: 700 }}
+                onClick={handleExportPdf}
+                disabled={isExportingPdf}
+                title="Exporter la fiche officielle au format PDF Orange Cameroun"
+              >
+                <span>📄</span>
+                <span>{isExportingPdf ? 'Export...' : 'PDF Fiche'}</span>
+              </button>
+              <button
+                className="btn btn-ghost btn-sm flex items-center gap-4"
+                onClick={() => setShowShareModal(true)}
+                title="Partager le profil ou copier le lien"
+              >
+                <span>🔗</span>
+                <span>Partager</span>
+              </button>
+              {onEdit && (
+                <button className="btn btn-ghost btn-sm" onClick={() => onEdit(inf)} title="Modifier">
+                  ✏️ Modifier
+                </button>
+              )}
+              {onDelete && (
+                <button className="btn btn-ghost btn-sm" onClick={() => onDelete(inf.id)} title="Supprimer" style={{ color: 'var(--red)' }}>
+                  🗑
+                </button>
+              )}
+            </div>
           </div>
-        )}
 
-        {/* Tabs */}
-        <div className="inf-profile-tabs">
-          {tabs.map(t => (
-            <button key={t.id} className={`inf-ptab ${profileTab === t.id ? 'active' : ''}`} onClick={() => setProfileTab(t.id)}>{t.icon} {t.label}</button>
-          ))}
-        </div>
-
-        {/* Tab content */}
-        <div className="inf-profile-body">
-          {profileTab === 'overview' && (
-            <div className="inf-overview-grid">
-              <div className="inf-ov-card"><div className="inf-ov-label">BIO & PRÉSENTATION</div><p>{inf.bio || 'Aucune biographie disponible.'}</p></div>
-              <div className="inf-ov-card"><div className="inf-ov-label">CONTRAT</div><p style={{ color: inf.contractStatus === 'actif' ? 'var(--green)' : 'var(--yellow)', fontWeight: 700 }}>{inf.contractStatus === 'actif' ? 'Actif' : inf.contractStatus === 'en_revision' ? 'En révision' : 'Prospect'}</p>{inf.contractEnd && <p className="text-sm text-muted">Expire: {inf.contractEnd}</p>}</div>
-              <div className="inf-ov-card"><div className="inf-ov-label">CATÉGORIES / NICHES</div><p>{(inf.categories || [inf.niche]).join(', ')}</p></div>
-              <div className="inf-ov-card"><div className="inf-ov-label">RISQUE & MORALITÉ</div><p style={{ color: inf.riskScore <= 1 ? 'var(--green)' : inf.riskScore <= 2 ? 'var(--yellow)' : 'var(--red)', fontWeight: 700 }}>Score Risque: {inf.riskScore}/5</p><p className="text-xs text-muted">{inf.riskNotes}</p></div>
-              <div className="inf-ov-card"><div className="inf-ov-label">CAMPAGNES</div><p className="text-lg font-bold">{inf.campaigns || 0}</p><p className="text-xs text-muted">Dernière: {inf.lastCampaign || '—'}</p></div>
-              <div className="inf-ov-card"><div className="inf-ov-label">DISPONIBILITÉ & STATUT</div><div className="flex gap-6 mt-4"><span className={`tag ${inf.disponibilite === 'disponible' ? 'tag-green' : 'tag-yellow'}`}>{inf.disponibilite}</span><span className="tag tag-ghost">{inf.status === 'active' ? 'Actif' : inf.status === 'warning' ? 'Alerte' : 'Nouveau'}</span></div></div>
+          {toastMsg && (
+            <div style={{ background: '#e8f5e9', color: '#2e7d32', padding: '6px 16px', fontSize: 12, fontWeight: 600, borderBottom: '1px solid #a5d6a7' }}>
+              {toastMsg}
             </div>
           )}
 
-          {profileTab === 'socials' && (
-            <div>
-              <div className="flex justify-between items-center mb-12">
-                <h4 className="text-sm font-bold text-dark m-0">Comptes & Réseaux Sociaux Référencés</h4>
-                <span className="text-xs text-muted">YouTube, X, Facebook, LinkedIn, Instagram, TikTok</span>
-              </div>
-              <div className="grid grid-2 gap-12">
-                {SOCIAL_NETWORKS.map(net => {
-                  const data = (inf.socialLinks || {})[net.id];
-                  const hasLink = Boolean(data && (data.url || data.username || (data.followers > 0)));
-                  return (
-                    <div key={net.id} className="p-12 border rounded" style={{ background: hasLink ? '#fff' : '#fafafa', opacity: hasLink ? 1 : 0.65, borderLeft: `3px solid ${hasLink ? net.color : '#e0e0e0'}` }}>
-                      <div className="flex justify-between items-center mb-6">
-                        <span className="font-bold text-sm flex items-center gap-6">
-                          <span style={{ fontSize: 16 }}>{net.icon}</span>
-                          <span>{net.label}</span>
-                        </span>
-                        {hasLink ? <span className="tag tag-green text-xs">Configuré</span> : <span className="tag text-xs">Non renseigné</span>}
-                      </div>
+          {/* Tabs */}
+          <div className="inf-profile-tabs">
+            {tabs.map(t => (
+              <button key={t.id} className={`inf-ptab ${profileTab === t.id ? 'active' : ''}`} onClick={() => setProfileTab(t.id)}>{t.icon} {t.label}</button>
+            ))}
+          </div>
 
-                      {hasLink ? (
-                        <div className="space-y-4 text-xs">
-                          {data.username && (
-                            <div className="text-dark font-semibold">
-                              Pseudo / Chaîne : <span className="text-blue">@{data.username.replace(/^@/, '')}</span>
-                            </div>
-                          )}
-                          <div className="text-muted">
-                            Abonnés : <strong className="text-dark">{data.followers ? Number(data.followers).toLocaleString() : '0'}</strong> ({formatFollowers(data.followers)})
-                          </div>
-                          {data.url ? (
-                            <div className="pt-4">
-                              <a href={data.url} target="_blank" rel="noreferrer" className="text-xs text-blue underline break-all inline-flex items-center gap-4">
-                                <span>🔗 Ouvrir le profil</span> ↗
-                              </a>
-                            </div>
-                          ) : (
-                            <span className="text-muted italic">Aucun lien direct</span>
-                          )}
+          {/* Tab content */}
+          <div className="inf-profile-body">
+            {profileTab === 'overview' && (
+              <div className="inf-overview-grid">
+                <div className="inf-ov-card"><div className="inf-ov-label">BIO & PRÉSENTATION</div><p>{inf.bio || 'Aucune biographie disponible.'}</p></div>
+                <div className="inf-ov-card"><div className="inf-ov-label">CONTRAT</div><p style={{ color: inf.contractStatus === 'actif' ? 'var(--green)' : 'var(--yellow)', fontWeight: 700 }}>{inf.contractStatus === 'actif' ? 'Actif' : inf.contractStatus === 'en_revision' ? 'En révision' : 'Prospect'}</p>{inf.contractEnd && <p className="text-sm text-muted">Expire: {inf.contractEnd}</p>}</div>
+                <div className="inf-ov-card"><div className="inf-ov-label">CATÉGORIES / NICHES</div><p>{categories.join(', ')}</p></div>
+                <div className="inf-ov-card"><div className="inf-ov-label">RISQUE & MORALITÉ</div><p style={{ color: (inf.riskScore || 0) <= 1 ? 'var(--green)' : (inf.riskScore || 0) <= 2 ? 'var(--yellow)' : 'var(--red)', fontWeight: 700 }}>Score Risque: {inf.riskScore ?? 0}/5</p><p className="text-xs text-muted">{inf.riskNotes || 'Aucun risque particulier signalé.'}</p></div>
+                <div className="inf-ov-card"><div className="inf-ov-label">CAMPAGNES</div><p className="text-lg font-bold">{inf.campaigns || 0}</p><p className="text-xs text-muted">Dernière: {inf.lastCampaign || '—'}</p></div>
+                <div className="inf-ov-card"><div className="inf-ov-label">DISPONIBILITÉ & STATUT</div><div className="flex gap-6 mt-4"><span className={`tag ${inf.disponibilite === 'disponible' ? 'tag-green' : 'tag-yellow'}`}>{inf.disponibilite || 'disponible'}</span><span className="tag tag-ghost">{inf.status === 'active' ? 'Actif' : inf.status === 'warning' ? 'Alerte' : 'Nouveau'}</span></div></div>
+              </div>
+            )}
+
+            {profileTab === 'socials' && (
+              <div>
+                <div className="flex justify-between items-center mb-12">
+                  <h4 className="text-sm font-bold text-dark m-0">Comptes & Réseaux Sociaux Référencés</h4>
+                  <span className="text-xs text-muted">YouTube, X, Facebook, LinkedIn, Instagram, TikTok</span>
+                </div>
+                <div className="grid grid-2 gap-12">
+                  {SOCIAL_NETWORKS.map(net => {
+                    const data = resolvedSocials[net.id];
+                    const hasLink = Boolean(data && (data.url || data.username || (data.followers > 0)));
+                    return (
+                      <div key={net.id} className="p-12 border rounded" style={{ background: hasLink ? '#fff' : '#fafafa', opacity: hasLink ? 1 : 0.65, borderLeft: `3px solid ${hasLink ? net.color : '#e0e0e0'}` }}>
+                        <div className="flex justify-between items-center mb-6">
+                          <span className="font-bold text-sm flex items-center gap-6">
+                            <span style={{ fontSize: 16 }}>{net.icon}</span>
+                            <span>{net.label}</span>
+                          </span>
+                          {hasLink ? <span className="tag tag-green text-xs">Configuré</span> : <span className="tag text-xs">Non renseigné</span>}
                         </div>
-                      ) : (
-                        <div className="text-xs text-muted italic">Aucun compte renseigné pour ce réseau.</div>
-                      )}
-                    </div>
-                  );
-                })}
+
+                        {hasLink ? (
+                          <div className="space-y-4 text-xs">
+                            {data.username && (
+                              <div className="text-dark font-semibold">
+                                Pseudo / Chaîne : <span className="text-blue">@{String(data.username).replace(/^@/, '')}</span>
+                              </div>
+                            )}
+                            <div className="text-muted">
+                              Abonnés : <strong className="text-dark">{data.followers ? Number(data.followers).toLocaleString() : '0'}</strong> ({formatFollowers(data.followers)})
+                            </div>
+                            {data.url ? (
+                              <div className="pt-4">
+                                <a href={data.url} target="_blank" rel="noreferrer" className="text-xs text-blue underline break-all inline-flex items-center gap-4">
+                                  <span>🔗 Ouvrir le profil</span> ↗
+                                </a>
+                              </div>
+                            ) : (
+                              <span className="text-muted italic">Aucun lien direct</span>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="text-xs text-muted italic">Aucun compte renseigné pour ce réseau.</div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {profileTab === 'content' && (
-            <InfluencerDeliverablesSection
-              influencer={inf}
-              setInfluencers={setInfluencers}
-              onExportPdf={handleExportPdf}
-              onShare={() => setShowShareModal(true)}
-            />
-          )}
+            {profileTab === 'content' && (
+              <InfluencerDeliverablesSection
+                influencer={inf}
+                setInfluencers={setInfluencers}
+                onExportPdf={handleExportPdf}
+                onShare={() => setShowShareModal(true)}
+              />
+            )}
 
-          {profileTab === 'analytics' && (
-            <div>
-              <h4 className="text-sm font-bold text-dark mb-12">Historique de Performance</h4>
-              {inf.performanceHistory && inf.performanceHistory.length > 0 ? (
-                <table className="table w-full"><thead><tr><th>Campagne</th><th className="text-right">Reach</th><th className="text-right">Engagement</th><th className="text-center">Qualité</th></tr></thead>
-                  <tbody>{inf.performanceHistory.map((p, i) => (<tr key={i}><td>{p.campaign}</td><td className="text-right" style={{ color: p.kpiReach >= p.kpiTarget ? 'var(--green)' : 'var(--red)' }}>{Math.round(p.kpiReach / (p.kpiTarget || 1) * 100)}%</td><td className="text-right" style={{ color: p.kpiEngagement >= p.engagementTarget ? 'var(--green)' : 'var(--red)' }}>{Math.round(p.kpiEngagement / (p.engagementTarget || 1) * 100)}%</td><td className="text-center">{p.contentQuality}/5</td></tr>))}</tbody></table>
-              ) : <p className="text-muted text-sm">Pas encore de données d'analytics.</p>}
-            </div>
-          )}
-
-          {profileTab === 'contact' && (
-            <div className="inf-contact-grid">
-              <div className="inf-contact-details" style={{ width: '100%' }}>
-                <h4 className="text-sm font-bold text-dark mb-12">Coordonnées Complètes</h4>
-                <div className="inf-contact-row"><span className="inf-contact-icon" style={{ background: 'rgba(255,121,0,0.1)', color: 'var(--orange)' }}>📍</span><div><div className="inf-ov-label">ADRESSE & LOCALISATION</div><strong>{inf.adresse || inf.city || 'Non renseignée'} ({inf.region || 'Cameroun'})</strong></div></div>
-                <div className="inf-contact-row"><span className="inf-contact-icon" style={{ background: 'rgba(41,128,185,0.1)', color: 'var(--blue)' }}>✉</span><div><div className="inf-ov-label">EMAIL DIRECT</div><strong style={{ fontSize: 12 }}>{inf.email}</strong></div></div>
-                <div className="inf-contact-row"><span className="inf-contact-icon" style={{ background: 'rgba(39,174,96,0.1)', color: 'var(--green)' }}>📞</span><div><div className="inf-ov-label">TÉLÉPHONES</div><strong>{inf.phone}</strong> {inf.telephone2 && <span> / {inf.telephone2}</span>}</div></div>
-                <div className="inf-contact-row"><span className="inf-contact-icon" style={{ background: 'rgba(142,68,173,0.1)', color: 'var(--purple)' }}>📑</span><div><div className="inf-ov-label">DOCUMENTS LÉGAUX</div><strong>CNI: {inf.documentsLegaux?.pieceIdentite?.present ? '✓ Conforme' : '⚠️ Manquant'} • RIB: {inf.documentsLegaux?.rib?.present ? '✓ Conforme' : '⚠️ Manquant'}</strong></div></div>
+            {profileTab === 'analytics' && (
+              <div>
+                <h4 className="text-sm font-bold text-dark mb-12">Historique de Performance</h4>
+                {inf.performanceHistory && inf.performanceHistory.length > 0 ? (
+                  <table className="table w-full"><thead><tr><th>Campagne</th><th className="text-right">Reach</th><th className="text-right">Engagement</th><th className="text-center">Qualité</th></tr></thead>
+                    <tbody>{inf.performanceHistory.map((p, i) => (<tr key={i}><td>{p.campaign}</td><td className="text-right" style={{ color: p.kpiReach >= (p.kpiTarget || 1) ? 'var(--green)' : 'var(--red)' }}>{Math.round(p.kpiReach / (p.kpiTarget || 1) * 100)}%</td><td className="text-right" style={{ color: p.kpiEngagement >= (p.engagementTarget || 1) ? 'var(--green)' : 'var(--red)' }}>{Math.round(p.kpiEngagement / (p.engagementTarget || 1) * 100)}%</td><td className="text-center">{p.contentQuality}/5</td></tr>))}</tbody></table>
+                ) : <p className="text-muted text-sm">Pas encore de données d'analytics pour cet influenceur.</p>}
               </div>
-            </div>
-          )}
-        </div>
+            )}
+
+            {profileTab === 'contact' && (
+              <div className="inf-contact-grid">
+                <div className="inf-contact-details" style={{ width: '100%' }}>
+                  <h4 className="text-sm font-bold text-dark mb-12">Coordonnées Complètes</h4>
+                  <div className="inf-contact-row"><span className="inf-contact-icon" style={{ background: 'rgba(255,121,0,0.1)', color: 'var(--orange)' }}>📍</span><div><div className="inf-ov-label">ADRESSE & LOCALISATION</div><strong>{inf.adresse || inf.city || 'Non renseignée'} ({inf.region || 'Cameroun'})</strong></div></div>
+                  <div className="inf-contact-row"><span className="inf-contact-icon" style={{ background: 'rgba(41,128,185,0.1)', color: 'var(--blue)' }}>✉</span><div><div className="inf-ov-label">EMAIL DIRECT</div><strong style={{ fontSize: 12 }}>{inf.email || 'Non renseigné'}</strong></div></div>
+                  <div className="inf-contact-row"><span className="inf-contact-icon" style={{ background: 'rgba(39,174,96,0.1)', color: 'var(--green)' }}>📞</span><div><div className="inf-ov-label">TÉLÉPHONES</div><strong>{inf.phone || 'Non renseigné'}</strong> {inf.telephone2 && <span> / {inf.telephone2}</span>}</div></div>
+                  <div className="inf-contact-row"><span className="inf-contact-icon" style={{ background: 'rgba(142,68,173,0.1)', color: 'var(--purple)' }}>📑</span><div><div className="inf-ov-label">DOCUMENTS LÉGAUX</div><strong>CNI: {inf.documentsLegaux?.pieceIdentite?.present ? '✓ Conforme' : '⚠️ Manquant'} • RIB: {inf.documentsLegaux?.rib?.present ? '✓ Conforme' : '⚠️ Manquant'}</strong></div></div>
+                </div>
+              </div>
+            )}
+          </div>
+        </ErrorBoundary>
 
         {showShareModal && (
           <ShareProfileModal
@@ -240,7 +297,8 @@ export function ProfileModal({ inf, onClose, onEdit, onDelete, setInfluencers })
 }
 
 /* ─── Edit/Add Modal ─── */
-export function EditModal({ inf, onClose, onSave }) {
+export function EditModal({ inf: propInf, influencer, onClose, onSave }) {
+  const inf = propInf || influencer;
   const isNew = !inf;
   
   // Normalisation des réseaux sociaux
