@@ -16,6 +16,7 @@ import {
   Legend
 } from 'recharts';
 import MiniSparkline from './MiniSparkline';
+import SocialPlatformIcon from '../../../components/common/SocialPlatformIcon';
 
 export default function ReportExecutiveCockpit({
   reports = [],
@@ -484,8 +485,11 @@ export default function ReportExecutiveCockpit({
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {channels.map((ch) => (
                 <div key={ch.name}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5, fontWeight: 600, marginBottom: 4 }}>
-                    <span style={{ color: 'var(--dark)' }}>{ch.name}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 11.5, fontWeight: 600, marginBottom: 4 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <SocialPlatformIcon platform={ch.name} size={15} />
+                      <span style={{ color: 'var(--dark)' }}>{ch.name}</span>
+                    </div>
                     <span style={{ color: 'var(--muted)' }}>
                       {ch.reach} • <strong style={{ color: '#27AE60' }}>{ch.growth}</strong>
                     </span>

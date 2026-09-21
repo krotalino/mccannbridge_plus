@@ -38,10 +38,18 @@ function ProtectedRoutes() {
           <Route path="/validation" element={<ValidationPage />} />
           <Route path="/influence" element={<InfluencePage />} />
           <Route path="/influence/:talentId" element={<InfluencePage />} />
-          {canAccessInternalOps && <Route path="/dashboard" element={<DashboardPage />} />}
+          {canAccessInternalOps ? (
+            <Route path="/dashboard" element={<DashboardPage />} />
+          ) : (
+            <Route path="/dashboard" element={<Navigate to="/reports" replace />} />
+          )}
           <Route path="/finance" element={<FinancePage />} />
 
-          {canAccessInternalOps && <Route path="/users" element={<UsersPage />} />}
+          {canAccessInternalOps ? (
+            <Route path="/users" element={<UsersPage />} />
+          ) : (
+            <Route path="/users" element={<Navigate to="/reports" replace />} />
+          )}
           {isAgency && <Route path="/admin-ia" element={<AdminIAPage />} />}
 
           <Route path="/reports" element={<ReportsPage />} />

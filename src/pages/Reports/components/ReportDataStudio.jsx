@@ -5,6 +5,7 @@ import {
   Layers, Flame, Activity
 } from 'lucide-react';
 import { BRANDS_LIST, CHANNELS_LIST } from '../../../data/reportsData';
+import SocialPlatformIcon from '../../../components/common/SocialPlatformIcon';
 
 export default function ReportDataStudio({
   report,
@@ -221,8 +222,8 @@ export default function ReportDataStudio({
                   </td>
                   <td className="py-12 px-8">
                     <div className="text-xs font-bold text-dark">{sp.brand}</div>
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
-                      {sp.channel}
+                    <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold px-2 py-0.5 rounded bg-gray-50 text-gray-800 border border-gray-200 mt-1">
+                      <SocialPlatformIcon platform={sp.channel} size={12} showLabel={true} />
                     </span>
                   </td>
                   <td className="py-12 px-8">

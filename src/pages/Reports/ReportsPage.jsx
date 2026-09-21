@@ -2,18 +2,21 @@ import { useState, useMemo } from 'react';
 import { 
   FileText, Calendar, Sparkles, BarChart2, TrendingUp, 
   Plus, Search, Filter, Download, Layers, Settings, 
-  Shield, CheckCircle2, Clock, AlertTriangle, ArrowLeft, 
+  Shield, ShieldCheck, CheckCircle2, Clock, AlertTriangle, ArrowLeft, 
   Database, Brain, Share2, Eye, RefreshCw, ChevronRight,
   MapPin, Mail, Hash, Target
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { useAuth } from '../../context/AuthContext';
 import { REPORT_STATUSES, REPORT_TYPES, BRANDS_LIST } from '../../data/reportsData';
 
 // Dashboard-inspired Ribbon and Perspectives components
 import ReportingSwitchboardRibbon from './components/ReportingSwitchboardRibbon';
 import ReportingPerspectiveBanner, { REPORTING_PERSPECTIVES } from './components/ReportingPerspectiveBanner';
+import ClientSwitchboardRibbon from './components/ClientSwitchboardRibbon';
+import ClientPerspectiveBanner, { CLIENT_REPORTING_PERSPECTIVES } from './components/ClientPerspectiveBanner';
 
-// Sub-components aligned with the Dashboard Analytics design system
+// Sub-components aligned with the Dashboard Analytics design system (Agency View)
 import ReportExecutiveCockpit from './components/ReportExecutiveCockpit';
 import ReportSummaryCards from './components/ReportSummaryCards';
 import ReportFilters from './components/ReportFilters';
@@ -28,6 +31,14 @@ import ReportAdminSettings from './components/ReportAdminSettings';
 import NewReportRequestModal from './components/NewReportRequestModal';
 import ReportExportModal from './components/ReportExportModal';
 
+// Dedicated Client View Sub-components (Conformes au Cahier des Charges & Données S38 Septembre 2026)
+import ClientExecutiveCockpit from './components/ClientExecutiveCockpit';
+import ClientBrandPerformance from './components/ClientBrandPerformance';
+import ClientCampaignsContent from './components/ClientCampaignsContent';
+import ClientBenchmarkInsights from './components/ClientBenchmarkInsights';
+import ClientRecommendationsActionPlan from './components/ClientRecommendationsActionPlan';
+import SocialPlatformIcon from '../../components/common/SocialPlatformIcon';
+
 export default function ReportsPage() {
   const { 
     state, 
@@ -39,10 +50,76 @@ export default function ReportsPage() {
     updateReportData, 
     deleteReport 
   } = useApp();
+  const { user, isAgency: authIsAgency, isClient: authIsClient } = useAuth();
 
   const reports = state?.reports || [];
   const currentUser = state?.currentUser || { user: 'Steve BESSOUBE', poste: 'Digital Web Analyst & Media' };
   const isAgency = state?.viewMode === 'agency' || (currentUser?.role || '').toLowerCase().includes('agency') || true;
+
+  // Strict check if current logged user is a Client account
+  const isClientAccount = Boolean(authIsClient || user?.role === 'client' || state?.viewMode === 'client');
+
+  // Client view tab state (5 sections according to cahier des charges)
+  const [clientTab, setClientTab] = useState('cockpit'); // 'cockpit' | 'brand' | 'campaigns' | 'benchmark' | 'action_plan'
+  const [clientPerspective, setClientPerspective] = useState('direction_marketing');
+  const [clientPeriod, setClientPeriod] = useState('s38_2026');
+  const [clientBrand, setClientBrand] = useState('all');
+  const [clientChannel, setClientChannel] = useState('all');
+  const [clientDiffusion, setClientDiffusion] = useState('all');
+  const [clientCompareMode, setClientCompareMode] = useState(true);
+
+  const handleClientPerspectiveChange = (perspId) => {
+    setClientPerspective(perspId);
+    const found = CLIENT_REPORTING_PERSPECTIVES.find(p => p.id === perspId);
+    if (found?.suggestedTab) {
+      setClientTab(found.suggestedTab);
+    }
+  };
+
+  // Default active view mode to 'client' so that Client accounts and consultants preview the client experience immediately
+  const [agencyActiveMode, setAgencyActiveMode] = useState('client'); // 'client' | 'agency'
+  const isCurrentlyClientView = isClientAccount || agencyActiveMode === 'client';
+
+  // 5 Client Tabs matching the cahier des charges
+  const clientTabs = [
+    { id: 'cockpit', label: '1. Cockpit Exécutif', icon: '📊', badge: 'S38 Live' },
+    { id: 'brand', label: '2. Performance de la Marque', icon: '📈', badge: '4 Marques' },
+    { id: 'campaigns', label: '3. Campagnes & Contenus', icon: '🎯', badge: 'Top Posts' },
+    { id: 'benchmark', label: '4. Benchmark & Insights', icon: '⚖️', badge: '3 Espaces' },
+    { id: 'action_plan', label: '5. Plan d’Action & Livrables', icon: '📋', badge: 'PDF S38' },
+  ];
+
+  // Certified S38 Report Fallback for export modal
+  const s38ReportFallback = useMemo(() => {
+    return reports.find(r => r.id?.includes('S38') || r.period?.label?.includes('S38')) || {
+      id: 'REP-2026-S38-ORANGE',
+      title: 'Bilan Hebdomadaire Social Media — Semaine S38 (14 au 20 Septembre 2026)',
+      type: 'hebdomadaire',
+      client: 'Orange Cameroun',
+      brands: ['Orange TELCO', 'Orange Money (OM)', 'Orange Business', 'Orange Pulse'],
+      status: 'approved',
+      version: 'v2.1 Certifiée',
+      priority: 'haute',
+      dueDate: '2026-09-21',
+      createdAt: '2026-09-21T08:00:00Z',
+      period: {
+        start: '2026-09-14',
+        end: '2026-09-20',
+        label: 'Semaine S38 (14 au 20 Septembre 2026) vs S37',
+        comparisonType: 'periode_precedente'
+      },
+      requester: {
+        name: 'Patrick Tuete',
+        role: 'Head of Digital Marketing',
+        email: 'patrick.tuete@orange.cm'
+      },
+      assignee: {
+        name: 'Steve BESSOUBE',
+        role: 'Digital Web Analyst & Media'
+      },
+      channels: ['Facebook', 'Instagram', 'TikTok', 'LinkedIn', 'X (Twitter)', 'YouTube']
+    };
+  }, [reports]);
 
   // 7 numbered tabs matching the exact Dashboard Analytics & Platform architecture
   const tabs = [
@@ -179,7 +256,244 @@ export default function ReportsPage() {
 
   return (
     <div className="reports-analytics-container animate-fadeIn">
-      {/* ─── 1. TOP HEADER (Identique au module Dashboard Analytics) ─── */}
+      {isCurrentlyClientView ? (
+        /* ═══════════════════════════════════════════════════════════════════
+           VUE CLIENT CERTIFIÉE (Cahier des charges Septembre 2026 - S38)
+           Strictement étanche, décisionnelle et protégée — Design Influence
+           ═══════════════════════════════════════════════════════════════════ */
+        <div className="dashboard-analytics-page animate-fade" style={{ paddingBottom: 60 }}>
+          
+          {/* ─── 1. EN-TÊTE DÉCISIONNEL CLIENT (Style Module Influence) ─── */}
+          <div className="flex justify-between items-center flex-wrap gap-14 mb-20">
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                <h1 style={{ fontSize: 24, fontWeight: 900, margin: 0, letterSpacing: '-0.5px', color: 'var(--dark)' }}>
+                  REPORTING & INSIGHTS
+                </h1>
+                <span className="tag tag-orange" style={{ fontSize: 11, fontWeight: 800 }}>
+                  MCCANN × ORANGE CAMEROUN
+                </span>
+                <span className="tag tag-green" style={{ fontSize: 11, fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                  <ShieldCheck size={13} /> ESPACE CLIENT CERTIFIÉ
+                </span>
+              </div>
+              <p style={{ margin: '4px 0 0 0', color: 'var(--muted)', fontSize: 13 }}>
+                Tour de contrôle décisionnelle, performance de marque, campagnes & contenus, benchmark concurrentiel et plan d’action S38.
+              </p>
+            </div>
+
+            {/* Actions & Synchronisation Live */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              {/* Synchronisation Active Badge Card */}
+              <div 
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 8, 
+                  padding: '6px 12px', 
+                  borderRadius: 8, 
+                  background: '#FFF8F2', 
+                  border: '1px solid #FFE0B2' 
+                }}
+              >
+                <span style={{ fontSize: 16 }}>⚡</span>
+                <div>
+                  <div style={{ fontSize: 9.5, fontWeight: 800, color: '#FF7900', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+                    SYNCHRONISATION ACTIVE
+                  </div>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--dark)' }}>
+                    Flux Connecté • {lastSyncTime}
+                  </div>
+                </div>
+              </div>
+
+              <button 
+                type="button"
+                className="btn btn-ghost btn-sm"
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, border: '1px solid #D0D0D0' }}
+              >
+                <RefreshCw size={13} className={isRefreshing ? 'animate-spin' : ''} />
+                <span>{isRefreshing ? 'Actualisation...' : 'Actualiser'}</span>
+              </button>
+
+              <button 
+                type="button"
+                className="btn btn-ghost btn-sm"
+                onClick={() => setClientCompareMode(!clientCompareMode)}
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 6,
+                  borderColor: clientCompareMode ? '#FF7900' : '#D0D0D0',
+                  background: clientCompareMode ? '#FFF8F2' : '#FFF',
+                  color: clientCompareMode ? '#FF7900' : 'var(--dark)'
+                }}
+              >
+                <span>⚖️</span>
+                <span>{clientCompareMode ? 'vs. S37 (Actif)' : 'Période S38 Seule'}</span>
+              </button>
+
+              <button 
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={() => setExportModalReport(s38ReportFallback)}
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 6, 
+                  background: '#FF7900', 
+                  color: '#FFFFFF',
+                  border: 'none',
+                  boxShadow: '0 2px 6px rgba(255, 121, 0, 0.3)'
+                }}
+              >
+                <Download size={14} />
+                <span>Télécharger Bilan PDF S38</span>
+              </button>
+
+              {/* Toggle réservé aux consultants agence */}
+              {!isClientAccount && (
+                <button
+                  type="button"
+                  onClick={() => setAgencyActiveMode('agency')}
+                  className="btn btn-secondary btn-sm"
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#F4E8FF', color: '#6B21A8', borderColor: '#E9D5FF' }}
+                  title="Accéder au registre des demandes et outils de production interne"
+                >
+                  <span>🛠️</span>
+                  <span>Mode Opérationnel Agence</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* ─── 2. THE EXECUTIVE REPORTING SWITCHBOARD (Signature Design Influence) ─── */}
+          <ClientSwitchboardRibbon
+            activeTab={clientTab}
+            onSelectTab={setClientTab}
+            selectedBrand={clientBrand}
+            compareMode={clientCompareMode}
+            lastSyncTime={lastSyncTime}
+          />
+
+          {/* ─── 3. MOTEUR DE PERSPECTIVES MÉTIER (Conforme InfluencePerspectiveBanner) ─── */}
+          <ClientPerspectiveBanner
+            currentPerspective={clientPerspective}
+            onChangePerspective={handleClientPerspectiveChange}
+            onQuickExport={() => setExportModalReport(s38ReportFallback)}
+            onRefresh={handleRefresh}
+          />
+
+          {/* ─── 4. BARRE DE NAVIGATION DES ONGLETS (Style Pills Influence) ─── */}
+          <div
+            className="card mb-20 p-8"
+            style={{
+              borderRadius: 12,
+              border: '1px solid #E0E0E0',
+              display: 'flex',
+              gap: 8,
+              overflowX: 'auto',
+              alignItems: 'center',
+              background: '#FFFFFF',
+              marginBottom: 20
+            }}
+          >
+            {clientTabs.map(tab => {
+              const isSelected = clientTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setClientTab(tab.id)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    padding: '8px 14px',
+                    borderRadius: 8,
+                    fontSize: 12,
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    border: 'none',
+                    transition: 'all 0.15s ease',
+                    background: isSelected ? '#FF7900' : 'transparent',
+                    color: isSelected ? '#FFFFFF' : 'var(--dark)',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  <span style={{ fontSize: 14 }}>{tab.icon}</span>
+                  <span>{tab.label}</span>
+                  {tab.badge && (
+                    <span
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 800,
+                        padding: '1px 6px',
+                        borderRadius: 10,
+                        background: isSelected ? 'rgba(255, 255, 255, 0.25)' : '#F0F0F0',
+                        color: isSelected ? '#FFFFFF' : 'var(--muted)'
+                      }}
+                    >
+                      {tab.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* ─── 3. RENDU DES 5 MODULES DU CAHIER DES CHARGES ─── */}
+          {clientTab === 'cockpit' && (
+            <ClientExecutiveCockpit
+              selectedPeriod={clientPeriod}
+              onPeriodChange={setClientPeriod}
+              selectedBrand={clientBrand}
+              onBrandChange={setClientBrand}
+              selectedChannel={clientChannel}
+              onChannelChange={setClientChannel}
+              diffusionType={clientDiffusion}
+              onDiffusionTypeChange={setClientDiffusion}
+              compareMode={clientCompareMode}
+              onToggleCompareMode={() => setClientCompareMode(!clientCompareMode)}
+              lastSyncTime={lastSyncTime}
+              onRefresh={handleRefresh}
+              isRefreshing={isRefreshing}
+              onNavigateToTab={(tab) => setClientTab(tab)}
+              onOpenExport={() => setExportModalReport(s38ReportFallback)}
+            />
+          )}
+
+          {clientTab === 'brand' && (
+            <ClientBrandPerformance
+              selectedBrand={clientBrand}
+              onBrandChange={setClientBrand}
+              compareMode={clientCompareMode}
+            />
+          )}
+
+          {clientTab === 'campaigns' && (
+            <ClientCampaignsContent />
+          )}
+
+          {clientTab === 'benchmark' && (
+            <ClientBenchmarkInsights />
+          )}
+
+          {clientTab === 'action_plan' && (
+            <ClientRecommendationsActionPlan
+              onOpenExportModal={() => setExportModalReport(s38ReportFallback)}
+            />
+          )}
+
+        </div>
+      ) : (
+        /* ═══════════════════════════════════════════════════════════════════
+           VUE OPÉRATIONNELLE AGENCE (Registre, Modélisation, SLA & Admin)
+           ═══════════════════════════════════════════════════════════════════ */
+        <div className="agency-view-container animate-fadeIn">
+          {/* ─── 1. TOP HEADER (Identique au module Dashboard Analytics) ─── */}
       <div className="flex justify-between items-start flex-wrap gap-16 mb-20">
         <div>
           <div className="flex items-center gap-10 flex-wrap">
@@ -591,6 +905,9 @@ export default function ReportsPage() {
           )}
 
         </>
+      )}
+
+        </div>
       )}
 
       {/* NOUVELLE DEMANDE MODAL */}
