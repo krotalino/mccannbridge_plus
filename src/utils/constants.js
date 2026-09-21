@@ -40,8 +40,6 @@ export const CLIENT_SECTIONS = [
   { id: 'validation', label: 'Validation', icon: '✅', path: '/validation' },
   { id: 'influence', label: 'Influence', icon: '⭐', path: '/influence' },
   { id: 'reports', label: 'Reporting & Insights', icon: '📈', path: '/reports' },
-  { id: 'dashboard', label: 'Dashboard Analytics', icon: '📊', path: '/dashboard' },
   { id: 'finance', label: 'Suivi Financier', icon: '💰', path: '/finance' },
-  { id: 'growth', label: 'Growth Hacking', icon: '🚀', path: '/growth' },
-  { id: 'users', label: 'Utilisateurs & Droits', icon: '👥', path: '/users' },
+  { id: 'tasks', label: 'Tâches transverses', icon: '✓', path: '/tasks' },
 ];

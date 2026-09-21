@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { useInfluenceStore, computeCockpitKpis } from './InfluenceStore';
 import { Badge } from './components/InfluenceCommon';
@@ -25,6 +26,10 @@ import InfluenceFinance from './sections/InfluenceFinance';
 import { ProfileModal, EditModal } from './InfluenceModals';
 
 export default function InfluencePage() {
+  const { talentId } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+
   const [activeTab, setActiveTab] = useState('cockpit');
   const [legacySubTab, setLegacySubTab] = useState('fiche');
   const [currentPerspective, setCurrentPerspective] = useState('traffic_ops');
@@ -55,6 +60,98 @@ export default function InfluencePage() {
   const [filters, setFilters] = useState({
     text: '', niche: '', platform: '', type: '', region: '', engagement: '', disponibilite: '', status: ''
   });
+
+  // Helper pour trouver un talent de manière flexible par id ou pseudo
+  const findTalentByIdOrPseudo = (idOrPseudo) => {
+    if (!idOrPseudo) return null;
+    const clean = String(idOrPseudo).toLowerCase().replace(/^@/, '').trim();
+    const candidateList = (influencers && influencers.length > 0) ? influencers : (data.talents || []);
+    return (
+      candidateList.find(inf => {
+        const infId = String(inf.id || '').toLowerCase();
+        const infPseudo = String(inf.pseudo || '').toLowerCase().replace(/^@/, '');
+        const infName = String(inf.name || inf.display_name || '').toLowerCase();
+        return (
+          infId === clean ||
+          infId === `tal-${clean}` ||
+          infId === `inf-${clean}` ||
+          infPseudo === clean ||
+          infName === clean
+        );
+      }) ||
+      (data.talents || []).find(t => {
+        const tId = String(t.id || '').toLowerCase();
+        const tPseudo = String(t.pseudo || '').toLowerCase().replace(/^@/, '');
+        const tName = String(t.display_name || '').toLowerCase();
+        return (
+          tId === clean ||
+          tId === `tal-${clean}` ||
+          tPseudo === clean ||
+          tName === clean
+        );
+      })
+    );
+  };
+
+  // Deep-linking URL: synchronisation automatique des paramètres d'URL
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    const subtabParam = searchParams.get('subtab');
+    const targetTalentParam = talentId || searchParams.get('influencerId') || searchParams.get('talentId');
+
+    if (tabParam) {
+      if (tabParam === 'fiche') {
+        setActiveTab('outils');
+        setLegacySubTab('fiche');
+      } else if (['cockpit', 'talents', 'campagnes', 'livrables', 'reporting', 'veille', 'import', 'outils'].includes(tabParam)) {
+        setActiveTab(tabParam);
+      }
+    }
+
+    if (subtabParam && ['fiche', 'contrats', 'cahier', 'performance', 'historique', 'finance'].includes(subtabParam)) {
+      setLegacySubTab(subtabParam);
+    }
+
+    if (targetTalentParam) {
+      const matched = findTalentByIdOrPseudo(targetTalentParam);
+      if (matched) {
+        setProfileInf(matched);
+        if (!tabParam && !talentId) {
+          setActiveTab('talents');
+        }
+      }
+    }
+  }, [talentId, searchParams, influencers, data.talents]);
+
+  const handleCloseProfile = () => {
+    setProfileInf(null);
+    if (talentId) {
+      navigate('/influence', { replace: true });
+    } else if (searchParams.has('influencerId') || searchParams.has('talentId')) {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('influencerId');
+      newParams.delete('talentId');
+      newParams.delete('pseudo');
+      setSearchParams(newParams, { replace: true });
+    }
+  };
+
+  const handleNavigateFromComponent = (tabId, targetTalentId) => {
+    if (tabId === 'fiche') {
+      setActiveTab('outils');
+      setLegacySubTab('fiche');
+      if (targetTalentId) {
+        const match = findTalentByIdOrPseudo(targetTalentId);
+        if (match) setProfileInf(match);
+      }
+    } else {
+      setActiveTab(tabId);
+      if (targetTalentId) {
+        const match = findTalentByIdOrPseudo(targetTalentId);
+        if (match) setProfileInf(match);
+      }
+    }
+  };
 
   // KPIs consolidés pour le switchboard et les perspectives
   const kpis = useMemo(() => computeCockpitKpis(data), [data]);
@@ -287,7 +384,7 @@ export default function InfluencePage() {
 
       {/* ─── 5. CONTENU DE L'ONGLET ACTIF ─── */}
       {activeTab === 'cockpit' && (
-        <CockpitInfluence data={data} onNavigate={(tabId) => setActiveTab(tabId)} />
+        <CockpitInfluence data={data} onNavigate={handleNavigateFromComponent} />
       )}
 
       {activeTab === 'talents' && (
@@ -306,6 +403,7 @@ export default function InfluencePage() {
         <CampagnesActivations
           data={data}
           setStatus={setDeliverableStatus}
+          onOpenTalentProfile={(talent) => setProfileInf(talent)}
         />
       )}
 
@@ -313,6 +411,7 @@ export default function InfluencePage() {
         <LivrablesValidations
           data={data}
           setStatus={setDeliverableStatus}
+          onOpenTalentProfile={(talent) => setProfileInf(talent)}
         />
       )}
 
@@ -431,33 +530,35 @@ export default function InfluencePage() {
               onSelect={setProfileInf}
             />
           )}
-
-          {profileInf && (
-            <ProfileModal
-              inf={profileInf}
-              influencer={profileInf}
-              onClose={() => setProfileInf(null)}
-              onEdit={(inf) => {
-                setProfileInf(null);
-                setEditInf(inf);
-              }}
-              onDelete={handleDelete}
-              setInfluencers={handleSetInfluencers}
-            />
-          )}
-
-          {(editInf || showAdd) && (
-            <EditModal
-              inf={editInf}
-              influencer={editInf}
-              onClose={() => {
-                setEditInf(null);
-                setShowAdd(false);
-              }}
-              onSave={handleSave}
-            />
-          )}
         </div>
+      )}
+
+      {/* ─── MODALE PROFIL TALENT GLOBALE (Accessible depuis tous les onglets & URL) ─── */}
+      {profileInf && (
+        <ProfileModal
+          inf={profileInf}
+          influencer={profileInf}
+          onClose={handleCloseProfile}
+          onEdit={(inf) => {
+            setProfileInf(null);
+            setEditInf(inf);
+          }}
+          onDelete={handleDelete}
+          setInfluencers={handleSetInfluencers}
+        />
+      )}
+
+      {/* ─── MODALE ÉDITION / CRÉATION GLOBALE ─── */}
+      {(editInf || showAdd) && (
+        <EditModal
+          inf={editInf}
+          influencer={editInf}
+          onClose={() => {
+            setEditInf(null);
+            setShowAdd(false);
+          }}
+          onSave={handleSave}
+        />
       )}
 
       {/* ─── MODAL D'EXPORTATION UNIFIÉ (Style Dashboard Analytics) ─── */}

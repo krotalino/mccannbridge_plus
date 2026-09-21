@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { formatNumber, Badge, PlatformIcon, Modal } from './InfluenceCommon';
 
-export default function CampaignModal({ campaign, data, snaps, onClose, onOpenDeliverable }) {
+export default function CampaignModal({ campaign, data, snaps, onClose, onOpenDeliverable, onOpenTalentProfile }) {
   const [subtab, setSubtab] = useState('overview');
 
   const deliverables = (data.deliverables || []).filter(d => d.campaign_id === campaign.id);
@@ -112,10 +112,48 @@ export default function CampaignModal({ campaign, data, snaps, onClose, onOpenDe
                   const talentDels = deliverables.filter(d => d.talent_id === t.id);
                   return (
                     <tr key={t.id}>
-                      <td className="strong">{t.display_name}</td>
+                      <td className="strong">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (onOpenTalentProfile) {
+                              onOpenTalentProfile(t);
+                            }
+                          }}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            padding: 0,
+                            font: 'inherit',
+                            fontWeight: 700,
+                            color: onOpenTalentProfile ? 'var(--orange, #FF7900)' : 'inherit',
+                            cursor: onOpenTalentProfile ? 'pointer' : 'default',
+                            textAlign: 'left'
+                          }}
+                          title="Consulter la fiche profil de ce talent"
+                        >
+                          {t.display_name} ↗
+                        </button>
+                      </td>
                       <td><Badge tone="ifx-b-blue">{t.type}</Badge></td>
                       <td>{talentDels.length} livrable(s)</td>
-                      <td className="mono">{t.profile_url ? <a href={t.profile_url} target="_blank" rel="noreferrer" style={{ color: 'var(--orange)' }}>Ouvrir profil ↗</a> : '—'}</td>
+                      <td className="mono">
+                        <button
+                          type="button"
+                          onClick={() => onOpenTalentProfile?.(t)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            padding: 0,
+                            color: 'var(--orange)',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            fontSize: 12
+                          }}
+                        >
+                          Fiche talent ↗
+                        </button>
+                      </td>
                     </tr>
                   );
                 })}

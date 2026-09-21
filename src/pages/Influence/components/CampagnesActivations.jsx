@@ -4,7 +4,7 @@ import { formatNumber, Badge } from './InfluenceCommon';
 import CampaignModal from './CampaignModal';
 import DeliverableModal from './DeliverableModal';
 
-export default function CampagnesActivations({ data, setStatus }) {
+export default function CampagnesActivations({ data, setStatus, onOpenTalentProfile }) {
   const [search, setSearch] = useState('');
   const [selectedCampaign, setSelectedCampaign] = useState(null);
   const [selectedDeliverable, setSelectedDeliverable] = useState(null);
@@ -212,8 +212,11 @@ export default function CampagnesActivations({ data, setStatus }) {
         <CampaignModal
           campaign={selectedCampaign}
           data={data}
+          snaps={snapshots}
           onClose={() => setSelectedCampaign(null)}
           onSelectDeliverable={d => setSelectedDeliverable(d)}
+          onOpenDeliverable={d => setSelectedDeliverable(d)}
+          onOpenTalentProfile={onOpenTalentProfile}
         />
       )}
 

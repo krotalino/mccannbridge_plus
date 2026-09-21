@@ -93,9 +93,9 @@ export const DEFAULT_PERMISSIONS = {
   'Digital Web Analyst': { traffic: 'read', briefs: 'read', calendar: 'read', validation: 'read', influence: 'read', reports: 'admin', finance: 'none', assistant_ia: 'write', admin_ia: 'none', users: 'none' },
   'DAF': { traffic: 'read', briefs: 'read', calendar: 'none', validation: 'read', influence: 'read', reports: 'admin', finance: 'admin', assistant_ia: 'none', admin_ia: 'none', users: 'read' },
   
-  // Client Profiles
-  'Directeur Marketing & Communication': { traffic: 'read', briefs: 'admin', calendar: 'admin', validation: 'admin', influence: 'write', reports: 'admin', finance: 'admin', assistant_ia: 'read', admin_ia: 'none', users: 'read' },
-  'Brand Manager': { traffic: 'read', briefs: 'admin', calendar: 'admin', validation: 'admin', influence: 'write', reports: 'admin', finance: 'write', assistant_ia: 'read', admin_ia: 'none', users: 'read' },
+  // Client Profiles (Strictly forbidden from users & IAM)
+  'Directeur Marketing & Communication': { traffic: 'read', briefs: 'admin', calendar: 'admin', validation: 'admin', influence: 'write', reports: 'admin', finance: 'admin', assistant_ia: 'read', admin_ia: 'none', users: 'none' },
+  'Brand Manager': { traffic: 'read', briefs: 'admin', calendar: 'admin', validation: 'admin', influence: 'write', reports: 'admin', finance: 'write', assistant_ia: 'read', admin_ia: 'none', users: 'none' },
   'Chargé de Communication': { traffic: 'read', briefs: 'write', calendar: 'write', validation: 'write', influence: 'read', reports: 'read', finance: 'none', assistant_ia: 'read', admin_ia: 'none', users: 'none' },
   'Chef de Projet Digital': { traffic: 'read', briefs: 'write', calendar: 'admin', validation: 'admin', influence: 'write', reports: 'write', finance: 'read', assistant_ia: 'read', admin_ia: 'none', users: 'none' },
   'Validateur Exécutif': { traffic: 'read', briefs: 'admin', calendar: 'admin', validation: 'admin', influence: 'read', reports: 'admin', finance: 'admin', assistant_ia: 'none', admin_ia: 'none', users: 'none' },

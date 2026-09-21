@@ -21,8 +21,10 @@ import AssistantIAPage from './pages/AssistantIA/AssistantIAPage';
 import PromptLibraryPage from './pages/PromptLibrary/PromptLibraryPage';
 import AdminIAPage from './pages/AdminIA/AdminIAPage';
 function ProtectedRoutes() {
-  const { isAuthenticated, isAgency } = useAuth();
+  const { isAuthenticated, isAgency, isClient, user } = useAuth();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
+
+  const canAccessInternalOps = isAgency && !isClient && user?.role !== 'client';
 
   return (
     <AppProvider>
@@ -36,10 +38,10 @@ function ProtectedRoutes() {
           <Route path="/validation" element={<ValidationPage />} />
           <Route path="/influence" element={<InfluencePage />} />
           <Route path="/influence/:talentId" element={<InfluencePage />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
+          {canAccessInternalOps && <Route path="/dashboard" element={<DashboardPage />} />}
           <Route path="/finance" element={<FinancePage />} />
 
-          <Route path="/users" element={<UsersPage />} />
+          {canAccessInternalOps && <Route path="/users" element={<UsersPage />} />}
           {isAgency && <Route path="/admin-ia" element={<AdminIAPage />} />}
 
           <Route path="/reports" element={<ReportsPage />} />

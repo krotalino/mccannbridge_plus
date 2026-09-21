@@ -8,10 +8,17 @@ import { AGENCE_SECTIONS, CLIENT_SECTIONS } from '../../utils/constants';
 export default function DashboardLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
-  const { user, isAgency } = useAuth();
+  const { user, isAgency, isClient } = useAuth();
   const { notifications } = useApp();
 
-  const sections = isAgency ? AGENCE_SECTIONS : CLIENT_SECTIONS;
+  const isClientRole = isClient || user?.role === 'client' || !isAgency;
+  const rawSections = isAgency && !isClientRole ? AGENCE_SECTIONS : CLIENT_SECTIONS;
+  const sections = rawSections.filter(s => {
+    if (isClientRole) {
+      return s.id !== 'dashboard' && s.id !== 'users';
+    }
+    return true;
+  });
   const currentSection = sections.find(
     s => location.pathname === s.path || location.pathname.startsWith(s.path + '/')
   );

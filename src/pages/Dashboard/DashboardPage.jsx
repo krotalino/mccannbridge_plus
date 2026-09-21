@@ -1,4 +1,6 @@
 import React, { useState, useMemo } from 'react';
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import {
   computeAnalytics,
@@ -19,7 +21,14 @@ import InfluenceAnalyticsView from './components/InfluenceAnalyticsView';
 import ExportModal from './components/ExportModal';
 
 export default function DashboardPage() {
-  const { state, isAgency } = useApp();
+  const { user, isAgency: authIsAgency, isClient } = useAuth();
+  const { state, isAgency: appIsAgency } = useApp();
+  const isAgency = authIsAgency ?? appIsAgency;
+
+  // Confidentialité : Les comptes avec la vue/rôle Client ne peuvent pas accéder à Dashboard Analytics
+  if (isClient || user?.role === 'client' || !isAgency) {
+    return <Navigate to="/briefs" replace />;
+  }
 
   // Active Tab View Navigation
   const [activeTab, setActiveTab] = useState('overview');

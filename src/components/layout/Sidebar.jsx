@@ -5,10 +5,18 @@ import { AGENCE_SECTIONS, CLIENT_SECTIONS } from '../../utils/constants';
 import { calcScore } from '../../utils/helpers';
 
 export default function Sidebar({ isOpen, onClose }) {
-  const { user, logout, isAgency } = useAuth();
+  const { user, logout, isAgency, isClient } = useAuth();
   const { tickets, calendar, notifications } = useApp();
   const location = useLocation();
-  const sections = isAgency ? AGENCE_SECTIONS : CLIENT_SECTIONS;
+
+  const isClientRole = isClient || user?.role === 'client' || !isAgency;
+  const rawSections = isAgency && !isClientRole ? AGENCE_SECTIONS : CLIENT_SECTIONS;
+  const sections = rawSections.filter(s => {
+    if (isClientRole) {
+      return s.id !== 'dashboard' && s.id !== 'users';
+    }
+    return true;
+  });
 
   const getBadge = (id) => {
     if (id === 'traffic-manager' || id === 'traffic-ia') {

@@ -32,6 +32,52 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
+// Role check middleware protecting internal modules (IAM / Users & Rights, and Dashboard Analytics)
+function requireAgencyRole(req: express.Request, res: express.Response, next: express.NextFunction) {
+  const userRole = (
+    (req.headers["x-user-role"] as string) ||
+    (req.query.role as string) ||
+    (req.body?.role as string) ||
+    ""
+  ).toLowerCase().trim();
+
+  // Any account with client role or client header is forbidden
+  if (userRole === "client") {
+    return res.status(403).json({
+      error: "Accès refusé. Les comptes associés à la vue Client ne sont pas autorisés à accéder aux données internes, aux statistiques globales consolidées ni à la gestion des utilisateurs et droits.",
+      code: "FORBIDDEN_FOR_CLIENT_ROLE",
+      allowedRoles: ["agence", "admin"]
+    });
+  }
+  next();
+}
+
+// Protected API routes for Users & Rights (IAM)
+app.use("/api/users", requireAgencyRole, (req, res) => {
+  res.json({
+    status: "ok",
+    message: "Module Utilisateurs & Droits (IAM) accessible uniquement aux équipes Agence McCann.",
+    scope: "internal_agency"
+  });
+});
+
+// Protected API routes for Dashboard Analytics & Consolidated Statistics
+app.use("/api/analytics", requireAgencyRole, (req, res) => {
+  res.json({
+    status: "ok",
+    message: "Module Dashboard Analytics et statistiques consolidées réservé aux équipes Agence McCann.",
+    scope: "internal_agency"
+  });
+});
+
+app.use("/api/dashboard", requireAgencyRole, (req, res) => {
+  res.json({
+    status: "ok",
+    message: "Module Dashboard Analytics et métriques consolidées réservé aux équipes Agence McCann.",
+    scope: "internal_agency"
+  });
+});
+
 // AI Chat endpoint (with Server-Sent Events streaming support)
 app.post("/api/ai/chat", async (req, res) => {
   const {

@@ -11,7 +11,7 @@ import DeliverableModal from './DeliverableModal';
 
 const ITEMS_PER_PAGE = 30;
 
-export default function LivrablesValidations({ data, setStatus }) {
+export default function LivrablesValidations({ data, setStatus, onOpenTalentProfile }) {
   const [search, setSearch] = useState('');
   const [campaignFilter, setCampaignFilter] = useState('');
   const [subjectFilter, setSubjectFilter] = useState('');
@@ -293,11 +293,30 @@ export default function LivrablesValidations({ data, setStatus }) {
                       </td>
 
                       <td style={{ padding: '12px 16px' }}>
-                        <div style={{ fontWeight: 700, color: 'var(--dark)' }}>
-                          {talent?.display_name || 'Non rattaché'}
-                        </div>
-                        {talent?.pseudo && (
-                          <div style={{ fontSize: 11, color: 'var(--muted)' }}>@{talent.pseudo}</div>
+                        {talent ? (
+                          <button
+                            type="button"
+                            onClick={() => onOpenTalentProfile?.(talent)}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              padding: 0,
+                              font: 'inherit',
+                              textAlign: 'left',
+                              cursor: onOpenTalentProfile ? 'pointer' : 'default',
+                              display: 'block'
+                            }}
+                            title="Consulter la fiche profil du talent"
+                          >
+                            <div style={{ fontWeight: 700, color: onOpenTalentProfile ? 'var(--orange, #FF7900)' : 'var(--dark)' }}>
+                              {talent.display_name} ↗
+                            </div>
+                            {talent.pseudo && (
+                              <div style={{ fontSize: 11, color: 'var(--muted)' }}>@{talent.pseudo}</div>
+                            )}
+                          </button>
+                        ) : (
+                          <span style={{ color: 'var(--muted)' }}>Non rattaché</span>
                         )}
                       </td>
 

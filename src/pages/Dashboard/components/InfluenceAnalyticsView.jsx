@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   ResponsiveContainer,
   BarChart,
@@ -14,6 +15,7 @@ import {
 } from 'recharts';
 
 export default function InfluenceAnalyticsView({ data }) {
+  const navigate = useNavigate();
   const { filteredInfluencers, breakdowns } = data;
   const [localSearch, setLocalSearch] = useState('');
 
@@ -229,7 +231,25 @@ export default function InfluenceAnalyticsView({ data }) {
               {displayInfluencers.slice(0, 15).map((inf, i) => (
                 <tr key={inf.id || i} style={{ borderBottom: '1px solid #F0F0F0' }}>
                   <td style={{ padding: '10px 14px', fontWeight: 700, color: 'var(--dark)' }}>
-                    {inf.display_name}
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/influence?tab=fiche&influencerId=${encodeURIComponent(inf.id)}`)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        padding: 0,
+                        font: 'inherit',
+                        fontWeight: 700,
+                        color: 'var(--dark)',
+                        cursor: 'pointer',
+                        textAlign: 'left'
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.color = '#FF7900'}
+                      onMouseLeave={e => e.currentTarget.style.color = 'var(--dark)'}
+                      title="Consulter la fiche profil de ce talent"
+                    >
+                      {inf.display_name} ↗
+                    </button>
                   </td>
                   <td style={{ padding: '10px 14px', fontWeight: 700, color: '#FF7900' }}>
                     {inf.pseudo || '@talent'}
