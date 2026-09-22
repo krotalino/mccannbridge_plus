@@ -1,9 +1,11 @@
 import { useState, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { FINANCIAL_DATA } from '../../data/financial';
 import { DOCUMENT_TYPES, DOCUMENT_STATUSES } from '../../utils/financialUtils';
 import FinancialDocumentModal from './modals/FinancialDocumentModal';
 import OcrImportModal from './modals/OcrImportModal';
+import ClientFinancePage from './client/ClientFinancePage';
 
 const FMT = (n) => (n !== undefined && n !== null ? Number(n).toLocaleString('fr-FR') : '0');
 
@@ -1103,9 +1105,25 @@ function FacturationTab() {
 /* ─── Main Page ─── */
 
 export default function FinancePage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeSection, setActiveSection] = useState('dashboard');
 
-  const renderContent = () => {
+  // Mode de vue actif : 'client' par défaut (Cahier des Charges Septembre 2026) | 'agency' (Interne)
+  const [activeViewMode, setActiveViewMode] = useState(() => {
+    const viewParam = searchParams.get('view');
+    if (viewParam === 'agency') return 'agency';
+    if (viewParam === 'client') return 'client';
+    return 'client';
+  });
+
+  const handleSwitchView = (mode) => {
+    setActiveViewMode(mode);
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('view', mode);
+    setSearchParams(newParams, { replace: true });
+  };
+
+  const renderAgencyContent = () => {
     switch (activeSection) {
       case 'dashboard': return <DashboardTab />;
       case 'operations': return <OperationsTab />;
@@ -1120,47 +1138,158 @@ export default function FinancePage() {
   };
 
   return (
-    <div className="fin-layout">
-      {/* Internal sidebar */}
-      <aside className="fin-sidebar">
-        <div className="fin-sidebar-header">
-          <div className="fin-sidebar-brand">McCANN BRIDGE</div>
-          <div className="fin-sidebar-sub">FINANCIAL MANAGER</div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, minHeight: '100%' }}>
+      {/* ─── EN-TÊTE SUPÉRIEUR GLOBAL : SÉLECTEUR DE VUE DUAL CLIENT / AGENCE ─── */}
+      <header
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 12,
+          padding: '12px 18px',
+          background: '#FFFFFF',
+          borderRadius: 12,
+          border: '1px solid #E2E8F0',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <h1 style={{ fontSize: 17, fontWeight: 900, color: 'var(--dark)', margin: 0 }}>
+                SUIVI FINANCIER & BUDGET — ORANGE CAMEROUN
+              </h1>
+              <span
+                style={{
+                  fontSize: 10,
+                  fontWeight: 800,
+                  padding: '2px 8px',
+                  borderRadius: 12,
+                  background: activeViewMode === 'client' ? '#FF7900' : '#1E293B',
+                  color: '#FFFFFF',
+                  textTransform: 'uppercase',
+                }}
+              >
+                {activeViewMode === 'client' ? 'Vue Client Certifiée' : 'Vue Agence Interne'}
+              </span>
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>
+              {activeViewMode === 'client'
+                ? 'Interface conforme au Cahier des Charges Septembre 2026 — Transparence, Gouvernance & Sécurité Partagée.'
+                : 'Supervision financière opérationnelle McCann Bridge, gestion des marges, trésorerie et facturation.'}
+            </div>
+          </div>
         </div>
-        <nav className="fin-sidebar-nav">
-          {FINANCE_SECTIONS.map(s => (
-            <button
-              key={s.id}
-              className={`fin-sidebar-item ${activeSection === s.id ? 'active' : ''}`}
-              onClick={() => setActiveSection(s.id)}
-            >
-              <span className="fin-sidebar-icon">{s.icon}</span>
-              <span>{s.label}</span>
-            </button>
-          ))}
-        </nav>
-      </aside>
 
-      {/* Main content */}
-      <main className="fin-main">
-        <header className="fin-header">
-          <div className="fin-header-left">
-            <h1 className="fin-title">
-              Cockpit Financier — Client : {FINANCIAL_DATA.client} · {FINANCIAL_DATA.cockpit ? 'Q2' : ''} {FINANCIAL_DATA.year}
-            </h1>
+        {/* Sélecteur de mode de vue (Segmented Switch) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div
+            style={{
+              display: 'flex',
+              padding: 3,
+              background: '#F1F5F9',
+              borderRadius: 8,
+              border: '1px solid #CBD5E1',
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => handleSwitchView('client')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '6px 12px',
+                borderRadius: 6,
+                fontSize: 12,
+                fontWeight: 800,
+                border: 'none',
+                background: activeViewMode === 'client' ? '#FF7900' : 'transparent',
+                color: activeViewMode === 'client' ? '#FFFFFF' : '#475569',
+                cursor: 'pointer',
+                boxShadow: activeViewMode === 'client' ? '0 1px 3px rgba(0,0,0,0.15)' : 'none',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              <span>👁️ Vue Client (Cahier des Charges)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleSwitchView('agency')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '6px 12px',
+                borderRadius: 6,
+                fontSize: 12,
+                fontWeight: 800,
+                border: 'none',
+                background: activeViewMode === 'agency' ? '#1E293B' : 'transparent',
+                color: activeViewMode === 'agency' ? '#FFFFFF' : '#475569',
+                cursor: 'pointer',
+                boxShadow: activeViewMode === 'agency' ? '0 1px 3px rgba(0,0,0,0.15)' : 'none',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              <span>🏢 Vue Agence (Interne)</span>
+            </button>
           </div>
-          <div className="fin-header-right">
-            <select className="form-input form-select" style={{ width: 200, padding: '6px 12px' }}>
-              <option>Orange Cameroun</option>
-              <option>MTN Cameroun</option>
-              <option>Tous les clients</option>
-            </select>
-          </div>
-        </header>
-        <div className="fin-content animate-fade">
-          {renderContent()}
         </div>
-      </main>
+      </header>
+
+      {/* ─── RENDU DU MODE CLIENT ─── */}
+      {activeViewMode === 'client' && (
+        <ClientFinancePage />
+      )}
+
+      {/* ─── RENDU DU MODE AGENCE (STRUCTURE ORIGINALE CONSERVÉE) ─── */}
+      {activeViewMode === 'agency' && (
+        <div className="fin-layout">
+          {/* Internal sidebar */}
+          <aside className="fin-sidebar">
+            <div className="fin-sidebar-header">
+              <div className="fin-sidebar-brand">McCANN BRIDGE</div>
+              <div className="fin-sidebar-sub">FINANCIAL MANAGER</div>
+            </div>
+            <nav className="fin-sidebar-nav">
+              {FINANCE_SECTIONS.map(s => (
+                <button
+                  key={s.id}
+                  className={`fin-sidebar-item ${activeSection === s.id ? 'active' : ''}`}
+                  onClick={() => setActiveSection(s.id)}
+                >
+                  <span className="fin-sidebar-icon">{s.icon}</span>
+                  <span>{s.label}</span>
+                </button>
+              ))}
+            </nav>
+          </aside>
+
+          {/* Main content */}
+          <main className="fin-main">
+            <header className="fin-header">
+              <div className="fin-header-left">
+                <h1 className="fin-title">
+                  Cockpit Financier Interne — Client : {FINANCIAL_DATA.client} · {FINANCIAL_DATA.cockpit ? 'Q2' : ''} {FINANCIAL_DATA.year}
+                </h1>
+              </div>
+              <div className="fin-header-right">
+                <select className="form-input form-select" style={{ width: 200, padding: '6px 12px' }}>
+                  <option>Orange Cameroun</option>
+                  <option>MTN Cameroun</option>
+                  <option>Tous les clients</option>
+                </select>
+              </div>
+            </header>
+            <div className="fin-content animate-fade">
+              {renderAgencyContent()}
+            </div>
+          </main>
+        </div>
+      )}
     </div>
   );
 }
