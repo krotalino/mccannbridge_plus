@@ -16,6 +16,9 @@ import ReportingInfluence from './components/ReportingInfluence';
 import VeilleStrategique from './components/VeilleStrategique';
 import ImportExcel from './components/ImportExcel';
 
+// COMPOSANT DÉDIÉ : VUE CLIENT (Cahier des Charges Influence Septembre 2026)
+import ClientInfluencePage from './client/ClientInfluencePage';
+
 // Composants outils métier (historique)
 import InfluenceFiche from './sections/InfluenceFiche';
 import InfluenceContrats from './sections/InfluenceContrats';
@@ -39,6 +42,21 @@ export default function InfluencePage() {
     const now = new Date();
     return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
   });
+
+  // Mode de vue actif : 'client' par défaut (Cahier des Charges Septembre 2026) | 'agency' (Interne)
+  const [activeViewMode, setActiveViewMode] = useState(() => {
+    const viewParam = searchParams.get('view');
+    if (viewParam === 'agency') return 'agency';
+    if (viewParam === 'client') return 'client';
+    return 'client';
+  });
+
+  const handleSwitchView = (mode) => {
+    setActiveViewMode(mode);
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('view', mode);
+    setSearchParams(newParams, { replace: true });
+  };
 
   // Store centralisé de l'influence synchronisé avec le classeur Excel
   const {
@@ -238,77 +256,156 @@ export default function InfluencePage() {
 
   return (
     <div className="dashboard-analytics-page animate-fade" style={{ paddingBottom: 60 }}>
-      {/* ─── 1. TOP HEADER (Identique à Dashboard Analytics / Traffic Manager) ─── */}
+      {/* ─── 1. TOP HEADER AVEC SWITCHER DE VUE CLIENT / AGENCE ─── */}
       <div className="flex justify-between items-center flex-wrap gap-14 mb-20">
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <h1 style={{ fontSize: 24, fontWeight: 900, margin: 0, letterSpacing: '-0.5px', color: 'var(--dark)' }}>
               MODULE INFLUENCE & AMBASSADEURS
             </h1>
             <span className="tag tag-orange" style={{ fontSize: 11, fontWeight: 800 }}>
               MCCANN × ORANGE CAMEROUN
             </span>
+            {activeViewMode === 'client' && (
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: 800,
+                  padding: '3px 10px',
+                  borderRadius: 12,
+                  background: '#E8F5E9',
+                  color: '#2E7D32',
+                  border: '1px solid #C8E6C9'
+                }}
+              >
+                Vue Client Conforme Cahier des Charges
+              </span>
+            )}
           </div>
           <p style={{ margin: '4px 0 0 0', color: 'var(--muted)', fontSize: 13 }}>
-            Tour de contrôle, gestion des créateurs, validation des BAT, mesure des performances et veille marché.
+            Tour de contrôle, sélection des créateurs, validation des BAT, mesure des performances et veille marché.
           </p>
         </div>
 
-        {/* Boutons d'action & Indicateur de Synchronisation */}
+        {/* Switcher de Vue & Boutons d'action */}
         <div className="flex items-center gap-12 flex-wrap">
+          {/* Switcher Segmenté de Vue */}
           <div
-            className="card"
             style={{
-              padding: '6px 14px',
-              background: '#FFF8F2',
-              border: '1px solid #FFE0B2',
-              borderRadius: 8,
               display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              marginBottom: 0
+              background: '#F3F4F6',
+              padding: 3,
+              borderRadius: 8,
+              border: '1px solid #E5E7EB'
             }}
           >
-            <span style={{ fontSize: 16 }}>⚡</span>
-            <div>
-              <div style={{ fontSize: 10, color: '#E65100', fontWeight: 700 }}>SYNCHRONISATION ACTIVE</div>
-              <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--dark)' }}>
-                Flux Connecté • {lastSyncTime}
-              </div>
-            </div>
+            <button
+              type="button"
+              onClick={() => handleSwitchView('client')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '6px 12px',
+                borderRadius: 6,
+                fontSize: 12,
+                fontWeight: 800,
+                border: 'none',
+                background: activeViewMode === 'client' ? '#FF7900' : 'transparent',
+                color: activeViewMode === 'client' ? '#FFFFFF' : '#4B5563',
+                cursor: 'pointer',
+                boxShadow: activeViewMode === 'client' ? '0 1px 3px rgba(0,0,0,0.15)' : 'none',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <span>👁️ Vue Client (Cahier des Charges)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleSwitchView('agency')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '6px 12px',
+                borderRadius: 6,
+                fontSize: 12,
+                fontWeight: 800,
+                border: 'none',
+                background: activeViewMode === 'agency' ? '#1E293B' : 'transparent',
+                color: activeViewMode === 'agency' ? '#FFFFFF' : '#4B5563',
+                cursor: 'pointer',
+                boxShadow: activeViewMode === 'agency' ? '0 1px 3px rgba(0,0,0,0.15)' : 'none',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <span>🏢 Vue Agence (Interne)</span>
+            </button>
           </div>
 
-          <button
-            type="button"
-            className="btn btn-ghost btn-sm"
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, border: '1px solid #D0D0D0' }}
-          >
-            <span>🔄</span> {isRefreshing ? 'Actualisation...' : 'Actualiser'}
-          </button>
+          {activeViewMode === 'agency' && (
+            <>
+              <div
+                className="card"
+                style={{
+                  padding: '6px 14px',
+                  background: '#FFF8F2',
+                  border: '1px solid #FFE0B2',
+                  borderRadius: 8,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  marginBottom: 0
+                }}
+              >
+                <span style={{ fontSize: 16 }}>⚡</span>
+                <div>
+                  <div style={{ fontSize: 10, color: '#E65100', fontWeight: 700 }}>SYNCHRONISATION ACTIVE</div>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--dark)' }}>
+                    Flux Connecté • {lastSyncTime}
+                  </div>
+                </div>
+              </div>
 
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm"
-            onClick={() => setShowAdd(true)}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#FFF3E8', color: '#E65100', border: '1px solid #FFD8BE', fontWeight: 700 }}
-          >
-            <span>+</span> Nouvel influenceur
-          </button>
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm"
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, border: '1px solid #D0D0D0' }}
+              >
+                <span>🔄</span> {isRefreshing ? 'Actualisation...' : 'Actualiser'}
+              </button>
 
-          <button
-            type="button"
-            className="btn btn-primary btn-sm"
-            onClick={() => setIsExportModalOpen(true)}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#FF7900', color: '#FFF' }}
-          >
-            <span>📥</span> Exporter Fiche Influence
-          </button>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={() => setShowAdd(true)}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#FFF3E8', color: '#E65100', border: '1px solid #FFD8BE', fontWeight: 700 }}
+              >
+                <span>+</span> Nouvel influenceur
+              </button>
+
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={() => setIsExportModalOpen(true)}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#FF7900', color: '#FFF' }}
+              >
+                <span>📥</span> Exporter Fiche Influence
+              </button>
+            </>
+          )}
         </div>
       </div>
 
-      {/* ─── 2. THE VISUAL INFLUENCE SWITCHBOARD RIBBON (Style Dashboard Analytics) ─── */}
+      {/* ─── RENDU SELON LE MODE DE VUE CHOISI ─── */}
+      {activeViewMode === 'client' ? (
+        <ClientInfluencePage onSwitchToAgencyView={() => handleSwitchView('agency')} />
+      ) : (
+        <div className="agency-influence-view animate-fade">
+          {/* ─── 2. THE VISUAL INFLUENCE SWITCHBOARD RIBBON (Style Dashboard Analytics) ─── */}
       <InfluenceSwitchboardRibbon
         data={data}
         kpis={kpis}
@@ -569,6 +666,8 @@ export default function InfluencePage() {
           activeTab={activeTab}
           onClose={() => setIsExportModalOpen(false)}
         />
+      )}
+        </div>
       )}
     </div>
   );
