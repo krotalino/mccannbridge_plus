@@ -32,6 +32,9 @@ try {
 export const db = firestoreDb;
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({
+  prompt: 'select_account',
+});
 
 export const OperationType = {
   CREATE: 'create',
@@ -82,13 +85,12 @@ export function handleFirestoreError(error, operationType, path = null) {
  */
 export async function testConnection() {
   try {
-    if (!auth.currentUser) return true;
-    await getDocFromServer(doc(db, 'users', auth.currentUser.uid));
+    await getDocFromServer(doc(db, 'test', 'connection'));
     console.log('Firebase Firestore connection verified.');
     return true;
   } catch (error) {
     if (error instanceof Error && (error.message.includes('the client is offline') || error.message.includes("Backend didn't respond"))) {
-      console.warn('Firebase client is offline, continuing with local persistence.');
+      console.warn('Firebase client is offline or backend delayed, continuing with local persistence.');
     }
     return false;
   }

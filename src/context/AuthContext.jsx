@@ -29,24 +29,12 @@ export function AuthProvider({ children }) {
 
   // Sync with Firebase Auth state
   useEffect(() => {
-    // Ensure Firebase Auth session exists so Firestore rules allow reads
-    const initAuth = async () => {
-      try {
-        if (!auth.currentUser) {
-          await signInAnonymously(auth);
-        }
-      } catch (e) {
-        // Anonymous sign-in may be restricted on the project; application operates safely with local persona/session
-      }
-    };
-    initAuth();
-
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         try {
-          // Fetch additional profile data from Firestore
           const userDocRef = doc(db, 'users', firebaseUser.uid);
           const userDoc = await getDoc(userDocRef);
+          const isAdminEmail = firebaseUser.email === 'selaboykouotou23@gmail.com';
           
           if (userDoc.exists()) {
             const data = userDoc.data();
@@ -54,9 +42,10 @@ export function AuthProvider({ children }) {
               uid: firebaseUser.uid,
               email: firebaseUser.email || data.email || 'utilisateur@orange.cm',
               user: data.name || firebaseUser.displayName || (firebaseUser.email ? firebaseUser.email.split('@')[0] : 'Utilisateur'),
-              role: data.role || 'agence',
-              poste: data.poste || (data.role === 'client' ? 'Brand Manager' : 'Chef de Projet Digital'),
+              role: data.role || (isAdminEmail ? 'agence' : 'agence'),
+              poste: data.poste || (isAdminEmail ? 'Administrateur' : (data.role === 'client' ? 'Brand Manager' : 'Chef de Projet Digital')),
               photoURL: firebaseUser.photoURL || null,
+              client: localStorage.getItem('bridge_active_client') || 'Orange Cameroun',
             };
             setUser(combinedUser);
             localStorage.setItem('bridge_user', JSON.stringify(combinedUser));
@@ -66,26 +55,31 @@ export function AuthProvider({ children }) {
             const parsed = saved ? JSON.parse(saved) : {};
             const newUser = {
               uid: firebaseUser.uid,
-              email: firebaseUser.email || parsed.email || 'demo@bridge.cm',
-              user: firebaseUser.displayName || parsed.user || 'Utilisateur Bridge',
-              role: parsed.role || 'agence',
-              poste: parsed.poste || 'Chef de Projet Digital',
+              email: firebaseUser.email || parsed.email || 'utilisateur@orange.cm',
+              user: firebaseUser.displayName || parsed.user || (firebaseUser.email ? firebaseUser.email.split('@')[0] : 'Utilisateur'),
+              role: parsed.role || (isAdminEmail ? 'agence' : 'agence'),
+              poste: parsed.poste || (isAdminEmail ? 'Administrateur' : 'Chef de Projet Digital'),
               photoURL: firebaseUser.photoURL || null,
+              client: parsed.client || localStorage.getItem('bridge_active_client') || 'Orange Cameroun',
             };
             
-            // Save to Firestore
-            await setDoc(userDocRef, {
-              uid: firebaseUser.uid,
-              email: newUser.email,
-              name: newUser.user,
-              role: newUser.role,
-              poste: newUser.poste,
-              photoURL: newUser.photoURL || '',
-              updatedAt: new Date().toISOString(),
-            }, { merge: true });
-
             setUser(newUser);
             localStorage.setItem('bridge_user', JSON.stringify(newUser));
+
+            // Save to Firestore
+            try {
+              await setDoc(userDocRef, {
+                uid: firebaseUser.uid,
+                email: newUser.email,
+                name: newUser.user,
+                role: newUser.role,
+                poste: newUser.poste,
+                photoURL: newUser.photoURL || '',
+                updatedAt: new Date().toISOString(),
+              }, { merge: true });
+            } catch (writeErr) {
+              console.warn('Initial user profile write warning:', writeErr);
+            }
           }
         } catch (err) {
           console.warn('Error reading user profile from Firestore:', err);
@@ -108,15 +102,6 @@ export function AuthProvider({ children }) {
   // Standard Login (email/persona)
   const login = useCallback(async (userData) => {
     try {
-      // Authenticate with Firebase if not already signed in
-      if (!auth.currentUser) {
-        try {
-          await signInAnonymously(auth);
-        } catch (e) {
-          // Anonymous sign-in may be restricted; continue with persona authentication
-        }
-      }
-
       const uid = auth.currentUser?.uid || `usr_${Date.now()}`;
       const fullUser = {
         uid,
@@ -125,8 +110,11 @@ export function AuthProvider({ children }) {
 
       setUser(fullUser);
       localStorage.setItem('bridge_user', JSON.stringify(fullUser));
+      if (fullUser.client) {
+        localStorage.setItem('bridge_active_client', fullUser.client);
+      }
 
-      // Save profile to Firestore
+      // Save profile to Firestore if session exists
       if (auth.currentUser) {
         try {
           const userDocRef = doc(db, 'users', auth.currentUser.uid);
@@ -147,47 +135,64 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  // Google Sign-In
-  const loginWithGoogle = useCallback(async (selectedRole = 'agence', defaultPoste = '') => {
+  // Google Sign-In (Firebase Auth)
+  const loginWithGoogle = useCallback(async (selectedRole = null, defaultPoste = null, extraMetadata = {}) => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const fbUser = result.user;
-      const userDocRef = doc(db, 'users', fbUser.uid);
-      const userDoc = await getDoc(userDocRef);
       
-      let finalRole = selectedRole;
-      let finalPoste = defaultPoste || (selectedRole === 'client' ? 'Brand Manager' : 'Chef de Projet Digital');
+      const isAdminEmail = fbUser.email === 'selaboykouotou23@gmail.com';
+      let finalRole = selectedRole || (isAdminEmail ? 'agence' : 'agence');
+      let finalPoste = defaultPoste || (isAdminEmail ? 'Administrateur' : (finalRole === 'client' ? 'Brand Manager' : 'Chef de Projet Digital'));
 
-      if (userDoc.exists()) {
-        const data = userDoc.data();
-        finalRole = data.role || selectedRole;
-        finalPoste = data.poste || finalPoste;
+      const userDocRef = doc(db, 'users', fbUser.uid);
+      try {
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          if (data.role && !selectedRole) finalRole = data.role;
+          if (data.poste && !defaultPoste) finalPoste = data.poste;
+        }
+      } catch (err) {
+        console.warn('Could not read existing user doc from Firestore:', err);
       }
+
+      const clientName = extraMetadata.client || localStorage.getItem('bridge_active_client') || 'Orange Cameroun';
 
       const userData = {
         uid: fbUser.uid,
-        email: fbUser.email,
-        user: fbUser.displayName || fbUser.email.split('@')[0],
+        email: fbUser.email || 'utilisateur@orange.cm',
+        user: fbUser.displayName || (fbUser.email ? fbUser.email.split('@')[0] : 'Utilisateur Google'),
         role: finalRole,
         poste: finalPoste,
-        photoURL: fbUser.photoURL,
+        photoURL: fbUser.photoURL || null,
+        client: clientName,
+        interlocuteurClient: extraMetadata.interlocuteurClient || (finalRole === 'client' ? finalPoste : 'Brand Manager'),
+        profilAgence: extraMetadata.profilAgence || (finalRole === 'agence' ? finalPoste : 'Chef de Projet Digital'),
       };
-
-      await setDoc(userDocRef, {
-        uid: fbUser.uid,
-        email: fbUser.email,
-        name: userData.user,
-        role: finalRole,
-        poste: finalPoste,
-        photoURL: fbUser.photoURL || '',
-        updatedAt: new Date().toISOString(),
-      }, { merge: true });
 
       setUser(userData);
       localStorage.setItem('bridge_user', JSON.stringify(userData));
+      localStorage.setItem('bridge_active_client', clientName);
+
+      // Persist profile to Firestore
+      try {
+        await setDoc(userDocRef, {
+          uid: fbUser.uid,
+          email: userData.email,
+          name: userData.user,
+          role: userData.role,
+          poste: userData.poste,
+          photoURL: userData.photoURL || '',
+          updatedAt: new Date().toISOString(),
+        }, { merge: true });
+      } catch (saveError) {
+        console.warn('Non-blocking user profile Firestore save warning:', saveError);
+      }
+
       return userData;
     } catch (error) {
-      handleFirestoreError(error, OperationType.WRITE, 'users');
+      console.error('Google Sign-In Error:', error);
       throw error;
     }
   }, []);

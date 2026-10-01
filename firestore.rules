@@ -184,5 +184,10 @@ service cloud.firestore {
       allow create: if isValidId(notificationId);
       allow update, delete: if isValidId(notificationId);
     }
+
+    // ─── Connection Health Test ───
+    match /test/{docId} {
+      allow read, write: if true;
+    }
   }
 }

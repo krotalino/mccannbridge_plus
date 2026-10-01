@@ -96,8 +96,12 @@ export default function Sidebar({ isOpen, onClose }) {
 
       <div className="sidebar-footer">
         <div className="flex items-center gap-12">
-          <div className="avatar avatar-md" style={{ background: 'var(--orange)' }}>
-            {user?.user?.split(' ').map(w => w[0]).join('').slice(0, 2) || 'BR'}
+          <div className="avatar avatar-md" style={{ background: 'var(--orange)', overflow: 'hidden' }}>
+            {user?.photoURL ? (
+              <img src={user.photoURL} alt={user?.user || ''} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              user?.user?.split(' ').map(w => w[0]).join('').slice(0, 2) || 'BR'
+            )}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div className="text-sm font-semibold truncate" style={{ color: 'var(--white)' }}>{user?.user || 'Utilisateur'}</div>
