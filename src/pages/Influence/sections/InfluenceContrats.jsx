@@ -73,6 +73,7 @@ export default function InfluenceContrats({ influencers = [], setInfluencers }) 
     const defaultInfId = infId ? String(infId) : (influencers[0]?.id !== undefined ? String(influencers[0].id) : '');
     setEditContract({
       id: '',
+      campagne: '',
       dateDebut: new Date().toISOString().split('T')[0],
       dateFin: '',
       type: 'ponctuel',
@@ -89,6 +90,7 @@ export default function InfluenceContrats({ influencers = [], setInfluencers }) 
   const handleOpenEdit = (contract) => {
     setEditContract({
       ...contract,
+      campagne: contract.campagne || contract.titre || '',
       influencerId: String(contract.influencerId)
     });
     setFormError('');
@@ -144,6 +146,7 @@ export default function InfluenceContrats({ influencers = [], setInfluencers }) 
             ? {
                 ...c,
                 ...editContract,
+                campagne: editContract.campagne || c.campagne || 'Campagne Générale',
                 montant: montantVal,
                 isNewlyCreated: true,
                 updatedAt: new Date().toISOString()
@@ -156,6 +159,7 @@ export default function InfluenceContrats({ influencers = [], setInfluencers }) 
         const newContract = {
           ...editContract,
           id: contractId,
+          campagne: editContract.campagne || 'Campagne Générale',
           montant: montantVal,
           isNewlyCreated: true,
           createdAt: new Date().toISOString(),
@@ -172,16 +176,24 @@ export default function InfluenceContrats({ influencers = [], setInfluencers }) 
 
       // 1. Mise à jour via updateInfluencer (persistance Firestore & State global)
       if (typeof updateInfluencer === 'function') {
-        await updateInfluencer(targetInf.id, influencerUpdates);
+        try {
+          await updateInfluencer(targetInf.id, influencerUpdates);
+        } catch (err) {
+          console.error('Erreur updateInfluencer contrat:', err);
+        }
       }
 
       // 2. Mise à jour via setInfluencers si transmis
       if (typeof setInfluencers === 'function') {
-        setInfluencers(prev => prev.map(inf =>
-          String(inf.id) === String(targetInf.id)
-            ? { ...inf, ...influencerUpdates }
-            : inf
-        ));
+        try {
+          setInfluencers(prev => (Array.isArray(prev) ? prev : []).map(inf =>
+            String(inf.id) === String(targetInf.id)
+              ? { ...inf, ...influencerUpdates }
+              : inf
+          ));
+        } catch (err) {
+          console.error('Erreur setInfluencers contrat:', err);
+        }
       }
 
       if (addNotification) {
@@ -394,6 +406,20 @@ export default function InfluenceContrats({ influencers = [], setInfluencers }) 
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div className="inf-edit-full">
+                <label className="form-label font-bold text-xs">Campagne rattachée / Intitulé du contrat</label>
+                <input
+                  className="form-input"
+                  type="text"
+                  placeholder="Ex: Campagne Pulse 2026, Mayi Festival, Ambassadeur Annuel..."
+                  value={editContract.campagne || ''}
+                  onChange={e => {
+                    setEditContract(c => ({ ...c, campagne: e.target.value }));
+                    if (formError) setFormError('');
+                  }}
+                />
               </div>
 
               <div>

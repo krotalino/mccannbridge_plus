@@ -18,8 +18,10 @@ import {
 import { formatCurrency, formatNumber } from '../../../../utils/helpers.js';
 import { exportInvoiceToPdf } from './InvoicePdfExport.js';
 import InvoiceModal from './InvoiceModal.jsx';
+import { useApp } from '../../../../context/AppContext.jsx';
 
 export default function InvoicesTab({ influencer, influencers, setInfluencers }) {
+  const { updateInfluencer, addNotification } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'brouillon' | 'envoyee' | 'validee' | 'payee'
   const [selectedInvoiceForModal, setSelectedInvoiceForModal] = useState(null);
@@ -50,81 +52,21 @@ export default function InvoicesTab({ influencer, influencers, setInfluencers })
         }
       });
     }
-    if (list.length === 0) {
-      list.push({
-        id: 'DEFAULT-01',
-        campaign: influencer?.lastCampaign || 'Campagne Digitale Orange',
-        brand: 'Orange Cameroun'
-      });
-    }
     return list;
   }, [influencer]);
 
-  // Récupération ou génération intelligente des factures pour l'influenceur
-  const factures = useMemo(() => {
-    if (Array.isArray(influencer?.factures) && influencer.factures.length > 0) {
-      return influencer.factures;
+  // Liste locale des factures réactive pour mise à jour instantanée de l'interface
+  const [facturesList, setFacturesList] = useState(() => (Array.isArray(influencer?.factures) ? influencer.factures : []));
+
+  useEffect(() => {
+    if (Array.isArray(influencer?.factures)) {
+      setFacturesList(influencer.factures);
+    } else {
+      setFacturesList([]);
     }
+  }, [influencer?.id, influencer?.factures]);
 
-    // Si aucune facture n'est encore initialisée dans le profil, générer des factures de référence
-    const generated = [];
-    const baseAmount = influencer?.cachetBase || 1500000;
-    const tvaRate = 19.25;
-
-    // Facture 1 : liée aux paiements réels déjà effectués
-    const lastCamp = influencer?.lastCampaign || 'Orange Weekend Mars';
-    const ht1 = baseAmount;
-    const tva1 = Math.round(ht1 * (tvaRate / 100));
-    generated.push({
-      id: `FAC-001`,
-      numeroFacture: `FAC-2026-089`,
-      dateEmission: '2026-03-01',
-      dateEcheance: '2026-03-15',
-      statut: 'payee',
-      campagne: lastCamp,
-      contratRef: contracts[0]?.id || 'CTR-001',
-      montantHT: ht1,
-      tvaTaux: tvaRate,
-      tvaMontant: tva1,
-      montantTTC: ht1 + tva1,
-      avanceDeduite: 0,
-      netAPayer: ht1 + tva1,
-      conditionsPaiement: 'Virement sous 15 jours après diffusion',
-      modalitesPaiement: 'Virement bancaire',
-      items: [
-        { description: `Création & diffusion de contenus d'influence — ${lastCamp}`, quantite: 1, prixUnit: ht1, total: ht1 }
-      ],
-      notes: 'Facture soldée après validation de conformité des livrables et statistiques.'
-    });
-
-    // Facture 2 : En cours / validée pour la campagne actuelle
-    const currentCamp = campaignsList[0]?.campaign || 'Orange Weekend Avril';
-    const ht2 = Math.round(baseAmount * 0.8);
-    const tva2 = Math.round(ht2 * (tvaRate / 100));
-    generated.push({
-      id: `FAC-002`,
-      numeroFacture: `FAC-2026-114`,
-      dateEmission: '2026-04-02',
-      dateEcheance: '2026-04-20',
-      statut: 'validee',
-      campagne: currentCamp,
-      contratRef: contracts[0]?.id || 'CTR-001',
-      montantHT: ht2,
-      tvaTaux: tvaRate,
-      tvaMontant: tva2,
-      montantTTC: ht2 + tva2,
-      avanceDeduite: Math.round(ht2 * 0.5),
-      netAPayer: (ht2 + tva2) - Math.round(ht2 * 0.5),
-      conditionsPaiement: '50% acompte à la signature / 50% solde à la livraison',
-      modalitesPaiement: 'Virement bancaire',
-      items: [
-        { description: `Campagne ${currentCamp} (Stories + Reel)`, quantite: 1, prixUnit: ht2, total: ht2 }
-      ],
-      notes: 'Acompte déjà perçu. Solde soumis pour ordonnancement du virement.'
-    });
-
-    return generated;
-  }, [influencer, contracts, campaignsList]);
+  const factures = facturesList;
 
   // Filtrage
   const filteredFactures = useMemo(() => {
@@ -146,52 +88,131 @@ export default function InvoicesTab({ influencer, influencers, setInfluencers })
   const totalEnAttenteTTC = factures.filter(f => f.statut === 'validee' || f.statut === 'envoyee').reduce((s, f) => s + (f.netAPayer || f.montantTTC || 0), 0);
 
   // Sauvegarde d'une facture
-  const handleSaveInvoice = (invoiceData) => {
-    if (!setInfluencers) return;
+  const handleSaveInvoice = async (invoiceData) => {
+    if (!influencer) return;
 
-    setInfluencers(prev => prev.map(inf => {
-      if (String(inf.id) !== String(influencer.id)) return inf;
-      const currentList = Array.isArray(inf.factures) && inf.factures.length > 0 ? [...inf.factures] : [...factures];
-      const existIdx = currentList.findIndex(f => f.id === invoiceData.id || f.numeroFacture === invoiceData.numeroFacture);
+    const currentList = Array.isArray(facturesList) ? [...facturesList] : (Array.isArray(influencer.factures) ? [...influencer.factures] : []);
+    const existIdx = currentList.findIndex(f => 
+      (invoiceData.id && String(f.id) === String(invoiceData.id)) || 
+      (invoiceData.numeroFacture && String(f.numeroFacture) === String(invoiceData.numeroFacture))
+    );
 
-      if (existIdx >= 0) {
-        currentList[existIdx] = { ...currentList[existIdx], ...invoiceData };
-      } else {
-        currentList.unshift(invoiceData);
+    let updatedList;
+    if (existIdx >= 0) {
+      updatedList = currentList.map((f, i) => i === existIdx ? { ...f, ...invoiceData, isNewlyCreated: true, updatedAt: new Date().toISOString() } : f);
+    } else {
+      updatedList = [{ ...invoiceData, isNewlyCreated: true, createdAt: new Date().toISOString() }, ...currentList];
+    }
+
+    setFacturesList(updatedList);
+
+    if (typeof updateInfluencer === 'function') {
+      try {
+        await updateInfluencer(influencer.id, { factures: updatedList });
+      } catch (err) {
+        console.error('Erreur lors de la sauvegarde de la facture:', err);
       }
+    }
 
-      return {
-        ...inf,
-        factures: currentList
-      };
-    }));
+    if (typeof setInfluencers === 'function') {
+      try {
+        setInfluencers(prev => (Array.isArray(prev) ? prev : []).map(inf =>
+          String(inf.id) === String(influencer.id)
+            ? { ...inf, factures: updatedList }
+            : inf
+        ));
+      } catch (err) {
+        console.error('Erreur setInfluencers:', err);
+      }
+    }
+
+    if (typeof addNotification === 'function') {
+      addNotification(`Facture ${invoiceData.numeroFacture || invoiceData.id} enregistrée avec succès`, 'success');
+    }
 
     setIsInvoiceModalOpen(false);
     setSelectedInvoiceForModal(null);
   };
 
-  const handleUpdateStatus = (invoiceId, newStatus) => {
-    setInfluencers(prev => prev.map(inf => {
-      if (String(inf.id) !== String(influencer.id)) return inf;
-      const list = Array.isArray(inf.factures) && inf.factures.length > 0 ? [...inf.factures] : [...factures];
-      const updated = list.map(f => {
-        if (f.id !== invoiceId && f.numeroFacture !== invoiceId) return f;
-        return { ...f, statut: newStatus };
-      });
-      return { ...inf, factures: updated };
-    }));
+  const handleUpdateStatus = async (invoiceId, newStatus) => {
+    if (!influencer) return;
+
+    const currentList = Array.isArray(facturesList) ? [...facturesList] : (Array.isArray(influencer.factures) ? [...influencer.factures] : []);
+    const updated = currentList.map(f => {
+      if (String(f.id) !== String(invoiceId) && String(f.numeroFacture) !== String(invoiceId)) return f;
+      return { ...f, statut: newStatus, updatedAt: new Date().toISOString() };
+    });
+
+    setFacturesList(updated);
+
+    if (typeof updateInfluencer === 'function') {
+      try {
+        await updateInfluencer(influencer.id, { factures: updated });
+      } catch (err) {
+        console.error('Erreur update status facture:', err);
+      }
+    }
+
+    if (typeof setInfluencers === 'function') {
+      try {
+        setInfluencers(prev => (Array.isArray(prev) ? prev : []).map(inf =>
+          String(inf.id) === String(influencer.id)
+            ? { ...inf, factures: updated }
+            : inf
+        ));
+      } catch (err) {
+        console.error('Erreur setInfluencers:', err);
+      }
+    }
+
+    if (typeof addNotification === 'function') {
+      addNotification(`Statut de la facture mis à jour : ${newStatus}`, 'info');
+    }
   };
 
-  const handleDeleteInvoice = (invoiceId) => {
-    if (!confirm('Supprimer cette facture ?')) return;
-    setInfluencers(prev => prev.map(inf => {
-      if (String(inf.id) !== String(influencer.id)) return inf;
-      const list = Array.isArray(inf.factures) && inf.factures.length > 0 ? [...inf.factures] : [...factures];
-      return {
-        ...inf,
-        factures: list.filter(f => f.id !== invoiceId && f.numeroFacture !== invoiceId)
-      };
-    }));
+  const handleDeleteInvoice = async (target) => {
+    if (!influencer) return;
+
+    const targetId = typeof target === 'object' ? (target?.id || target?.numeroFacture) : target;
+    const targetNumero = typeof target === 'object' ? target?.numeroFacture : null;
+
+    const currentList = Array.isArray(facturesList) ? [...facturesList] : (Array.isArray(influencer.factures) ? [...influencer.factures] : []);
+    const updated = currentList.filter(f => {
+      if (typeof target === 'object' && f === target) return false;
+      if (targetId && String(f.id || '').trim() === String(targetId).trim()) return false;
+      if (targetId && String(f.numeroFacture || '').trim() === String(targetId).trim()) return false;
+      if (targetNumero && String(f.numeroFacture || '').trim() === String(targetNumero).trim()) return false;
+      return true;
+    });
+
+    // 1. Mise à jour instantanée du state local
+    setFacturesList(updated);
+
+    // 2. Mise à jour persistante via updateInfluencer (Firestore et State global AppContext)
+    if (typeof updateInfluencer === 'function') {
+      try {
+        await updateInfluencer(influencer.id, { factures: updated });
+      } catch (err) {
+        console.error('Erreur suppression facture via updateInfluencer:', err);
+      }
+    }
+
+    // 3. Mise à jour locale via setInfluencers si transmis
+    if (typeof setInfluencers === 'function') {
+      try {
+        setInfluencers(prev => (Array.isArray(prev) ? prev : []).map(inf =>
+          String(inf.id) === String(influencer.id)
+            ? { ...inf, factures: updated }
+            : inf
+        ));
+      } catch (err) {
+        console.error('Erreur setInfluencers suppression facture:', err);
+      }
+    }
+
+    if (typeof addNotification === 'function') {
+      addNotification(`Facture ${targetNumero || targetId || ''} supprimée avec succès`, 'info');
+    }
   };
 
   const handleDownloadPdf = (fac) => {
@@ -306,8 +327,18 @@ export default function InvoicesTab({ influencer, influencers, setInfluencers })
             <tbody>
               {filteredFactures.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-24 text-center text-muted text-xs">
-                    Aucune facture ne correspond à ces critères.
+                  <td colSpan={9} className="py-32 text-center text-muted text-xs">
+                    <div style={{ fontSize: 24, marginBottom: 6 }}>📑</div>
+                    <strong style={{ color: 'var(--dark)' }}>
+                      {searchTerm || statusFilter !== 'all'
+                        ? 'Aucune facture ne correspond aux filtres actifs'
+                        : 'Aucune facture enregistrée pour cet influenceur'}
+                    </strong>
+                    <p style={{ margin: '4px 0 0', color: 'var(--muted)' }}>
+                      {searchTerm || statusFilter !== 'all'
+                        ? 'Modifiez vos critères de recherche pour afficher les factures.'
+                        : 'Cliquez sur « + Créer une Facture » pour émettre une nouvelle facture.'}
+                    </p>
                   </td>
                 </tr>
               ) : (
@@ -399,7 +430,7 @@ export default function InvoicesTab({ influencer, influencers, setInfluencers })
                           <button
                             type="button"
                             className="btn btn-ghost btn-sm p-4 text-red"
-                            onClick={() => handleDeleteInvoice(fac.id || fac.numeroFacture)}
+                            onClick={() => handleDeleteInvoice(fac)}
                             title="Supprimer la facture"
                           >
                             <Trash2 size={14} />

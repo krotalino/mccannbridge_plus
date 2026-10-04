@@ -362,7 +362,7 @@ function appReducer(state, action) {
 
     case 'SYNC_INFLUENCERS': {
       try { localStorage.setItem('bridge_influencers_v2', JSON.stringify(action.influencers)); } catch (e) {}
-      return { ...state, influencers: action.influencers, firestoreReady: true };
+      return { ...state, influencers: action.influencers, influenceTalents: action.influencers, firestoreReady: true };
     }
 
     case 'SYNC_FINANCIAL_DOCUMENTS': {
@@ -607,14 +607,16 @@ function appReducer(state, action) {
     case 'ADD_INFLUENCER':
     case 'ADD_INFLUENCE_TALENT': {
       const talent = action.talent || action.influencer;
-      const updatedTalents = [talent, ...(state.influenceTalents || state.influencers).filter(i => String(i.id) !== String(talent.id))];
+      const baseList = (state.influencers && state.influencers.length > 0) ? state.influencers : (state.influenceTalents || []);
+      const updatedTalents = [talent, ...baseList.filter(i => String(i.id) !== String(talent.id))];
       try { localStorage.setItem('bridge_influencers_v2', JSON.stringify(updatedTalents)); } catch (e) {}
       return { ...state, influencers: updatedTalents, influenceTalents: updatedTalents };
     }
 
     case 'UPDATE_INFLUENCER':
     case 'UPDATE_INFLUENCE_TALENT': {
-      const updatedTalents = (state.influenceTalents || state.influencers).map(i =>
+      const baseList = (state.influencers && state.influencers.length > 0) ? state.influencers : (state.influenceTalents || []);
+      const updatedTalents = baseList.map(i =>
         String(i.id) === String(action.id) ? { ...i, ...action.updates, updatedAt: new Date().toISOString() } : i
       );
       try { localStorage.setItem('bridge_influencers_v2', JSON.stringify(updatedTalents)); } catch (e) {}
@@ -623,7 +625,8 @@ function appReducer(state, action) {
 
     case 'DELETE_INFLUENCER':
     case 'DELETE_INFLUENCE_TALENT': {
-      const updatedTalents = (state.influenceTalents || state.influencers).filter(i => String(i.id) !== String(action.id));
+      const baseList = (state.influencers && state.influencers.length > 0) ? state.influencers : (state.influenceTalents || []);
+      const updatedTalents = baseList.filter(i => String(i.id) !== String(action.id));
       try { localStorage.setItem('bridge_influencers_v2', JSON.stringify(updatedTalents)); } catch (e) {}
       return { ...state, influencers: updatedTalents, influenceTalents: updatedTalents };
     }
@@ -2469,6 +2472,19 @@ export function AppProvider({ children }) {
   }, [state.knowledgeChunks]);
 
   // ─── Influencers Management ───
+  const sanitizeForFirestore = (obj) => {
+    if (obj === undefined) return null;
+    if (obj === null || typeof obj !== 'object') return obj;
+    if (Array.isArray(obj)) return obj.map(sanitizeForFirestore);
+    const cleaned = {};
+    for (const [key, value] of Object.entries(obj)) {
+      if (value !== undefined) {
+        cleaned[key] = sanitizeForFirestore(value);
+      }
+    }
+    return cleaned;
+  };
+
   const addInfluencer = useCallback(async (influencerData) => {
     const id = influencerData.id ? String(influencerData.id) : `INF-${Date.now().toString().slice(-6)}`;
     const newInf = {
@@ -2480,7 +2496,7 @@ export function AppProvider({ children }) {
     dispatch({ type: 'ADD_INFLUENCER', influencer: newInf });
     dispatch({ type: 'ADD_NOTIFICATION', text: `Influenceur @${newInf.pseudo || newInf.name} enregistré`, notifType: 'success' });
     try {
-      await setDoc(doc(db, 'influencers', id), newInf);
+      await setDoc(doc(db, 'influencers', id), sanitizeForFirestore(newInf));
     } catch (err) {
       handleFirestoreError(err, OperationType.WRITE, `influencers/${id}`);
     }
@@ -2495,7 +2511,7 @@ export function AppProvider({ children }) {
     };
     dispatch({ type: 'UPDATE_INFLUENCER', id: stringId, updates: updatedFields });
     try {
-      await setDoc(doc(db, 'influencers', stringId), updatedFields, { merge: true });
+      await setDoc(doc(db, 'influencers', stringId), sanitizeForFirestore(updatedFields), { merge: true });
     } catch (err) {
       handleFirestoreError(err, OperationType.WRITE, `influencers/${stringId}`);
     }

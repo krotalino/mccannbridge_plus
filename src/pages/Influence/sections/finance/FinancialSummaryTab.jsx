@@ -52,16 +52,6 @@ export default function FinancialSummaryTab({ influencer, influencers, setInflue
         }
       });
     }
-    if (list.length === 0) {
-      list.push({
-        id: 'DEFAULT-01',
-        campaign: influencer?.lastCampaign || 'Campagne Digitale Orange',
-        brand: 'Orange Cameroun',
-        budgetAlloue: influencer?.cachetBase || 1500000,
-        montantNegocie: influencer?.cachetBase || 1500000,
-        statut: 'en_cours'
-      });
-    }
     return list;
   }, [influencer]);
 
