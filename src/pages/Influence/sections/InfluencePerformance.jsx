@@ -70,7 +70,7 @@ export default function InfluencePerformance({ influencers = [], setInfluencers 
             id: p.id || `PUB-${Math.random().toString(36).substr(2, 6)}`,
             title: p.titre || p.title || `Publication de ${inf.name}`,
             talent_name: inf.name,
-            campaign_name: p.campagne || 'Campagnes Q4 2025',
+            campaign_name: p.campagne || 'Campagne sans nom',
             platform: (p.plateforme || p.platform || 'instagram').toLowerCase(),
             content_type: (p.format || p.content_type || 'post').toLowerCase(),
             content_subject: p.sujet || p.content_subject || 'Général',
@@ -474,6 +474,32 @@ export default function InfluencePerformance({ influencers = [], setInfluencers 
           </button>
         </div>
       </div>
+
+      {/* Bannière d'état initial vierge */}
+      {allDeliverables.length === 0 && (
+        <div
+          className="mb-20 p-14 rounded-xl flex items-center justify-between gap-12"
+          style={{ background: '#F8FAFC', border: '1px dashed #CBD5E1' }}
+        >
+          <div className="flex items-center gap-10">
+            <span style={{ fontSize: 22 }}>📊</span>
+            <div>
+              <div className="text-xs font-bold text-dark">
+                Aucune donnée de performance enregistrée pour le moment
+              </div>
+              <div className="text-[11px] text-muted">
+                Les données d'exemples ont été supprimées. Seules les publications et livrables nouvellement enregistrés via le bouton « Ajouter une Publication » s'afficheront ici.
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowAddDeliverableModal(true)}
+            className="btn btn-orange text-xs font-semibold px-12 py-6 rounded-lg whitespace-nowrap"
+          >
+            + Enregistrer une Publication
+          </button>
+        </div>
+      )}
 
       {/* Barre d'onglets de la section Performance */}
       <div

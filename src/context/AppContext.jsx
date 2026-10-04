@@ -157,7 +157,19 @@ const loadSavedInfluencers = () => {
     const saved = localStorage.getItem('bridge_influencers_v2');
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        // Sanitize: ensure no legacy example campaigns/cahiers/stats remain unless newly recorded
+        return parsed.map(inf => ({
+          ...inf,
+          campaigns: typeof inf.campaigns === 'number' && inf.campaigns > 0 ? inf.campaigns : 0,
+          contracts: Array.isArray(inf.contracts) ? inf.contracts.filter(c => c && c.isNewlyCreated) : [],
+          cahierDesCharges: Array.isArray(inf.cahierDesCharges) ? inf.cahierDesCharges.filter(c => c && c.isNewlyCreated) : [],
+          publicationStats: Array.isArray(inf.publicationStats) ? inf.publicationStats.filter(p => p && p.isNewlyCreated) : [],
+          performanceHistory: Array.isArray(inf.performanceHistory) ? inf.performanceHistory.filter(h => h && h.isNewlyCreated) : [],
+          paiements: Array.isArray(inf.paiements) ? inf.paiements.filter(p => p && p.isNewlyCreated) : [],
+          pendingDeliverables: Array.isArray(inf.pendingDeliverables) ? inf.pendingDeliverables.filter(d => d && d.isNewlyCreated) : []
+        }));
+      }
     }
     return INITIAL_INFLUENCE_TALENTS;
   } catch (e) {
@@ -170,7 +182,10 @@ const loadSavedInfluenceDeliverables = () => {
     const saved = localStorage.getItem('bridge_influence_deliverables_v2');
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        // Exclude legacy mock deliverables from old Excel seed, only keep newly recorded
+        return parsed.filter(d => d && !d.import_batch_id && d.campaign_id !== 'CAMP-ORANGE-Q4-2025' && !d.isDemo);
+      }
     }
     return INITIAL_INFLUENCE_DELIVERABLES;
   } catch (e) {
@@ -183,7 +198,10 @@ const loadSavedInfluenceCampaigns = () => {
     const saved = localStorage.getItem('bridge_influence_campaigns_v2');
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        // Exclude legacy mock campaigns, only keep newly recorded
+        return parsed.filter(c => c && !c.import_batch_id && c.id !== 'CAMP-ORANGE-Q4-2025' && !c.isDemo);
+      }
     }
     return INITIAL_INFLUENCE_CAMPAIGNS;
   } catch (e) {

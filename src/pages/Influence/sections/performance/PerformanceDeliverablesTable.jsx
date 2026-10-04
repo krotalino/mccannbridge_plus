@@ -202,7 +202,9 @@ export default function PerformanceDeliverablesTable({
             {deliverables.length === 0 ? (
               <tr>
                 <td colSpan={13} className="text-center py-40 text-muted italic">
-                  Aucune publication ne correspond aux filtres actifs.
+                  {totalDeliverablesCount === 0
+                    ? 'Aucune donnée de performance enregistrée pour le moment. Cliquez sur « Nouvelle Publication » pour enregistrer vos premiers résultats.'
+                    : 'Aucune publication ne correspond aux filtres actifs.'}
                 </td>
               </tr>
             ) : (

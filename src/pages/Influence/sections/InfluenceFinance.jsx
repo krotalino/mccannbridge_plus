@@ -121,13 +121,13 @@ export default function InfluenceFinance({ influencers = [], setInfluencers }) {
             <div className="text-right">
               <div className="text-xxs text-muted uppercase font-bold">Contrat(s) en vigueur</div>
               <div className="text-sm font-extrabold text-dark">
-                {selectedInf.contracts?.length || 1} contrat ({selectedInf.contractStatus || 'Actif'})
+                {selectedInf.contracts?.length || 0} contrat{selectedInf.contracts?.length > 1 ? 's' : ''} ({selectedInf.contractStatus || 'Non renseigné'})
               </div>
             </div>
             <div className="text-right">
               <div className="text-xxs text-muted uppercase font-bold">Score Global</div>
               <div className="text-sm font-extrabold text-orange">
-                {selectedInf.scorePerformance || selectedInf.score || 4.2} / 5 ⭐
+                {selectedInf.scorePerformance || selectedInf.score || '—'} / 5 ⭐
               </div>
             </div>
           </div>

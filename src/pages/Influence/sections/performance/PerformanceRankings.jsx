@@ -188,7 +188,7 @@ export default function PerformanceRankings({
         <div className="flex flex-col gap-8">
           {sortedContents.length === 0 ? (
             <div className="text-center py-32 text-muted italic text-xs">
-              Aucun contenu disponible selon les critères sélectionnés.
+              Aucun contenu de performance enregistré pour le moment. Seules les publications nouvellement enregistrées apparaîtront dans le classement.
             </div>
           ) : (
             sortedContents.slice(0, 15).map((item, index) => {
@@ -292,7 +292,7 @@ export default function PerformanceRankings({
         <div className="flex flex-col gap-8">
           {sortedTalents.length === 0 ? (
             <div className="text-center py-32 text-muted italic text-xs">
-              Aucun talent disponible selon les critères sélectionnés.
+              Aucune métrique de talent enregistrée pour le moment. Seuls les talents avec des publications nouvellement enregistrées apparaîtront ici.
             </div>
           ) : (
             sortedTalents.slice(0, 15).map((talent, index) => {

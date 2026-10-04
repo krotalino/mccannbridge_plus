@@ -412,50 +412,64 @@ export default function InfluenceFiche({ influencers, setInfluencers, onViewProf
                   const isExpanded = Boolean(expandedCards[inf.id]);
                   return (
                     <div style={{ background: '#fbfbfb', border: '1px solid #e9ecef', borderRadius: 8, padding: 10, marginBottom: 12 }}>
-                      <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center gap-6" style={{ overflow: 'hidden' }}>
-                          <span style={{ fontSize: 13 }}>📦</span>
-                          <span className="font-bold text-xs text-dark truncate" title={activeCdc?.titre || 'Campagne en cours'}>
-                            {activeCdc?.titre ? (activeCdc.titre.length > 20 ? activeCdc.titre.substring(0, 18) + '...' : activeCdc.titre) : 'Campagne en cours'}
+                      {stats.total === 0 ? (
+                        <div className="flex items-center justify-between text-xs text-muted" style={{ padding: '4px 2px' }}>
+                          <div className="flex items-center gap-6">
+                            <span style={{ fontSize: 13 }}>📦</span>
+                            <span style={{ fontSize: 11 }}>Aucun livrable en cours</span>
+                          </div>
+                          <span className="tag" style={{ fontSize: 9, padding: '1px 6px', background: '#f0f0f0', color: '#888' }}>
+                            0 livrable
                           </span>
-                          {activeCdc?.reference && (
-                            <span className="tag" style={{ fontSize: 9, padding: '1px 5px', background: '#f0f0f0', color: '#666' }}>
-                              {activeCdc.reference}
-                            </span>
-                          )}
                         </div>
-                        <div className="flex items-center gap-4 shrink-0">
-                          <span className="tag" style={{
-                            fontSize: 9,
-                            padding: '1px 6px',
-                            background: stats.progress === 100 ? '#d4edda' : '#fff3cd',
-                            color: stats.progress === 100 ? '#155724' : '#856404',
-                            fontWeight: 700
-                          }}>
-                            {stats.progress}%
-                          </span>
-                          <button
-                            type="button"
-                            onClick={(e) => { e.stopPropagation(); toggleExpandCard(inf.id); }}
-                            className="btn btn-ghost btn-xs"
-                            style={{ padding: '1px 4px', fontSize: 10 }}
-                            title={isExpanded ? 'Réduire les livrables' : 'Afficher les livrables détaillés'}
-                          >
-                            {isExpanded ? '▲' : '▼'}
-                          </button>
-                        </div>
-                      </div>
+                      ) : (
+                        <>
+                          <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center gap-6" style={{ overflow: 'hidden' }}>
+                              <span style={{ fontSize: 13 }}>📦</span>
+                              <span className="font-bold text-xs text-dark truncate" title={activeCdc?.titre || 'Campagne en cours'}>
+                                {activeCdc?.titre ? (activeCdc.titre.length > 20 ? activeCdc.titre.substring(0, 18) + '...' : activeCdc.titre) : 'Campagne en cours'}
+                              </span>
+                              {activeCdc?.reference && (
+                                <span className="tag" style={{ fontSize: 9, padding: '1px 5px', background: '#f0f0f0', color: '#666' }}>
+                                  {activeCdc.reference}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-4 shrink-0">
+                              <span className="tag" style={{
+                                fontSize: 9,
+                                padding: '1px 6px',
+                                background: stats.progress === 100 ? '#d4edda' : '#fff3cd',
+                                color: stats.progress === 100 ? '#155724' : '#856404',
+                                fontWeight: 700
+                              }}>
+                                {stats.progress}%
+                              </span>
+                              <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); toggleExpandCard(inf.id); }}
+                                className="btn btn-ghost btn-xs"
+                                style={{ padding: '1px 4px', fontSize: 10 }}
+                                title={isExpanded ? 'Réduire les livrables' : 'Afficher les livrables détaillés'}
+                              >
+                                {isExpanded ? '▲' : '▼'}
+                              </button>
+                            </div>
+                          </div>
 
-                      {/* Barre de progression */}
-                      <div style={{ height: 4, background: '#e9ecef', borderRadius: 2, overflow: 'hidden', marginBottom: 8 }}>
-                        <div style={{ width: `${stats.progress}%`, height: '100%', background: stats.progress === 100 ? '#28A745' : '#FF7900', borderRadius: 2 }} />
-                      </div>
+                          {/* Barre de progression */}
+                          <div style={{ height: 4, background: '#e9ecef', borderRadius: 2, overflow: 'hidden', marginBottom: 8 }}>
+                            <div style={{ width: `${stats.progress}%`, height: '100%', background: stats.progress === 100 ? '#28A745' : '#FF7900', borderRadius: 2 }} />
+                          </div>
 
-                      {/* Résumé condensé */}
-                      <div className="flex justify-between items-center text-xs text-muted mb-6" style={{ fontSize: 10 }}>
-                        <span>{stats.completed}/{stats.total} validés • {stats.inProgress} en cours</span>
-                        {stats.late > 0 && <span style={{ color: 'var(--red)', fontWeight: 700 }}>⚠️ {stats.late} retard</span>}
-                      </div>
+                          {/* Résumé condensé */}
+                          <div className="flex justify-between items-center text-xs text-muted mb-6" style={{ fontSize: 10 }}>
+                            <span>{stats.completed}/{stats.total} validés • {stats.inProgress} en cours</span>
+                            {stats.late > 0 && <span style={{ color: 'var(--red)', fontWeight: 700 }}>⚠️ {stats.late} retard</span>}
+                          </div>
+                        </>
+                      )}
 
                       {/* Liste des livrables */}
                       <div className="space-y-4">

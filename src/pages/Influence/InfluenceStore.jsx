@@ -18,7 +18,13 @@ const getInitialData = () => {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed && parsed.talents && parsed.talents.length > 0) {
-        return parsed;
+        return {
+          ...parsed,
+          campaigns: Array.isArray(parsed.campaigns) ? parsed.campaigns.filter(c => c && !c.import_batch_id && c.id !== 'CAMP-ORANGE-Q4-2025' && !c.isDemo) : [],
+          deliverables: Array.isArray(parsed.deliverables) ? parsed.deliverables.filter(d => d && !d.import_batch_id && d.campaign_id !== 'CAMP-ORANGE-Q4-2025' && !d.isDemo) : [],
+          snapshots: Array.isArray(parsed.snapshots) ? parsed.snapshots.filter(s => s && s.isNewlyCreated) : [],
+          insights: Array.isArray(parsed.insights) ? parsed.insights.filter(i => i && !i.isDemo) : []
+        };
       }
     }
   } catch (e) {

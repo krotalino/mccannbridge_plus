@@ -88,7 +88,7 @@ export default function CampagnesActivations({ data, setStatus, onOpenTalentProf
             <div style={{ textAlign: 'right', borderLeft: '1px solid #E5E7EB', paddingLeft: 12 }}>
               <span style={{ fontSize: 11, color: 'var(--muted)' }}>Vues cumulées :</span>{' '}
               <strong style={{ fontSize: 13, color: '#FF7900' }}>
-                {totalViews > 0 ? formatNumber(totalViews) : '14.8M'}
+                {totalViews > 0 ? formatNumber(totalViews) : '0'}
               </strong>
             </div>
           </div>
@@ -142,7 +142,7 @@ export default function CampagnesActivations({ data, setStatus, onOpenTalentProf
               {filtered.length === 0 ? (
                 <tr>
                   <td colSpan={8} style={{ padding: '36px 16px', textAlign: 'center', color: 'var(--muted)' }}>
-                    Aucune campagne ne correspond à votre recherche.
+                    {search ? 'Aucune campagne ne correspond à votre recherche.' : 'Aucune campagne en cours enregistrée. Les nouvelles campagnes apparaîtront ici.'}
                   </td>
                 </tr>
               ) : (

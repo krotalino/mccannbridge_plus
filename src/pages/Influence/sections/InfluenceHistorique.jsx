@@ -65,33 +65,30 @@ export default function InfluenceHistorique({ influencers = [], setInfluencers }
           networks: h.networks || (selectedInf.reseaux ? [...selectedInf.reseaux] : ['Instagram', 'TikTok']),
           contentTypes: h.contentTypes || ['Story', 'Reel / TikTok'],
 
-          kpiReach: h.kpiReach || 150000,
-          kpiTarget: h.kpiTarget || 120000,
-          impressions: h.impressions || Math.round((h.kpiReach || 150000) * 1.32),
-          kpiEngagement: h.kpiEngagement || 5.8,
-          engagementTarget: h.engagementTarget || 5.0,
-          clicks: h.clicks || Math.round((h.kpiReach || 150000) * 0.042),
-          conversions: h.conversions || Math.round((h.kpiReach || 150000) * 0.005),
+          kpiReach: h.kpiReach || 0,
+          kpiTarget: h.kpiTarget || 0,
+          impressions: h.impressions || (h.kpiReach ? Math.round(h.kpiReach * 1.32) : 0),
+          kpiEngagement: h.kpiEngagement || 0,
+          engagementTarget: h.engagementTarget || 0,
+          clicks: h.clicks || (h.kpiReach ? Math.round(h.kpiReach * 0.042) : 0),
+          conversions: h.conversions || 0,
           salesVolume: h.salesVolume || 0,
 
-          contentQuality: h.contentQuality || 4,
+          contentQuality: h.contentQuality || 0,
           onTime: h.onTime !== undefined ? h.onTime : true,
           variablePaid: h.variablePaid !== undefined ? h.variablePaid : 100,
 
           notesInternes: {
-            noteGlobale: h.notesInternes?.noteGlobale || h.contentQuality || 4.2,
-            fiabilite: h.notesInternes?.fiabilite || 4,
-            qualiteCollaboration: h.notesInternes?.qualiteCollaboration || 4,
+            noteGlobale: h.notesInternes?.noteGlobale || h.contentQuality || 0,
+            fiabilite: h.notesInternes?.fiabilite || 0,
+            qualiteCollaboration: h.notesInternes?.qualiteCollaboration || 0,
             respectDelais: h.notesInternes?.respectDelais || (h.onTime ? 5 : 3),
-            commentaire: h.notesInternes?.commentaire || 'Campagne exécutée en accord avec les guidelines et objectifs Orange.',
-            pointsForts: h.notesInternes?.pointsForts || ['Excellente affinité audience', 'Esthétique conforme à la charte'],
-            axesAmelioration: h.notesInternes?.axesAmelioration || ['Optimiser les liens traqués dans les stories'],
+            commentaire: h.notesInternes?.commentaire || 'Campagne enregistrée.',
+            pointsForts: h.notesInternes?.pointsForts || [],
+            axesAmelioration: h.notesInternes?.axesAmelioration || [],
           },
 
-          livrables: h.livrables || [
-            { id: `L-${idx}-1`, titre: `Story ${campName}`, type: 'Story', url: 'https://instagram.com/sample', statut: 'valide' },
-            { id: `L-${idx}-2`, titre: `Reel ${campName}`, type: 'Reel / TikTok', url: 'https://instagram.com/reel/sample', statut: 'valide' }
-          ],
+          livrables: h.livrables || [],
 
           remuneration: {
             base: h.remuneration?.base || selectedInf.cachetBase || 1500000,
@@ -127,27 +124,27 @@ export default function InfluenceHistorique({ influencers = [], setInfluencers }
             networks: cdc.guidelineMarque?.mentions?.length ? ['Instagram', 'Facebook'] : ['Instagram', 'TikTok'],
             contentTypes: cdcLivrables.map(l => l.type).filter(Boolean) || ['Story', 'Reel'],
 
-            kpiReach: 140000,
-            kpiTarget: 150000,
-            impressions: 185000,
-            kpiEngagement: 6.2,
-            engagementTarget: 5.5,
-            clicks: 3900,
-            conversions: 450,
+            kpiReach: cdc.kpiReach || 0,
+            kpiTarget: cdc.kpiTarget || 0,
+            impressions: cdc.impressions || 0,
+            kpiEngagement: cdc.kpiEngagement || 0,
+            engagementTarget: cdc.engagementTarget || 0,
+            clicks: cdc.clicks || 0,
+            conversions: cdc.conversions || 0,
             salesVolume: 0,
 
-            contentQuality: 4,
+            contentQuality: 0,
             onTime: true,
             variablePaid: 100,
 
             notesInternes: {
-              noteGlobale: 4.5,
-              fiabilite: 5,
-              qualiteCollaboration: 5,
-              respectDelais: 4,
+              noteGlobale: 0,
+              fiabilite: 0,
+              qualiteCollaboration: 0,
+              respectDelais: 0,
               commentaire: `Cahier des charges ${cdcName} avec ${cdcLivrables.length} livrable(s).`,
-              pointsForts: ['Respect scrupuleux du brief de marque', 'Grande réactivité'],
-              axesAmelioration: ['Maintenir la dynamique sur les stories'],
+              pointsForts: [],
+              axesAmelioration: [],
             },
 
             livrables: cdcLivrables.map(l => ({
@@ -205,8 +202,8 @@ export default function InfluenceHistorique({ influencers = [], setInfluencers }
       : '0.0';
     const totalPaid = consolidatedCampaigns.reduce((sum, c) => sum + (c.remuneration?.base || 0) + (c.remuneration?.variable || 0), 0);
     const avgRating = consolidatedCampaigns.length > 0
-      ? (consolidatedCampaigns.reduce((sum, c) => sum + (c.notesInternes?.noteGlobale || c.contentQuality || 4), 0) / consolidatedCampaigns.length).toFixed(1)
-      : '4.5';
+      ? (consolidatedCampaigns.reduce((sum, c) => sum + (c.notesInternes?.noteGlobale || c.contentQuality || 0), 0) / consolidatedCampaigns.length).toFixed(1)
+      : '0.0';
 
     return { totalReach, avgEngagement, totalPaid, avgRating, count: consolidatedCampaigns.length };
   }, [consolidatedCampaigns]);
@@ -496,9 +493,15 @@ export default function InfluenceHistorique({ influencers = [], setInfluencers }
           style={{ background: '#ffffff', border: '1px dashed #D0D7DE' }}
         >
           <div style={{ fontSize: 40, marginBottom: 12 }}>🔍</div>
-          <h3 className="text-base font-bold text-dark mb-4">Aucune campagne ne correspond aux critères</h3>
+          <h3 className="text-base font-bold text-dark mb-4">
+            {searchTerm || statusFilter !== 'all' || brandFilter !== 'all'
+              ? 'Aucune campagne ne correspond aux critères de recherche'
+              : 'Aucune campagne passée ou en cours enregistrée pour cet influenceur'}
+          </h3>
           <p className="text-xs text-muted mb-16 max-w-sm mx-auto">
-            Ajustez vos filtres de recherche ou ajoutez une nouvelle campagne historique pour ce talent.
+            {searchTerm || statusFilter !== 'all' || brandFilter !== 'all'
+              ? 'Ajustez vos filtres de recherche pour afficher les campagnes.'
+              : 'Seules les campagnes nouvellement enregistrées apparaîtront sur la fiche de ce talent.'}
           </p>
           <button
             className="btn btn-orange btn-sm"

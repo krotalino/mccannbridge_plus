@@ -13,93 +13,93 @@ export default function ClientCockpitInfluence({
     {
       id: 'talentsActifs',
       title: 'Talents Actifs',
-      value: kpis.talentsActifs || 24,
+      value: kpis.talentsActifs ?? 0,
       sub: 'Créateurs & ambassadeurs mobilisés',
       icon: '👥',
       color: '#FF7900',
       tag: 'Vivier Actif',
-      trend: '+4 ce mois'
+      trend: (kpis.talentsActifs || 0) > 0 ? `${kpis.talentsActifs} talents qualifiés` : 'Aucun talent actif'
     },
     {
       id: 'activationsEnCours',
       title: 'Activations en Cours',
-      value: kpis.activationsEnCours || 6,
+      value: kpis.activationsEnCours ?? 0,
       sub: 'Opérations en exécution',
       icon: '🚀',
       color: '#2980B9',
-      tag: '3 Entités',
-      trend: '100% dans les délais'
+      tag: (kpis.activationsEnCours || 0) > 0 ? 'En cours' : '0 activation',
+      trend: (kpis.activationsEnCours || 0) > 0 ? '100% dans les délais' : 'Aucune campagne en cours'
     },
     {
       id: 'contenusDiffuses',
       title: 'Contenus Diffusés',
-      value: kpis.contenusDiffuses || 48,
+      value: kpis.contenusDiffuses ?? 0,
       sub: 'Livrables publiés & conformes',
       icon: '📱',
       color: '#27AE60',
-      tag: 'BAT Validés',
-      trend: '19 Reels • 24 TikToks'
+      tag: (kpis.contenusDiffuses || 0) > 0 ? 'BAT Validés' : '0 diffusé',
+      trend: (kpis.contenusDiffuses || 0) > 0 ? `${kpis.contenusDiffuses} contenus` : 'Aucun contenu diffusé'
     },
     {
       id: 'porteeCumulee',
       title: 'Portée / Impressions',
-      value: kpis.porteeCumulee || '16.4M',
+      value: kpis.porteeCumulee || '0',
       sub: 'Exposition cumulée certifiée',
       icon: '🌐',
       color: '#8E44AD',
-      tag: '+24% vs Q2',
-      trend: 'Audience Cameroun & Diaspora'
+      tag: 'Audience certifiée',
+      trend: 'Mesures réelles'
     },
     {
       id: 'vuesVideo',
       title: 'Vues Vidéo',
-      value: kpis.vuesVideo || '8.9M',
+      value: kpis.vuesVideo || '0',
       sub: 'Consommation Reels, TikTok, YT',
       icon: '▶️',
       color: '#D35400',
-      tag: '68% rétention',
-      trend: 'Format court dominant'
+      tag: 'Vues réelles',
+      trend: 'Comptabilisation en direct'
     },
     {
       id: 'engagementsCumules',
       title: 'Engagements Cumulés',
-      value: kpis.engagementsCumules || '742K',
+      value: kpis.engagementsCumules || '0',
       sub: 'Réactions, partages, clics, saves',
       icon: '💬',
       color: '#16A085',
-      tag: 'Qualitatif',
-      trend: 'Partages en forte hausse'
+      tag: 'Interactions',
+      trend: 'Calculé sur livrables'
     },
     {
       id: 'tauxEngagement',
       title: 'Taux d’Engagement',
-      value: kpis.tauxEngagement || '5.2%',
+      value: kpis.tauxEngagement || '0.0%',
       sub: 'Qualité relative des interactions',
       icon: '🔥',
       color: '#C0392B',
-      tag: 'Bench: 3.8%',
-      trend: '+1.4 pt vs marché telco'
+      tag: 'Performance',
+      trend: 'Taux effectif'
     },
     {
       id: 'livrablesAValider',
       title: 'Livrables à Valider',
-      value: kpis.livrablesAValider || 7,
+      value: kpis.livrablesAValider ?? 0,
       sub: 'En attente décision Orange',
       icon: '⚡',
       color: '#E67E22',
       tag: 'Action Orange',
-      trend: '2 sous 24h',
-      highlight: true
+      trend: (kpis.livrablesAValider || 0) > 0 ? `${kpis.livrablesAValider} en attente` : 'À jour',
+      highlight: (kpis.livrablesAValider || 0) > 0
     },
     {
       id: 'alertesActives',
       title: 'Alertes Prioritaires',
-      value: kpis.alertesActives || alerts.length || 3,
+      value: kpis.alertesActives ?? alerts.length ?? 0,
       sub: 'Retards, conformité, surperf',
       icon: '⚠️',
       color: '#E74C3C',
-      tag: 'À surveiller',
-      trend: '1 chevauchement com'
+      tag: (kpis.alertesActives || alerts.length || 0) > 0 ? 'À surveiller' : 'RAS',
+      trend: (kpis.alertesActives || alerts.length || 0) > 0 ? `${kpis.alertesActives || alerts.length} alerte(s)` : 'Aucune alerte active'
     }
   ];
 

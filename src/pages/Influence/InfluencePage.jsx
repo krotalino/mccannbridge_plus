@@ -198,9 +198,9 @@ export default function InfluencePage() {
     { id: 'talents', label: 'Talents & Ambassadeurs', icon: '👥', badge: (influencers || []).length },
     { id: 'campagnes', label: 'Campagnes & Activations', icon: '🗂', badge: (data.campaigns || []).length },
     { id: 'livrables', label: 'Livrables & Validations', icon: '📄', badge: (data.deliverables || []).length },
-    { id: 'reporting', label: 'Reporting & Analyses', icon: '📈', badge: `${kpis.rate || '4.8'}%` },
-    { id: 'veille', label: 'Veille Stratégique', icon: '📡', badge: '3' },
-    { id: 'import', label: 'Import Excel', icon: '📥', badge: '6' },
+    { id: 'reporting', label: 'Reporting & Analyses', icon: '📈', badge: kpis.rate ? `${kpis.rate}%` : null },
+    { id: 'veille', label: 'Veille Stratégique', icon: '📡', badge: null },
+    { id: 'import', label: 'Import Excel', icon: '📥', badge: (data.batches || []).length || null },
     { id: 'outils', label: 'Outils Métier', icon: '🧰', badge: null }
   ];
 

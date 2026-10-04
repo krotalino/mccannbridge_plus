@@ -64,7 +64,7 @@ export default function PerformanceTalentsTable({
             {talentsMetrics.length === 0 ? (
               <tr>
                 <td colSpan={11} className="text-center py-32 text-muted italic">
-                  Aucun influenceur ne correspond aux filtres actifs.
+                  Aucune métrique de performance enregistrée pour les influenceurs pour le moment.
                 </td>
               </tr>
             ) : (

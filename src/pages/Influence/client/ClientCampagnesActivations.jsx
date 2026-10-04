@@ -60,7 +60,28 @@ export default function ClientCampagnesActivations({
 
       {/* ─── LISTE DÉTAILLÉE DES CAMPAGNES ─── */}
       <div className="space-y-4">
-        {filteredCampaigns.map((camp) => (
+        {filteredCampaigns.length === 0 ? (
+          <div
+            className="card"
+            style={{
+              borderRadius: 14,
+              padding: '40px 20px',
+              background: '#FFFFFF',
+              border: '1px dashed #CBD5E1',
+              textAlign: 'center',
+              color: 'var(--muted)'
+            }}
+          >
+            <span style={{ fontSize: 32, display: 'block', marginBottom: 8 }}>🗂</span>
+            <h4 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: 'var(--dark)' }}>
+              Aucune campagne en cours enregistrée
+            </h4>
+            <p style={{ margin: '6px 0 0', fontSize: 12, color: 'var(--muted)' }}>
+              Seules les campagnes nouvellement enregistrées apparaîtront ici.
+            </p>
+          </div>
+        ) : (
+          filteredCampaigns.map((camp) => (
           <div
             key={camp.id}
             className="card"
@@ -304,7 +325,7 @@ export default function ClientCampagnesActivations({
               </div>
             </div>
           </div>
-        ))}
+        )))}
       </div>
     </div>
   );

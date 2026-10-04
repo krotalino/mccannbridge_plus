@@ -307,8 +307,12 @@ export default function InfluencerDeliverablesSection({ influencer, setInfluence
         </div>
 
         {deliverablesToShow.length === 0 ? (
-          <div className="p-20 text-center bg-white rounded border text-muted text-xs">
-            Aucun livrable ne correspond aux critères de filtre.
+          <div className="p-32 text-center bg-white rounded-lg border text-muted text-xs">
+            <span style={{ fontSize: 28, display: 'block', marginBottom: 8 }}>📦</span>
+            <strong style={{ color: 'var(--dark)' }}>Aucun livrable enregistré pour cet influenceur</strong>
+            <p style={{ margin: '4px 0 0', color: 'var(--muted)' }}>
+              Seuls les livrables nouvellement enregistrés dans les cahiers des charges apparaîtront ici.
+            </p>
           </div>
         ) : (
           <div className="space-y-10">

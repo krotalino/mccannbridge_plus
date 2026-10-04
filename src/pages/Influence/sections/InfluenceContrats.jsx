@@ -172,7 +172,13 @@ export default function InfluenceContrats({ influencers, setInfluencers }) {
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={8} className="text-center text-muted py-16">Aucun contrat trouvé.</td></tr>
+              <tr>
+                <td colSpan={8} className="text-center text-muted py-24 text-xs">
+                  {filterInf || filterStatut || filterType
+                    ? 'Aucun contrat ne correspond aux filtres actifs.'
+                    : 'Aucun contrat enregistré pour le moment. Seuls les contrats nouvellement enregistrés s\'afficheront ici.'}
+                </td>
+              </tr>
             ) : filtered.map(c => {
               const days = getDaysUntil(c.dateFin);
               const stColor = getContractStatusColor(c.statut);

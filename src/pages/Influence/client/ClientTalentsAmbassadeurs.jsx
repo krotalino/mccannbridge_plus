@@ -280,7 +280,9 @@ export default function ClientTalentsAmbassadeurs({
                     Historique Orange :
                   </span>
                   <span style={{ fontSize: 11, fontWeight: 800, color: '#FF7900' }}>
-                    {talent.orangeHistory?.totalCampaigns} campagne(s) • Tx Eng. {talent.orangeHistory?.averageEngagementRate}
+                    {talent.orangeHistory?.totalCampaigns > 0
+                      ? `${talent.orangeHistory.totalCampaigns} campagne(s) • Tx Eng. ${talent.orangeHistory.averageEngagementRate}`
+                      : 'Aucune campagne enregistrée'}
                   </span>
                 </div>
 
