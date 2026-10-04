@@ -109,46 +109,22 @@ export const CLIENT_INFLUENCE_ROLES = [
 
 // ─── 3. KPI DU COCKPIT (PAGE 2 DU CAHIER DES CHARGES) ───
 export const INITIAL_CLIENT_COCKPIT_KPIS = {
-  talentsActifs: 24, // Nombre de créateurs mobilisés sur la période
-  activationsEnCours: 6, // Campagnes / opérations en exécution
-  contenusDiffuses: 48, // Livrables réellement publiés et conformes
-  porteeCumulee: '16.4M', // Exposition cumulée (portée + impressions)
-  vuesVideo: '8.9M', // Consommation Reels, TikTok, YouTube
-  engagementsCumules: '742K', // Réactions, commentaires, partages, clics
-  tauxEngagement: '5.2%', // Qualité relative des interactions
-  livrablesAValider: 7, // En attente de décision Orange (BAT, captions, scripts)
-  alertesActives: 3, // Retards, non-conformité, sur-performance
+  talentsActifs: 24, // Nombre de créateurs qualifiés
+  activationsEnCours: 0, // Aucune campagne exemple, seules les nouvelles créations
+  contenusDiffuses: 0, // Livrables réellement publiés
+  porteeCumulee: '—', // Exposition cumulée
+  vuesVideo: '—', // Consommation vidéo
+  engagementsCumules: '—', // Réactions, commentaires, partages
+  tauxEngagement: '—', // Qualité relative
+  livrablesAValider: 0, // En attente de décision Orange
+  alertesActives: 0, // Alertes prioritaires
 };
 
 // Bloc « À Retenir » (Page 2 du Cahier des Charges)
 export const INITIAL_CLIENT_A_RETENIR = {
-  meilleureActivation: {
-    title: 'Orange Pulse Gaming Challenge #MaxiData',
-    metric: '+38% d’engagement vs moyenne',
-    description: 'La mécanique concours TikTok menée par @carlesantonio et @bkbaptist a surperformé avec 2.4M de vues et 18 400 partages organiques.',
-    badge: '🏆 Top Performer',
-    actionText: 'Voir la campagne',
-    targetTab: 'campagnes',
-    targetId: 'CAMP-PULSE-2026'
-  },
-  decisionRequise: {
-    title: 'Validation Script Reel & Caption — Offre Épargne Orange Money',
-    metric: 'Deadline : J-1 (Mercredi 18h)',
-    description: 'Le script vidéo et la trame storyboard de @simplesttuthi sont en attente d’approbation Orange pour autoriser le tournage prévu vendredi.',
-    badge: '⚡ Décision Urgente',
-    actionText: 'Ouvrir le centre de validation',
-    targetTab: 'validations',
-    targetId: 'VAL-2026-001'
-  },
-  opportuniteExploiter: {
-    title: 'Amplifier le format UGC Carrousel Éducatif B2B',
-    metric: 'Taux de sauvegarde exceptionnel (8.4%)',
-    description: 'Le carrousel LinkedIn de @dr_ngassa sur la fibre sécurisée génère un volume record de leads entrants. Recommandation : étendre la mécanique à 2 profils experts.',
-    badge: '💡 Opportunité Test',
-    actionText: 'Consulter la recommandation',
-    targetTab: 'veille',
-    targetId: 'REC-2026-003'
-  }
+  meilleureActivation: null,
+  decisionRequise: null,
+  opportuniteExploiter: null
 };
 
 // ─── 4. CATALOGUE TALENTS CÔTÉ CLIENT (PAGE 2 & 3) ───
@@ -181,11 +157,11 @@ export const INITIAL_CLIENT_TALENTS = [
     languages: ['Français', 'Pidgin', 'Camfranglais'],
     formatsMastered: ['Reel dynamique', 'TikTok sketch', 'Story interactive', 'Live streaming', 'Présence terrain'],
     orangeHistory: {
-      totalCampaigns: 4,
-      lastCampaign: 'Orange Pulse Gaming Challenge (2026)',
-      totalContentPublished: 16,
-      averageEngagementRate: '6.4%',
-      reliabilityScore: '98%'
+      totalCampaigns: 0,
+      lastCampaign: '—',
+      totalContentPublished: 0,
+      averageEngagementRate: '—',
+      reliabilityScore: '—'
     },
     mccannRecommendation: {
       level: 'Hautement recommandé',
@@ -236,11 +212,11 @@ export const INITIAL_CLIENT_TALENTS = [
     languages: ['Français', 'Anglais'],
     formatsMastered: ['Vidéo explicative face-cam', 'Tutoriel app', 'Carrousel pédagogique', 'Story test produit'],
     orangeHistory: {
-      totalCampaigns: 5,
-      lastCampaign: 'Orange Money Zéro Frais & Épargne (2026)',
-      totalContentPublished: 22,
-      averageEngagementRate: '5.8%',
-      reliabilityScore: '100%'
+      totalCampaigns: 0,
+      lastCampaign: '—',
+      totalContentPublished: 0,
+      averageEngagementRate: '—',
+      reliabilityScore: '—'
     },
     mccannRecommendation: {
       level: 'Hautement recommandé',
@@ -290,11 +266,11 @@ export const INITIAL_CLIENT_TALENTS = [
     languages: ['Français', 'Anglais'],
     formatsMastered: ['Reel esthétique', 'Story daily vlog', 'Carrousel lookbook', 'Live interactif'],
     orangeHistory: {
-      totalCampaigns: 3,
-      lastCampaign: 'Orange Weekend & Lifestyle (2025/2026)',
-      totalContentPublished: 12,
-      averageEngagementRate: '4.9%',
-      reliabilityScore: '94%'
+      totalCampaigns: 0,
+      lastCampaign: '—',
+      totalContentPublished: 0,
+      averageEngagementRate: '—',
+      reliabilityScore: '—'
     },
     mccannRecommendation: {
       level: 'Recommandé',
@@ -344,11 +320,11 @@ export const INITIAL_CLIENT_TALENTS = [
     languages: ['Français', 'Anglais'],
     formatsMastered: ['Article d’opinion LinkedIn', 'Carrousel infographique', 'Webinaire pro', 'Vidéo podcast'],
     orangeHistory: {
-      totalCampaigns: 2,
-      lastCampaign: 'Orange Business Solutions Connect (2026)',
-      totalContentPublished: 6,
-      averageEngagementRate: '7.8%',
-      reliabilityScore: '99%'
+      totalCampaigns: 0,
+      lastCampaign: '—',
+      totalContentPublished: 0,
+      averageEngagementRate: '—',
+      reliabilityScore: '—'
     },
     mccannRecommendation: {
       level: 'Prioritaire B2B',
@@ -398,11 +374,11 @@ export const INITIAL_CLIENT_TALENTS = [
     languages: ['Français', 'Ghomálá’', 'Camfranglais'],
     formatsMastered: ['Vlog du quotidien', 'Vidéo conseil pratique', 'Story témoignage réel', 'Reel tuto'],
     orangeHistory: {
-      totalCampaigns: 2,
-      lastCampaign: 'Orange Money Rentrée Scolaire (2025/2026)',
-      totalContentPublished: 8,
-      averageEngagementRate: '8.2%',
-      reliabilityScore: '95%'
+      totalCampaigns: 0,
+      lastCampaign: '—',
+      totalContentPublished: 0,
+      averageEngagementRate: '—',
+      reliabilityScore: '—'
     },
     mccannRecommendation: {
       level: 'Recommandé Proximité',
@@ -452,11 +428,11 @@ export const INITIAL_CLIENT_TALENTS = [
     languages: ['Français', 'Anglais', 'Pidgin'],
     formatsMastered: ['Chorégraphie virale', 'Sound design TikTok', 'Reel musical', 'Duo & Stitch'],
     orangeHistory: {
-      totalCampaigns: 3,
-      lastCampaign: 'Pulse Sound Challenge (2026)',
-      totalContentPublished: 11,
-      averageEngagementRate: '9.1%',
-      reliabilityScore: '92%'
+      totalCampaigns: 0,
+      lastCampaign: '—',
+      totalContentPublished: 0,
+      averageEngagementRate: '—',
+      reliabilityScore: '—'
     },
     mccannRecommendation: {
       level: 'Recommandé Viralité',
@@ -482,378 +458,18 @@ export const INITIAL_CLIENT_TALENTS = [
 ];
 
 // ─── 5. PORTEFEUILLE DES CAMPAGNES & ACTIVATIONS (PAGES 3 & 4) ───
-export const INITIAL_CLIENT_CAMPAIGNS = [
-  {
-    id: 'CAMP-PULSE-2026',
-    name: 'Orange Pulse Gaming & MaxiData 2026',
-    entity: 'orange_cm',
-    entityLabel: 'Orange Cameroun',
-    businessObjective: 'Recruter 65 000 nouveaux abonnés jeunes sur les forfaits MaxiData et stimuler l’usage data gaming 4G/4.5G.',
-    commObjective: 'Positionner Orange comme le partenaire numéro 1 de la culture gaming et des créateurs urbains au Cameroun.',
-    targetAudience: 'Jeunes urbains 16-25 ans, amateurs d’e-sport, streamers et consommateurs intensifs de réseaux sociaux.',
-    keyMessage: 'Avec Orange Pulse, libère ton gaming sans lag avec les forfaits MaxiData nuit et week-end.',
-    cta: 'Compose *119# ou télécharge l’application Max It pour activer ton Pass Pulse.',
-    mandatoryMentions: '#PartenariatOrange #OrangePulse #MaxiData. Offre soumise à conditions en zone de couverture 4G Orange Cameroun.',
-    period: '01 Sept — 31 Oct 2026',
-    periodStart: '2026-09-01',
-    periodEnd: '2026-10-31',
-    status: 'en_production',
-    statusLabel: 'En production & diffusion',
-    networks: ['tiktok', 'instagram', 'youtube'],
-    budgetEnveloppe: '45 000 000 FCFA (Budget global validé)',
-    selectedTalents: [
-      { id: 'TAL-carles-antonio', name: 'Carles Antonio', role: 'Tête d’affiche & sketchs comédie' },
-      { id: 'TAL-bkbaptist', name: 'Bk Baptist', role: 'Défis viraux de danse & sound-design' },
-      { id: 'TAL-queen-diva', name: 'Queen Diva', role: 'Relais lifestyle & concours gaming' }
-    ],
-    plannedDeliverables: '12 Reels Instagram, 16 TikToks exclusifs, 2 Lives Twitch/YouTube, 30 Stories relais',
-    contractualCount: 28,
-    publishedCount: 19,
-    kpiTarget: {
-      views: '4.5M vues',
-      engagementRate: '5.5%',
-      appInstalls: '25 000 clics redirection'
-    },
-    kpiReal: {
-      views: '3.8M vues (84% de l’objectif)',
-      engagementRate: '6.8% (Surperformance)',
-      appInstalls: '19 400 clics mesurés'
-    },
-    progressPercent: 68
-  },
-  {
-    id: 'CAMP-OM-ZERO-2026',
-    name: 'Orange Money Zéro Frais & Épargne Otélé',
-    entity: 'orange_money',
-    entityLabel: 'Orange Money',
-    businessObjective: 'Favoriser l’adoption du compte d’épargne rémunéré Otélé et dynamiser les paiements marchands QR Code sans frais.',
-    commObjective: 'Démystifier l’épargne digitale et rassurer sur la sécurité et l’accessibilité immédiate de l’argent.',
-    targetAudience: 'Jeunes actifs, commerçants, travailleurs indépendants et familles (22-45 ans).',
-    keyMessage: 'Ton argent travaille pour toi avec l’Épargne Otélé Orange Money. Zéro frais de retrait chez les commerçants partenaires.',
-    cta: 'Ouvre ton compte Épargne Otélé directement sur l’app Max It ou via *150#.',
-    mandatoryMentions: '#PartenariatOrange #OrangeMoney #Otélé. Service financier fourni en partenariat avec la banque partenaire agréée.',
-    period: '15 Août — 30 Nov 2026',
-    periodStart: '2026-08-15',
-    periodEnd: '2026-11-30',
-    status: 'en_production',
-    statusLabel: 'En cours d’exécution',
-    networks: ['facebook', 'tiktok', 'instagram', 'youtube'],
-    budgetEnveloppe: '38 000 000 FCFA',
-    selectedTalents: [
-      { id: 'TAL-simplest-tuthi', name: 'Simplest Tuthi', role: 'Ambassadeur pédagogie & tutoriels démo' },
-      { id: 'TAL-mayole-francine', name: 'Mayole Francine', role: 'Témoignage gestion du budget familial' }
-    ],
-    plannedDeliverables: '8 Vidéos explicatives face-cam, 10 Carrousels tutos, 4 Lives FAQ Orange Money',
-    contractualCount: 22,
-    publishedCount: 15,
-    kpiTarget: {
-      views: '3.0M vues',
-      engagementRate: '4.8%',
-      appInstalls: '15 000 souscriptions Otélé'
-    },
-    kpiReal: {
-      views: '2.6M vues',
-      engagementRate: '5.4%',
-      appInstalls: '12 800 comptes ouverts'
-    },
-    progressPercent: 70
-  },
-  {
-    id: 'CAMP-B2B-CLOUD-2026',
-    name: 'Orange Business Cloud & Connect PME',
-    entity: 'orange_business',
-    entityLabel: 'Orange Business',
-    businessObjective: 'Générer 180 leads qualifiés PME/PMI pour la solution Fibre Pro et l’hébergement Cloud souverain au Cameroun.',
-    commObjective: 'Valoriser l’infrastructure réseau et la cybersécurité des données hébergées localement par Orange.',
-    targetAudience: 'Dirigeants d’entreprises, DSI, responsables informatiques et créateurs de startups.',
-    keyMessage: 'Sécurisez la croissance de votre entreprise avec le Cloud souverain et la Fibre dédiée Orange Business.',
-    cta: 'Demandez un audit gratuit de votre infrastructure sur orangebusiness.cm.',
-    mandatoryMentions: '#OrangeBusiness #TransformationDigitale #CloudCameroun. Offre dédiée aux professionnels immatriculés.',
-    period: '01 Sept — 15 Déc 2026',
-    periodStart: '2026-09-01',
-    periodEnd: '2026-12-15',
-    status: 'en_production',
-    statusLabel: 'En cours d’exécution',
-    networks: ['linkedin', 'x'],
-    budgetEnveloppe: '18 000 000 FCFA',
-    selectedTalents: [
-      { id: 'TAL-dr-ngassa', name: 'Dr. David Ngassa', role: 'Tribunes expertes et analyses de cas réels' }
-    ],
-    plannedDeliverables: '6 Articles de fond LinkedIn, 6 Carrousels infographiques B2B, 1 Webinaire DSI',
-    contractualCount: 13,
-    publishedCount: 8,
-    kpiTarget: {
-      views: '400K impressions qualifiées',
-      engagementRate: '6.0%',
-      appInstalls: '180 leads B2B'
-    },
-    kpiReal: {
-      views: '460K impressions',
-      engagementRate: '7.8%',
-      appInstalls: '142 formulaires remplis'
-    },
-    progressPercent: 62
-  }
-];
+export const INITIAL_CLIENT_CAMPAIGNS = [];
 
 // ─── 6. CALENDRIER DE DIFFUSION & CONTENUS (PAGE 4) ───
 // Inclut dates tournage, soumission BAT, validation Orange, publication prévues, détecteur de conflits
-export const INITIAL_CLIENT_CALENDAR_ITEMS = [
-  {
-    id: 'CNT-2026-101',
-    talentId: 'TAL-carles-antonio',
-    talentName: 'Carles Antonio',
-    talentPhoto: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
-    campaignId: 'CAMP-PULSE-2026',
-    campaignName: 'Orange Pulse Gaming 2026',
-    entity: 'orange_cm',
-    platform: 'tiktok',
-    format: 'Reel / TikTok Sketch (60s)',
-    title: 'Sketch : Quand ton coloc utilise tout le wifi pendant ta game',
-    draftPreviewUrl: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80',
-    caption: 'Tu es en pleine finale et la connexion te lâche ? 😂 Pas avec les forfaits MaxiData Orange Pulse ! Active ton pass à 500F et roule sur la concurrence sans latence. #PartenariatOrange #OrangePulse #GamingCameroun #MaxiData',
-    hashtags: ['#PartenariatOrange', '#OrangePulse', '#GamingCameroun', '#MaxiData'],
-    partnershipMentionIncluded: true,
-    cta: 'Compose *119# pour activer ton Pass Pulse',
-    dateShooting: '2026-09-18',
-    dateBatSubmission: '2026-09-20',
-    dateOrangeValidation: '2026-09-21',
-    datePublicationScheduled: '2026-09-23T18:30:00',
-    status: 'pret_a_diffuser',
-    statusLabel: 'BAT Validé Orange • Prêt à diffuser',
-    complianceStatus: 'conforme',
-    conflictWarning: null, // Pas de conflit
-    organicOrPaidRelay: 'Relais organique + Boost Média prévu (500K imp)',
-    publishedUrl: null
-  },
-  {
-    id: 'CNT-2026-102',
-    talentId: 'TAL-simplest-tuthi',
-    talentName: 'Simplest Tuthi',
-    talentPhoto: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
-    campaignId: 'CAMP-OM-ZERO-2026',
-    campaignName: 'Orange Money Zéro Frais & Épargne',
-    entity: 'orange_money',
-    platform: 'tiktok',
-    format: 'Vidéo Face-cam Tuto (90s)',
-    title: 'Tuto : Comment activer l’Épargne Otélé en 3 clics sur Max It',
-    draftPreviewUrl: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=600&q=80',
-    caption: 'Arrêtez de laisser dormir votre argent sans intérêt ! 💰 Découvrez comment activer l’Épargne Otélé Orange Money depuis votre canapé. Vos économies travaillent pour vous chaque jour. #PartenariatOrange #OrangeMoney #EpargneOtele',
-    hashtags: ['#PartenariatOrange', '#OrangeMoney', '#EpargneOtele', '#EducationFinanciere'],
-    partnershipMentionIncluded: true,
-    cta: 'Télécharge l’app Max It sur Play Store ou App Store',
-    dateShooting: '2026-09-19',
-    dateBatSubmission: '2026-09-21',
-    dateOrangeValidation: 'En attente',
-    datePublicationScheduled: '2026-09-24T12:00:00',
-    status: 'en_validation_orange',
-    statusLabel: 'En validation Orange (Deadline J-1)',
-    complianceStatus: 'en_revue',
-    conflictWarning: {
-      type: 'chevauchement',
-      severity: 'moyen',
-      message: 'Attention : publication prévue le même jour que l’annonce officielle des Résultats Semestriels Orange Cameroun. Recommandation : décaler de 24h (25 Sept à 12h).'
-    },
-    organicOrPaidRelay: 'Organique exclusif puis sponsorisé',
-    publishedUrl: null
-  },
-  {
-    id: 'CNT-2026-103',
-    talentId: 'TAL-dr-ngassa',
-    talentName: 'Dr. David Ngassa',
-    talentPhoto: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
-    campaignId: 'CAMP-B2B-CLOUD-2026',
-    campaignName: 'Orange Business Cloud & Connect',
-    entity: 'orange_business',
-    platform: 'linkedin',
-    format: 'Carrousel Infographique B2B (6 slides)',
-    title: 'Infographie : Les 5 failles critiques de cybersécurité des PME en 2026',
-    draftPreviewUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80',
-    caption: '85% des PME camerounaises n’ont pas de sauvegarde hors site redondée. Dans cette analyse, je décrypte comment l’offre Cloud Souverain d’Orange Business garantit la continuité d’activité. #OrangeBusiness #Cybersecurite #CloudCameroun #PartenariatOrange',
-    hashtags: ['#OrangeBusiness', '#Cybersecurite', '#CloudCameroun', '#PartenariatOrange'],
-    partnershipMentionIncluded: true,
-    cta: 'Consultez le livre blanc complet sur orangebusiness.cm',
-    dateShooting: '2026-09-15',
-    dateBatSubmission: '2026-09-17',
-    dateOrangeValidation: '2026-09-18',
-    datePublicationScheduled: '2026-09-21T09:00:00',
-    status: 'publie',
-    statusLabel: 'Publié & Mesuré',
-    complianceStatus: 'conforme',
-    conflictWarning: null,
-    organicOrPaidRelay: 'Sponsorisé LinkedIn Sponsored Content',
-    publishedUrl: 'https://linkedin.com/posts/dr_david_ngassa_cybersecurite-cloud-pme-orange-7241098'
-  },
-  {
-    id: 'CNT-2026-104',
-    talentId: 'TAL-queen-diva',
-    talentName: 'Queen Diva',
-    talentPhoto: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=400&q=80',
-    campaignId: 'CAMP-PULSE-2026',
-    campaignName: 'Orange Pulse Gaming 2026',
-    entity: 'orange_cm',
-    platform: 'instagram',
-    format: 'Reel Esthétique & Story Daily',
-    title: 'Get Ready With Me : En route pour la finale Orange Pulse Tournoi',
-    draftPreviewUrl: 'https://images.unsplash.com/photo-1516251193007-45ef944ab0c6?auto=format&fit=crop&w=600&q=80',
-    caption: 'Le gaming aussi a son style ✨ Retrouvez-moi ce samedi à l’Orange Digital Center pour encourager les meilleures équipes du tournoi Pulse. Ambiance garantie ! #PartenariatOrange #OrangePulse #ODC #Douala',
-    hashtags: ['#PartenariatOrange', '#OrangePulse', '#ODC', '#DoualaStyle'],
-    partnershipMentionIncluded: true,
-    cta: 'Inscriptions gratuites sur le lien en bio',
-    dateShooting: '2026-09-22',
-    dateBatSubmission: '2026-09-23',
-    dateOrangeValidation: 'En attente',
-    datePublicationScheduled: '2026-09-26T14:00:00',
-    status: 'en_attente_bat',
-    statusLabel: 'BAT en cours de finalisation',
-    complianceStatus: 'en_revue',
-    conflictWarning: null,
-    organicOrPaidRelay: 'Relais organique compte officiel @OrangeCameroun',
-    publishedUrl: null
-  }
-];
+export const INITIAL_CLIENT_CALENDAR_ITEMS = [];
 
 // ─── 7. CENTRE DE VALIDATION ORANGE & CHECKLIST CONFORMITÉ (PAGE 5) ───
 // Centralise : Shortlists, Casting, Briefs, Concepts, Scripts, BAT visuels, Légendes/Hashtags/Mentions, Plans de publication, Bilans
-export const INITIAL_CLIENT_VALIDATIONS = [
-  {
-    id: 'VAL-2026-001',
-    category: 'script_storyboard',
-    categoryLabel: 'Script & Storyboard',
-    title: 'Script Vidéo Tuto "Épargne Otélé Orange Money" — @simplesttuthi',
-    campaignName: 'Orange Money Zéro Frais & Épargne',
-    talentName: 'Simplest Tuthi',
-    talentId: 'TAL-simplest-tuthi',
-    entity: 'orange_money',
-    submittedAt: '2026-09-21T08:30:00',
-    deadline: '2026-09-22T18:00:00',
-    hoursRemaining: 26,
-    impactNonReponse: 'Le tournage vidéo studio prévu mercredi sera reporté d’une semaine, retardant le plan média national de 4 jours.',
-    designatedValidator: 'Valideur Orange Money (Chef de Produit Épargne)',
-    description: 'Validation de la trame scénaristique, des dialogues expliquant le taux d’intérêt créditeur de 4% annuel et des mentions réglementaires bancaires.',
-    previewType: 'document',
-    previewContent: `[SCÈNE 1 - INTÉRIEUR BUREAU - JOUR]
-Simplest Tuthi face caméra avec son smartphone.
-"Vous avez 50 000 FCFA qui dorment sur votre compte ? Saviez-vous qu'avec l'Épargne Otélé Orange Money, ils peuvent vous rapporter des intérêts quotidiens garantis ?"
-
-[SCÈNE 2 - SCREENSHOT APPLICATION MAX IT]
-Affichage en incrustation de l'onglet "Services Financiers > Épargne Otélé".
-Saisie d'un versement de 10 000 FCFA avec le message : "Activation immédiate sans frais d'ouverture ni frais de gestion".
-
-[SCÈNE 3 - CONCLUSION & MENTIONS LÉGALES]
-Simplest sourit. "Votre argent reste disponible à 100% à tout moment sans pénalité."
-Mention légale animée en bas d'écran : "Service financier en partenariat avec la banque agréée. Taux brut de 4% l'an."`,
-    checklist: {
-      logoCharteConforme: true,
-      offreConditionsCorrectes: true,
-      ctaLienVerifies: true,
-      mentionsLegalesIncluses: true,
-      droitsMusicauxImagesValides: true,
-      absenceConflitExclusivite: true,
-      dateCanalCoherents: true,
-      validationOrangeObtenue: false,
-      publicationConfirmee: false
-    },
-    status: 'en_attente', // 'en_attente' | 'approuve' | 'modifications_demandees' | 'refuse' | 'reporte'
-    priority: 'urgente'
-  },
-  {
-    id: 'VAL-2026-002',
-    category: 'bat_visuel',
-    categoryLabel: 'BAT Visuel & Montage',
-    title: 'BAT Montage Définitif Reel #MaxiData Gaming — @carlesantonio',
-    campaignName: 'Orange Pulse Gaming 2026',
-    talentName: 'Carles Antonio',
-    talentId: 'TAL-carles-antonio',
-    entity: 'orange_cm',
-    submittedAt: '2026-09-20T14:15:00',
-    deadline: '2026-09-22T12:00:00',
-    hoursRemaining: 18,
-    impactNonReponse: 'Perte du créneau de publication optimal du mardi soir (pic d’audience jeune 19h-21h).',
-    designatedValidator: 'Chef de Marque Orange Cameroun',
-    description: 'Validation du montage vidéo final avec incrustation du logo Orange Pulse officiel et du packshot promotionnel 500F = 2.5 Go.',
-    previewType: 'video',
-    previewContent: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80',
-    checklist: {
-      logoCharteConforme: true,
-      offreConditionsCorrectes: true,
-      ctaLienVerifies: true,
-      mentionsLegalesIncluses: true,
-      droitsMusicauxImagesValides: true,
-      absenceConflitExclusivite: true,
-      dateCanalCoherents: true,
-      validationOrangeObtenue: false,
-      publicationConfirmee: false
-    },
-    status: 'en_attente',
-    priority: 'urgente'
-  },
-  {
-    id: 'VAL-2026-003',
-    category: 'shortlist_casting',
-    categoryLabel: 'Shortlist Casting Influence',
-    title: 'Proposition de Casting : 3 Créateurs Tech pour la rentrée Orange Digital Center',
-    campaignName: 'Orange Digital Academy 2026',
-    talentName: 'Multi-profils (Casting)',
-    talentId: null,
-    entity: 'orange_cm',
-    submittedAt: '2026-09-19T10:00:00',
-    deadline: '2026-09-24T18:00:00',
-    hoursRemaining: 72,
-    impactNonReponse: 'Retard dans la signature des conventions d’exclusivité avec les talents avant le début des ateliers.',
-    designatedValidator: 'Responsable Média & Communication Institutionnelle',
-    description: 'Shortlist de 3 créateurs spécialisés en vulgarisation tech, intelligence artificielle et programmation pour promouvoir les formations gratuites de l’ODC Yaoundé et Douala.',
-    previewType: 'shortlist',
-    previewContent: '1. @cedric_code (120K, Tech/Python) — 2. @aicha_digital (95K, UI/UX Design) — 3. @junior_tech_cm (65K, Réparation & Gadgets)',
-    checklist: {
-      logoCharteConforme: true,
-      offreConditionsCorrectes: true,
-      ctaLienVerifies: true,
-      mentionsLegalesIncluses: true,
-      droitsMusicauxImagesValides: true,
-      absenceConflitExclusivite: true,
-      dateCanalCoherents: true,
-      validationOrangeObtenue: false,
-      publicationConfirmee: false
-    },
-    status: 'en_attente',
-    priority: 'normale'
-  }
-];
+export const INITIAL_CLIENT_VALIDATIONS = [];
 
 // ─── 8. REGISTRE DES ALERTES INFLUENCE (PAGE 5 DU CAHIER DES CHARGES) ───
-export const INITIAL_CLIENT_ALERTS = [
-  {
-    id: 'ALT-2026-01',
-    severity: 'haute',
-    type: 'delai_depasse',
-    title: 'Validation en attente au-delà du délai prévu (SLA > 48h)',
-    objectRef: 'VAL-2026-001 (Script Épargne Otélé)',
-    consequence: 'Risque de décalage de la date de tournage fixée avec les équipes techniques.',
-    recommendedAction: 'Arbitrer immédiatement via le bouton "Approuver" ou notifier les ajustements requis.',
-    date: '2026-09-21'
-  },
-  {
-    id: 'ALT-2026-02',
-    severity: 'moyenne',
-    type: 'chevauchement',
-    title: 'Chevauchement éditorial détecté avec la communication Corporate Orange',
-    objectRef: 'CNT-2026-102 prévu le 24 Septembre',
-    consequence: 'Deux prises de parole d’envergure le même jour risquent de cannibaliser l’engagement social media.',
-    recommendedAction: 'Décaler la diffusion du tutoriel Simplest Tuthi au vendredi 25 Septembre à 12h.',
-    date: '2026-09-20'
-  },
-  {
-    id: 'ALT-2026-03',
-    severity: 'info',
-    type: 'surperformance',
-    title: 'Sur-performance à amplifier : +38% d’engagement sur le Reel Pulse Gaming',
-    objectRef: 'Reel Carles Antonio publié le 12 Septembre',
-    consequence: 'La vidéo génère un flux continu de commentaires organiques qualifiés.',
-    recommendedAction: 'Allouer un budget de médiatisation complémentaire de 500 000 FCFA pour booster la viralité.',
-    date: '2026-09-19'
-  }
-];
+export const INITIAL_CLIENT_ALERTS = [];
 
 // ─── 9. REPORTING MULTIDIMENSIONNEL & BEST PERFORMERS (PAGE 6) ───
 export const INITIAL_CLIENT_REPORTING = {

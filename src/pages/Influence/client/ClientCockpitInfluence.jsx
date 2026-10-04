@@ -213,196 +213,212 @@ export default function ClientCockpitInfluence({
           </span>
         </div>
 
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: 16
-          }}
-        >
-          {/* 1. Meilleure Activation */}
+        {!aRetenir?.meilleureActivation && !aRetenir?.decisionRequise && !aRetenir?.opportuniteExploiter ? (
+          <div style={{ padding: '24px 16px', textAlign: 'center', color: 'rgba(255,255,255,0.7)', fontSize: 13, background: 'rgba(255,255,255,0.03)', borderRadius: 12, border: '1px dashed rgba(255,255,255,0.15)' }}>
+            <span style={{ fontSize: 24, display: 'block', marginBottom: 6 }}>🗂</span>
+            <strong>Aucune activation en cours à synthétiser</strong>
+            <p style={{ margin: '4px 0 0', fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
+              Les messages essentiels et tops performers apparaîtront automatiquement dès le lancement des prochaines campagnes.
+            </p>
+          </div>
+        ) : (
           <div
             style={{
-              padding: '16px',
-              borderRadius: 12,
-              background: 'rgba(255, 255, 255, 0.05)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between'
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: 16
             }}
           >
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                <span
+            {/* 1. Meilleure Activation */}
+            {aRetenir.meilleureActivation && (
+              <div
+                style={{
+                  padding: '16px',
+                  borderRadius: 12,
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between'
+                }}
+              >
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <span
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 800,
+                        padding: '2px 8px',
+                        borderRadius: 6,
+                        background: 'rgba(39, 174, 96, 0.2)',
+                        color: '#2ECC71'
+                      }}
+                    >
+                      {aRetenir.meilleureActivation.badge}
+                    </span>
+                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>Performance</span>
+                  </div>
+
+                  <h4 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#FFFFFF', marginBottom: 6 }}>
+                    {aRetenir.meilleureActivation.title}
+                  </h4>
+
+                  <div style={{ fontSize: 13, fontWeight: 800, color: '#2ECC71', marginBottom: 8 }}>
+                    {aRetenir.meilleureActivation.metric}
+                  </div>
+
+                  <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.8)', lineHeight: 1.5 }}>
+                    {aRetenir.meilleureActivation.description}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => onNavigateTab('campagnes')}
                   style={{
+                    marginTop: 14,
+                    padding: '8px 12px',
+                    borderRadius: 8,
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    color: '#FFFFFF',
                     fontSize: 11,
-                    fontWeight: 800,
-                    padding: '2px 8px',
-                    borderRadius: 6,
-                    background: 'rgba(39, 174, 96, 0.2)',
-                    color: '#2ECC71'
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    textAlign: 'center'
                   }}
                 >
-                  {aRetenir.meilleureActivation.badge}
-                </span>
-                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>Performance</span>
+                  {aRetenir.meilleureActivation.actionText} →
+                </button>
               </div>
+            )}
 
-              <h4 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#FFFFFF', marginBottom: 6 }}>
-                {aRetenir.meilleureActivation.title}
-              </h4>
+            {/* 2. Décision Orange Requise */}
+            {aRetenir.decisionRequise && (
+              <div
+                style={{
+                  padding: '16px',
+                  borderRadius: 12,
+                  background: 'rgba(255, 121, 0, 0.12)',
+                  border: '1px solid rgba(255, 121, 0, 0.4)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between'
+                }}
+              >
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <span
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 800,
+                        padding: '2px 8px',
+                        borderRadius: 6,
+                        background: 'rgba(255, 121, 0, 0.3)',
+                        color: '#FF9E40'
+                      }}
+                    >
+                      {aRetenir.decisionRequise.badge}
+                    </span>
+                    <span style={{ fontSize: 11, color: '#FFB266', fontWeight: 700 }}>
+                      {aRetenir.decisionRequise.metric}
+                    </span>
+                  </div>
 
-              <div style={{ fontSize: 13, fontWeight: 800, color: '#2ECC71', marginBottom: 8 }}>
-                {aRetenir.meilleureActivation.metric}
-              </div>
+                  <h4 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#FFFFFF', marginBottom: 6 }}>
+                    {aRetenir.decisionRequise.title}
+                  </h4>
 
-              <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.8)', lineHeight: 1.5 }}>
-                {aRetenir.meilleureActivation.description}
-              </p>
-            </div>
+                  <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.85)', lineHeight: 1.5 }}>
+                    {aRetenir.decisionRequise.description}
+                  </p>
+                </div>
 
-            <button
-              type="button"
-              onClick={() => onNavigateTab('campagnes')}
-              style={{
-                marginTop: 14,
-                padding: '8px 12px',
-                borderRadius: 8,
-                background: 'rgba(255, 255, 255, 0.1)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                color: '#FFFFFF',
-                fontSize: 11,
-                fontWeight: 700,
-                cursor: 'pointer',
-                textAlign: 'center'
-              }}
-            >
-              {aRetenir.meilleureActivation.actionText} →
-            </button>
-          </div>
-
-          {/* 2. Décision Orange Requise */}
-          <div
-            style={{
-              padding: '16px',
-              borderRadius: 12,
-              background: 'rgba(255, 121, 0, 0.12)',
-              border: '1px solid rgba(255, 121, 0, 0.4)',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between'
-            }}
-          >
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                <span
+                <button
+                  type="button"
+                  onClick={() => onNavigateTab('validations')}
                   style={{
+                    marginTop: 14,
+                    padding: '8px 12px',
+                    borderRadius: 8,
+                    background: '#FF7900',
+                    border: 'none',
+                    color: '#FFFFFF',
                     fontSize: 11,
                     fontWeight: 800,
-                    padding: '2px 8px',
-                    borderRadius: 6,
-                    background: 'rgba(255, 121, 0, 0.3)',
-                    color: '#FF9E40'
+                    cursor: 'pointer',
+                    textAlign: 'center',
+                    boxShadow: '0 2px 8px rgba(255, 121, 0, 0.4)'
                   }}
                 >
-                  {aRetenir.decisionRequise.badge}
-                </span>
-                <span style={{ fontSize: 11, color: '#FFB266', fontWeight: 700 }}>
-                  {aRetenir.decisionRequise.metric}
-                </span>
+                  ⚡ {aRetenir.decisionRequise.actionText} →
+                </button>
               </div>
+            )}
 
-              <h4 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#FFFFFF', marginBottom: 6 }}>
-                {aRetenir.decisionRequise.title}
-              </h4>
+            {/* 3. Principale Opportunité à Exploiter */}
+            {aRetenir.opportuniteExploiter && (
+              <div
+                style={{
+                  padding: '16px',
+                  borderRadius: 12,
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between'
+                }}
+              >
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <span
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 800,
+                        padding: '2px 8px',
+                        borderRadius: 6,
+                        background: 'rgba(52, 152, 219, 0.2)',
+                        color: '#3498DB'
+                      }}
+                    >
+                      {aRetenir.opportuniteExploiter.badge}
+                    </span>
+                    <span style={{ fontSize: 11, color: '#85C1E9', fontWeight: 700 }}>
+                      {aRetenir.opportuniteExploiter.metric}
+                    </span>
+                  </div>
 
-              <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.85)', lineHeight: 1.5 }}>
-                {aRetenir.decisionRequise.description}
-              </p>
-            </div>
+                  <h4 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#FFFFFF', marginBottom: 6 }}>
+                    {aRetenir.opportuniteExploiter.title}
+                  </h4>
 
-            <button
-              type="button"
-              onClick={() => onNavigateTab('validations')}
-              style={{
-                marginTop: 14,
-                padding: '8px 12px',
-                borderRadius: 8,
-                background: '#FF7900',
-                border: 'none',
-                color: '#FFFFFF',
-                fontSize: 11,
-                fontWeight: 800,
-                cursor: 'pointer',
-                textAlign: 'center',
-                boxShadow: '0 2px 8px rgba(255, 121, 0, 0.4)'
-              }}
-            >
-              ⚡ {aRetenir.decisionRequise.actionText} →
-            </button>
-          </div>
+                  <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.8)', lineHeight: 1.5 }}>
+                    {aRetenir.opportuniteExploiter.description}
+                  </p>
+                </div>
 
-          {/* 3. Principale Opportunité à Exploiter */}
-          <div
-            style={{
-              padding: '16px',
-              borderRadius: 12,
-              background: 'rgba(255, 255, 255, 0.05)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between'
-            }}
-          >
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                <span
+                <button
+                  type="button"
+                  onClick={() => onNavigateTab('veille')}
                   style={{
+                    marginTop: 14,
+                    padding: '8px 12px',
+                    borderRadius: 8,
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    color: '#FFFFFF',
                     fontSize: 11,
-                    fontWeight: 800,
-                    padding: '2px 8px',
-                    borderRadius: 6,
-                    background: 'rgba(52, 152, 219, 0.2)',
-                    color: '#3498DB'
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    textAlign: 'center'
                   }}
                 >
-                  {aRetenir.opportuniteExploiter.badge}
-                </span>
-                <span style={{ fontSize: 11, color: '#85C1E9', fontWeight: 700 }}>
-                  {aRetenir.opportuniteExploiter.metric}
-                </span>
+                  {aRetenir.opportuniteExploiter.actionText} →
+                </button>
               </div>
-
-              <h4 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#FFFFFF', marginBottom: 6 }}>
-                {aRetenir.opportuniteExploiter.title}
-              </h4>
-
-              <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.8)', lineHeight: 1.5 }}>
-                {aRetenir.opportuniteExploiter.description}
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => onNavigateTab('veille')}
-              style={{
-                marginTop: 14,
-                padding: '8px 12px',
-                borderRadius: 8,
-                background: 'rgba(255, 255, 255, 0.1)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                color: '#FFFFFF',
-                fontSize: 11,
-                fontWeight: 700,
-                cursor: 'pointer',
-                textAlign: 'center'
-              }}
-            >
-              {aRetenir.opportuniteExploiter.actionText} →
-            </button>
+            )}
           </div>
-        </div>
+        )}
       </div>
 
       {/* ─── 3. DEUX COLONNES : ACTIVATIONS EN COURS & ALERTES PRIORITAIRES ─── */}
@@ -433,54 +449,64 @@ export default function ClientCockpitInfluence({
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {campaigns.map((camp) => (
-              <div
-                key={camp.id}
-                onClick={() => onSelectCampaign(camp)}
-                style={{
-                  padding: '14px',
-                  borderRadius: 10,
-                  border: '1px solid #F1F5F9',
-                  background: '#F8FAFC',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                  <span className="tag tag-orange" style={{ fontSize: 10, fontWeight: 800 }}>
-                    {camp.entityLabel}
-                  </span>
-                  <span style={{ fontSize: 11, color: 'var(--muted)', fontWeight: 600 }}>
-                    {camp.period}
-                  </span>
-                </div>
-
-                <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--dark)', marginBottom: 4 }}>
-                  {camp.name}
-                </div>
-
-                <div style={{ fontSize: 12, color: '#475569', marginBottom: 10 }}>
-                  <strong>Livrables :</strong> {camp.publishedCount} diffusés sur {camp.contractualCount} prévus
-                </div>
-
-                {/* Barre de progression */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ flex: 1, height: 6, borderRadius: 3, background: '#E2E8F0', overflow: 'hidden' }}>
-                    <div
-                      style={{
-                        width: `${camp.progressPercent}%`,
-                        height: '100%',
-                        background: '#FF7900',
-                        borderRadius: 3
-                      }}
-                    />
-                  </div>
-                  <span style={{ fontSize: 11, fontWeight: 800, color: '#FF7900' }}>
-                    {camp.progressPercent}%
-                  </span>
-                </div>
+            {campaigns.length === 0 ? (
+              <div style={{ padding: '28px 16px', textAlign: 'center', color: 'var(--muted)', fontSize: 12, background: '#F8FAFC', borderRadius: 10, border: '1px dashed #E2E8F0' }}>
+                <span style={{ fontSize: 24, display: 'block', marginBottom: 6 }}>🗂</span>
+                <strong style={{ color: 'var(--dark)' }}>Aucune campagne en cours enregistrée</strong>
+                <p style={{ margin: '4px 0 0', fontSize: 11, color: '#64748B' }}>
+                  Les nouvelles activations et campagnes créées apparaîtront ici.
+                </p>
               </div>
-            ))}
+            ) : (
+              campaigns.map((camp) => (
+                <div
+                  key={camp.id}
+                  onClick={() => onSelectCampaign(camp)}
+                  style={{
+                    padding: '14px',
+                    borderRadius: 10,
+                    border: '1px solid #F1F5F9',
+                    background: '#F8FAFC',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                    <span className="tag tag-orange" style={{ fontSize: 10, fontWeight: 800 }}>
+                      {camp.entityLabel}
+                    </span>
+                    <span style={{ fontSize: 11, color: 'var(--muted)', fontWeight: 600 }}>
+                      {camp.period}
+                    </span>
+                  </div>
+
+                  <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--dark)', marginBottom: 4 }}>
+                    {camp.name}
+                  </div>
+
+                  <div style={{ fontSize: 12, color: '#475569', marginBottom: 10 }}>
+                    <strong>Livrables :</strong> {camp.publishedCount} diffusés sur {camp.contractualCount} prévus
+                  </div>
+
+                  {/* Barre de progression */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ flex: 1, height: 6, borderRadius: 3, background: '#E2E8F0', overflow: 'hidden' }}>
+                      <div
+                        style={{
+                          width: `${camp.progressPercent}%`,
+                          height: '100%',
+                          background: '#FF7900',
+                          borderRadius: 3
+                        }}
+                      />
+                    </div>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: '#FF7900' }}>
+                      {camp.progressPercent}%
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -504,49 +530,59 @@ export default function ClientCockpitInfluence({
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {alerts.map((alt) => {
-              const isHigh = alt.severity === 'haute';
-              return (
-                <div
-                  key={alt.id}
-                  style={{
-                    padding: '14px',
-                    borderRadius: 10,
-                    borderLeft: `4px solid ${isHigh ? '#E74C3C' : '#F39C12'}`,
-                    background: isHigh ? '#FEF2F2' : '#FFFBEB',
-                    borderTop: '1px solid #F1F5F9',
-                    borderRight: '1px solid #F1F5F9',
-                    borderBottom: '1px solid #F1F5F9'
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                    <span
-                      style={{
-                        fontSize: 10,
-                        fontWeight: 800,
-                        textTransform: 'uppercase',
-                        color: isHigh ? '#B91C1C' : '#B45309'
-                      }}
-                    >
-                      {alt.type.replace('_', ' ')}
-                    </span>
-                    <span style={{ fontSize: 10, color: 'var(--muted)' }}>{alt.date}</span>
-                  </div>
+            {alerts.length === 0 ? (
+              <div style={{ padding: '28px 16px', textAlign: 'center', color: 'var(--muted)', fontSize: 12, background: '#F8FAFC', borderRadius: 10, border: '1px dashed #E2E8F0' }}>
+                <span style={{ fontSize: 24, display: 'block', marginBottom: 6 }}>🛡️</span>
+                <strong style={{ color: 'var(--dark)' }}>Aucune alerte active</strong>
+                <p style={{ margin: '4px 0 0', fontSize: 11, color: '#64748B' }}>
+                  Aucun retard, risque éditorial ou conflit de calendrier détecté.
+                </p>
+              </div>
+            ) : (
+              alerts.map((alt) => {
+                const isHigh = alt.severity === 'haute';
+                return (
+                  <div
+                    key={alt.id}
+                    style={{
+                      padding: '14px',
+                      borderRadius: 10,
+                      borderLeft: `4px solid ${isHigh ? '#E74C3C' : '#F39C12'}`,
+                      background: isHigh ? '#FEF2F2' : '#FFFBEB',
+                      borderTop: '1px solid #F1F5F9',
+                      borderRight: '1px solid #F1F5F9',
+                      borderBottom: '1px solid #F1F5F9'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                      <span
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 800,
+                          textTransform: 'uppercase',
+                          color: isHigh ? '#B91C1C' : '#B45309'
+                        }}
+                      >
+                        {alt.type.replace('_', ' ')}
+                      </span>
+                      <span style={{ fontSize: 10, color: 'var(--muted)' }}>{alt.date}</span>
+                    </div>
 
-                  <div style={{ fontSize: 13, fontWeight: 800, color: '#1F2937', marginBottom: 4 }}>
-                    {alt.title}
-                  </div>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: '#1F2937', marginBottom: 4 }}>
+                      {alt.title}
+                    </div>
 
-                  <div style={{ fontSize: 12, color: '#4B5563', marginBottom: 6 }}>
-                    <strong>Conséquence :</strong> {alt.consequence}
-                  </div>
+                    <div style={{ fontSize: 12, color: '#4B5563', marginBottom: 6 }}>
+                      <strong>Conséquence :</strong> {alt.consequence}
+                    </div>
 
-                  <div style={{ fontSize: 11, fontWeight: 600, color: isHigh ? '#DC2626' : '#D97706' }}>
-                    💡 <strong>Action recommandée :</strong> {alt.recommendedAction}
+                    <div style={{ fontSize: 11, fontWeight: 600, color: isHigh ? '#DC2626' : '#D97706' }}>
+                      💡 <strong>Action recommandée :</strong> {alt.recommendedAction}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </div>
       </div>

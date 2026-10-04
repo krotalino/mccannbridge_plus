@@ -38,62 +38,16 @@ export function getInfluencerCdcAndDeliverables(influencer) {
 
   const cdcList = Array.isArray(influencer.cahierDesCharges) && influencer.cahierDesCharges.length > 0
     ? influencer.cahierDesCharges
-    : [
-        {
-          id: 'CDC-001',
-          campagneId: 'CP-2026-04',
-          campagneNom: influencer.lastCampaign || 'Orange Weekend Avril',
-          dateDebut: '2026-04-01',
-          dateFin: '2026-04-30',
-          objectifs: 'Accroître la notoriété des offres week-end, générer du trafic en boutique et stimuler les téléchargements My Orange.',
-          contraintes: 'Respect strict de la charte graphique Orange Cameroun, pas de marque concurrente, affichage obligatoire des mentions légales et sticker de lien.',
-          guidelineMarque: {
-            ton: 'Enthousiaste, dynamique, jeune et accessible',
-            visuels: 'Couleurs officielles Orange (#FF7900), contrastes maîtrisés, logo visible dès les 3 premières secondes',
-            hashtags: ['#OrangeCameroun', '#OrangeWeekend', '#PulseOrange'],
-            mentions: ['@OrangeCameroun']
-          },
-          produits: ['Forfait Orange Weekend', 'Orange Money'],
-          livrables: [
-            {
-              id: 'LIV-001',
-              titre: 'Story teaser de lancement avec sticker de redirection',
-              type: 'story',
-              deadline: '2026-04-08',
-              statut: 'livre',
-              avancement: 85,
-              description: 'Séquence de 3 stories dynamiques présentant l\'offre Orange Weekend avec code promo exclusif.',
-              lienPublication: 'https://instagram.com/stories/highlights/1789234892/',
-              commentaires: 'Brouillon soumis à validation. Visuel conforme à la charte McCann.',
-              produit: 'Forfait Orange Weekend'
-            },
-            {
-              id: 'LIV-002',
-              titre: 'Reel Instagram & TikTok démonstration et cas d\'usage',
-              type: 'reel',
-              deadline: '2026-04-14',
-              statut: 'en_cours',
-              avancement: 50,
-              description: 'Vidéo verticale de 30-45s illustrant l\'achat du pass week-end via Orange Money.',
-              lienPublication: '',
-              commentaires: 'Tournage prévu le 10 avril au campus de Douala. En attente de validation du script.',
-              produit: 'Orange Money'
-            },
-            {
-              id: 'LIV-003',
-              titre: 'Post carrousel récapitulatif des avantages & concours',
-              type: 'post',
-              deadline: '2026-04-22',
-              statut: 'a_faire',
-              avancement: 10,
-              description: 'Publication de 4 slides pédagogiques résumant les offres avec jeu concours Orange.',
-              lienPublication: '',
-              commentaires: 'Éléments visuels transmis par l\'agence McCann.',
-              produit: 'Forfait Orange Weekend'
-            }
-          ]
-        }
-      ];
+    : [];
+
+  if (cdcList.length === 0) {
+    return {
+      activeCdc: null,
+      allCdc: [],
+      activeDeliverables: [],
+      stats: { total: 0, valides: 0, enCours: 0, enRetard: 0, globalProgress: 0 }
+    };
+  }
 
   // Enrichir chaque livrable avec des valeurs calculées
   const allDeliverables = [];
