@@ -603,21 +603,33 @@ export default function InfluencePage() {
           {legacySubTab === 'contrats' && (
             <InfluenceContrats
               influencers={influencers}
+              setInfluencers={handleSetInfluencers}
               onSelect={setProfileInf}
               onEdit={setEditInf}
             />
           )}
 
           {legacySubTab === 'cahier' && (
-            <InfluenceCahierCharges influencers={influencers} />
+            <InfluenceCahierCharges
+              influencers={influencers}
+              setInfluencers={handleSetInfluencers}
+            />
           )}
 
           {legacySubTab === 'performance' && (
-            <InfluencePerformance influencers={influencers} onSelect={setProfileInf} />
+            <InfluencePerformance
+              influencers={influencers}
+              setInfluencers={handleSetInfluencers}
+              onSelect={setProfileInf}
+            />
           )}
 
           {legacySubTab === 'historique' && (
-            <InfluenceHistorique influencers={influencers} onSelect={setProfileInf} />
+            <InfluenceHistorique
+              influencers={influencers}
+              setInfluencers={handleSetInfluencers}
+              onSelect={setProfileInf}
+            />
           )}
 
           {legacySubTab === 'finance' && (
