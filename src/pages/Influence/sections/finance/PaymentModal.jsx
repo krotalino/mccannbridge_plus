@@ -3,6 +3,7 @@ import { X, DollarSign, Calendar, FileText, CheckCircle2, ShieldAlert, CreditCar
 import { formatCurrency } from '../../../../utils/helpers.js';
 
 export default function PaymentModal({ isOpen, onClose, onSave, influencer, initialPayment = null, campaigns = [], contracts = [] }) {
+  const [formError, setFormError] = useState('');
   const [formData, setFormData] = useState({
     id: '',
     type: 'avance', // 'avance' | 'solde' | 'echeance' | 'bonus' | 'penalite'
@@ -18,6 +19,7 @@ export default function PaymentModal({ isOpen, onClose, onSave, influencer, init
   });
 
   useEffect(() => {
+    setFormError('');
     if (initialPayment) {
       setFormData({
         id: initialPayment.id || '',
@@ -53,12 +55,13 @@ export default function PaymentModal({ isOpen, onClose, onSave, influencer, init
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setFormError('');
     if (!formData.montant || Number(formData.montant) <= 0) {
-      alert('Veuillez saisir un montant valide supérieur à 0.');
+      setFormError('Veuillez saisir un montant valide supérieur à 0.');
       return;
     }
     if (!formData.campagne) {
-      alert('Veuillez sélectionner ou renseigner la campagne concernée.');
+      setFormError('Veuillez sélectionner ou renseigner la campagne concernée.');
       return;
     }
 
@@ -129,6 +132,13 @@ export default function PaymentModal({ isOpen, onClose, onSave, influencer, init
         </div>
 
         <form onSubmit={handleSubmit}>
+          {formError && (
+            <div className="p-8 mb-14 rounded bg-red-50 border border-red-200 text-xs text-red font-semibold flex items-center gap-6">
+              <ShieldAlert size={15} />
+              <span>{formError}</span>
+            </div>
+          )}
+
           {/* Type d'opération financière */}
           <div className="mb-14">
             <label className="block text-xs font-bold text-dark mb-6">Type d'opération financière *</label>

@@ -1,39 +1,43 @@
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { formatCurrency, formatNumber } from '../../../utils/helpers';
 import FinancialSummaryTab from './finance/FinancialSummaryTab';
 import InvoicesTab from './finance/InvoicesTab';
 import JustificatifsTab from './finance/JustificatifsTab';
 import PerformanceScoresTab from './finance/PerformanceScoresTab';
 import ContractSyncTab from './finance/ContractSyncTab';
+import { INITIAL_INFLUENCE_TALENTS } from '../../../data/influenceSeedData';
 
-export default function InfluenceFinance({ influencers = [], setInfluencers }) {
-  const [selectedInfId, setSelectedInfId] = useState(influencers[0]?.id || '');
+export default function InfluenceFinance({ influencers = [], setInfluencers, initialInfluencerId = null }) {
+  // Liste garantie non vide grâce au seed des talents
+  const effectiveInfluencers = useMemo(() => {
+    if (Array.isArray(influencers) && influencers.length > 0) return influencers;
+    return INITIAL_INFLUENCE_TALENTS || [];
+  }, [influencers]);
+
+  const [selectedInfId, setSelectedInfId] = useState(() => initialInfluencerId || effectiveInfluencers[0]?.id || '');
+
+  useEffect(() => {
+    if (initialInfluencerId) {
+      setSelectedInfId(initialInfluencerId);
+    } else if (!selectedInfId && effectiveInfluencers.length > 0) {
+      setSelectedInfId(effectiveInfluencers[0]?.id || '');
+    }
+  }, [initialInfluencerId, effectiveInfluencers, selectedInfId]);
+
   // Sub-tabs: 'suivi_financier' | 'facturation' | 'justificatifs' | 'scores' | 'contrats'
   const [activeSubTab, setActiveSubTab] = useState('suivi_financier');
 
   // Influenceur sélectionné
   const selectedInf = useMemo(() => {
-    return (influencers || []).find(i => String(i.id) === String(selectedInfId)) || influencers[0] || null;
-  }, [influencers, selectedInfId]);
-
-  if (!influencers || influencers.length === 0) {
-    return (
-      <div className="card text-center py-40" style={{ background: '#fff', border: '1px dashed #d0d7de', borderRadius: 12 }}>
-        <div style={{ fontSize: 44, marginBottom: 12 }}>💳</div>
-        <h3 className="text-lg font-bold text-dark mb-4">Aucune donnée financière</h3>
-        <p className="text-sm text-muted mb-20 max-w-md mx-auto">
-          Aucun influenceur n'est encore enregistré dans la base de données. Créez un profil dans l'onglet "1. Fiche Influence" pour gérer les paiements, devis, factures et documents légaux.
-        </p>
-      </div>
-    );
-  }
+    return effectiveInfluencers.find(i => String(i.id) === String(selectedInfId)) || effectiveInfluencers[0] || null;
+  }, [effectiveInfluencers, selectedInfId]);
 
   // Calculs consolidés à l'échelle de TOUS les influenceurs (pour la bannière globale)
   const allPaiements = useMemo(() => {
-    return (influencers || []).flatMap(inf =>
+    return effectiveInfluencers.flatMap(inf =>
       (inf.paiements || []).map(p => ({ ...p, influencerName: inf.pseudo || inf.name, influencerId: inf.id }))
     );
-  }, [influencers]);
+  }, [effectiveInfluencers]);
 
   const globalTotalPaye = allPaiements
     .filter(p => p.statut === 'paye')
@@ -43,7 +47,7 @@ export default function InfluenceFinance({ influencers = [], setInfluencers }) {
     .filter(p => p.statut === 'en_attente')
     .reduce((sum, p) => sum + (Number(p.montant) || 0), 0);
 
-  const globalTotalContracts = (influencers || []).flatMap(inf => inf.contracts || []);
+  const globalTotalContracts = effectiveInfluencers.flatMap(inf => inf.contracts || []);
   const globalBudgetContracts = globalTotalContracts.reduce((sum, c) => sum + (Number(c.montant) || 0), 0);
 
   const subTabs = [
@@ -74,7 +78,7 @@ export default function InfluenceFinance({ influencers = [], setInfluencers }) {
             value={selectedInf?.id || ''}
             onChange={e => setSelectedInfId(e.target.value)}
           >
-            {influencers.map(inf => (
+            {effectiveInfluencers.map(inf => (
               <option key={inf.id} value={inf.id}>
                 @{inf.pseudo || inf.name} ({inf.realName || `${inf.prenom || ''} ${inf.nom || ''}`.trim() || 'Créateur'})
               </option>
@@ -162,7 +166,7 @@ export default function InfluenceFinance({ influencers = [], setInfluencers }) {
       {activeSubTab === 'suivi_financier' && (
         <FinancialSummaryTab
           influencer={selectedInf}
-          influencers={influencers}
+          influencers={effectiveInfluencers}
           setInfluencers={setInfluencers}
           onSwitchTab={(tabId) => setActiveSubTab(tabId)}
         />
@@ -171,7 +175,7 @@ export default function InfluenceFinance({ influencers = [], setInfluencers }) {
       {activeSubTab === 'facturation' && (
         <InvoicesTab
           influencer={selectedInf}
-          influencers={influencers}
+          influencers={effectiveInfluencers}
           setInfluencers={setInfluencers}
         />
       )}
@@ -179,7 +183,7 @@ export default function InfluenceFinance({ influencers = [], setInfluencers }) {
       {activeSubTab === 'justificatifs' && (
         <JustificatifsTab
           influencer={selectedInf}
-          influencers={influencers}
+          influencers={effectiveInfluencers}
           setInfluencers={setInfluencers}
         />
       )}
@@ -187,14 +191,14 @@ export default function InfluenceFinance({ influencers = [], setInfluencers }) {
       {activeSubTab === 'scores' && (
         <PerformanceScoresTab
           influencer={selectedInf}
-          influencers={influencers}
+          influencers={effectiveInfluencers}
         />
       )}
 
       {activeSubTab === 'contrats' && (
         <ContractSyncTab
           influencer={selectedInf}
-          influencers={influencers}
+          influencers={effectiveInfluencers}
           setInfluencers={setInfluencers}
         />
       )}

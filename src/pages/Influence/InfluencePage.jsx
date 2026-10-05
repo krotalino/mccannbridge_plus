@@ -27,6 +27,7 @@ import InfluencePerformance from './sections/InfluencePerformance';
 import InfluenceHistorique from './sections/InfluenceHistorique';
 import InfluenceFinance from './sections/InfluenceFinance';
 import { ProfileModal, EditModal } from './InfluenceModals';
+import { INITIAL_INFLUENCE_TALENTS } from '../../data/influenceSeedData';
 
 export default function InfluencePage() {
   const { talentId } = useParams();
@@ -79,11 +80,18 @@ export default function InfluencePage() {
     text: '', niche: '', platform: '', type: '', region: '', engagement: '', disponibilite: '', status: ''
   });
 
+  // Liste garantie non vide grâce au fallback sur data.talents et INITIAL_INFLUENCE_TALENTS
+  const effectiveInfluencers = useMemo(() => {
+    if (Array.isArray(influencers) && influencers.length > 0) return influencers;
+    if (Array.isArray(data?.talents) && data.talents.length > 0) return data.talents;
+    return INITIAL_INFLUENCE_TALENTS || [];
+  }, [influencers, data?.talents]);
+
   // Helper pour trouver un talent de manière flexible par id ou pseudo
   const findTalentByIdOrPseudo = (idOrPseudo) => {
     if (!idOrPseudo) return null;
     const clean = String(idOrPseudo).toLowerCase().replace(/^@/, '').trim();
-    const candidateList = (influencers && influencers.length > 0) ? influencers : (data.talents || []);
+    const candidateList = (effectiveInfluencers && effectiveInfluencers.length > 0) ? effectiveInfluencers : (data.talents || []);
     return (
       candidateList.find(inf => {
         const infId = String(inf.id || '').toLowerCase();
@@ -126,8 +134,13 @@ export default function InfluencePage() {
       }
     }
 
-    if (subtabParam && ['fiche', 'contrats', 'cahier', 'performance', 'historique', 'finance'].includes(subtabParam)) {
-      setLegacySubTab(subtabParam);
+    if (subtabParam) {
+      const norm = (subtabParam === 'budget' || subtabParam === 'budgets' || subtabParam === 'paiement' || subtabParam === 'paiements')
+        ? 'finance'
+        : subtabParam;
+      if (['fiche', 'contrats', 'cahier', 'performance', 'historique', 'finance'].includes(norm)) {
+        setLegacySubTab(norm);
+      }
     }
 
     if (targetTalentParam) {
@@ -139,7 +152,7 @@ export default function InfluencePage() {
         }
       }
     }
-  }, [talentId, searchParams, influencers, data.talents]);
+  }, [talentId, searchParams, effectiveInfluencers, data.talents]);
 
   const handleCloseProfile = () => {
     setProfileInf(null);
@@ -232,24 +245,16 @@ export default function InfluencePage() {
   };
 
   const handleSetInfluencers = async (updaterOrList) => {
-    if (typeof updaterOrList === 'function') {
-      const updatedList = updaterOrList(influencers);
+    const baseList = (influencers && influencers.length > 0) ? influencers : effectiveInfluencers;
+    const updatedList = typeof updaterOrList === 'function' ? updaterOrList(baseList) : updaterOrList;
+    if (Array.isArray(updatedList)) {
       for (const inf of updatedList) {
-        const old = influencers.find(i => String(i.id) === String(inf.id));
+        const old = baseList.find(i => String(i.id) === String(inf.id));
         if (!old) {
           await addInfluencer(inf);
         } else if (JSON.stringify(old) !== JSON.stringify(inf)) {
           await updateInfluencer(inf.id, inf);
         }
-      }
-      for (const old of influencers) {
-        if (!updatedList.some(i => String(i.id) === String(old.id))) {
-          await deleteInfluencer(old.id);
-        }
-      }
-    } else if (Array.isArray(updaterOrList)) {
-      for (const inf of updaterOrList) {
-        await updateInfluencer(inf.id, inf);
       }
     }
   };
@@ -588,7 +593,7 @@ export default function InfluencePage() {
 
           {legacySubTab === 'fiche' && (
             <InfluenceFiche
-              influencers={influencers}
+              influencers={effectiveInfluencers}
               setInfluencers={handleSetInfluencers}
               filters={filters}
               setFilters={setFilters}
@@ -602,7 +607,7 @@ export default function InfluencePage() {
 
           {legacySubTab === 'contrats' && (
             <InfluenceContrats
-              influencers={influencers}
+              influencers={effectiveInfluencers}
               setInfluencers={handleSetInfluencers}
               onSelect={setProfileInf}
               onEdit={setEditInf}
@@ -611,14 +616,14 @@ export default function InfluencePage() {
 
           {legacySubTab === 'cahier' && (
             <InfluenceCahierCharges
-              influencers={influencers}
+              influencers={effectiveInfluencers}
               setInfluencers={handleSetInfluencers}
             />
           )}
 
           {legacySubTab === 'performance' && (
             <InfluencePerformance
-              influencers={influencers}
+              influencers={effectiveInfluencers}
               setInfluencers={handleSetInfluencers}
               onSelect={setProfileInf}
             />
@@ -626,7 +631,7 @@ export default function InfluencePage() {
 
           {legacySubTab === 'historique' && (
             <InfluenceHistorique
-              influencers={influencers}
+              influencers={effectiveInfluencers}
               setInfluencers={handleSetInfluencers}
               onSelect={setProfileInf}
             />
@@ -634,7 +639,7 @@ export default function InfluencePage() {
 
           {legacySubTab === 'finance' && (
             <InfluenceFinance
-              influencers={influencers}
+              influencers={effectiveInfluencers}
               setInfluencers={handleSetInfluencers}
               onSelect={setProfileInf}
             />

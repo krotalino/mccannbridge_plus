@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { formatCurrency } from '../../../utils/helpers';
 import { useApp } from '../../../context/AppContext';
+import { INITIAL_INFLUENCE_TALENTS } from '../../../data/influenceSeedData';
 
 const CONTRACT_TYPES = ['exclusif', 'ponctuel', 'ambassadeur', 'partenariat'];
 const CONTRACT_STATUTS = ['actif', 'en_negociation', 'expire', 'resilie'];
@@ -46,15 +47,23 @@ export default function InfluenceContrats({ influencers = [], setInfluencers }) 
   const [formError, setFormError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Liste garantie non vide des talents
+  const effectiveInfluencers = useMemo(() => {
+    if (Array.isArray(influencers) && influencers.length > 0) return influencers;
+    return INITIAL_INFLUENCE_TALENTS || [];
+  }, [influencers]);
+
   // Rassembler tous les contrats de tous les influenceurs
-  const allContracts = (influencers || []).flatMap(inf =>
-    (inf.contracts || []).map(c => ({
-      ...c,
-      influencerName: inf.pseudo || inf.name || inf.display_name || 'Créateur',
-      influencerRealName: inf.realName || `${inf.prenom || inf.first_name || ''} ${inf.nom || inf.last_name || ''}`.trim() || inf.name,
-      influencerId: String(inf.id)
-    }))
-  );
+  const allContracts = useMemo(() => {
+    return effectiveInfluencers.flatMap(inf =>
+      (inf.contracts || []).map(c => ({
+        ...c,
+        influencerName: inf.pseudo || inf.name || inf.display_name || 'Créateur',
+        influencerRealName: inf.realName || `${inf.prenom || inf.first_name || ''} ${inf.nom || inf.last_name || ''}`.trim() || inf.name,
+        influencerId: String(inf.id)
+      }))
+    );
+  }, [effectiveInfluencers]);
 
   const filtered = allContracts.filter(c => {
     if (filterInf && String(c.influencerId) !== String(filterInf)) return false;
@@ -70,16 +79,24 @@ export default function InfluenceContrats({ influencers = [], setInfluencers }) 
   const totalMontant = allContracts.filter(c => c.statut === 'actif').reduce((s, c) => s + (c.montant || 0), 0);
 
   const handleOpenAdd = (infId = null) => {
-    const defaultInfId = infId ? String(infId) : (influencers[0]?.id !== undefined ? String(influencers[0].id) : '');
+    const list = effectiveInfluencers;
+    const defaultInfId = infId ? String(infId) : (list[0]?.id !== undefined ? String(list[0].id) : '');
+    const today = new Date();
+    const oneYearLater = new Date(today);
+    oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
+
+    const targetInf = list.find(i => String(i.id) === String(defaultInfId)) || list[0];
+    const defaultMontant = targetInf?.cachetBase || 1500000;
+
     setEditContract({
       id: '',
-      campagne: '',
-      dateDebut: new Date().toISOString().split('T')[0],
-      dateFin: '',
-      type: 'ponctuel',
-      montant: 0,
-      modalitesPaiement: '',
-      statut: 'en_negociation',
+      campagne: 'Campagne Orange 2026',
+      dateDebut: today.toISOString().split('T')[0],
+      dateFin: oneYearLater.toISOString().split('T')[0],
+      type: 'ambassadeur',
+      montant: defaultMontant,
+      modalitesPaiement: 'Virement bancaire — 50% au démarrage, 50% à la livraison finale',
+      statut: 'actif',
       documentUrl: null,
       influencerId: defaultInfId,
     });
@@ -126,7 +143,7 @@ export default function InfluenceContrats({ influencers = [], setInfluencers }) 
       return;
     }
 
-    const targetInf = (influencers || []).find(i => String(i.id) === String(editContract.influencerId));
+    const targetInf = effectiveInfluencers.find(i => String(i.id) === String(editContract.influencerId));
     if (!targetInf) {
       setFormError('Influenceur sélectionné introuvable dans la base.');
       return;
@@ -159,7 +176,7 @@ export default function InfluenceContrats({ influencers = [], setInfluencers }) 
         const newContract = {
           ...editContract,
           id: contractId,
-          campagne: editContract.campagne || 'Campagne Générale',
+          campagne: editContract.campagne || 'Campagne Orange 2026',
           montant: montantVal,
           isNewlyCreated: true,
           createdAt: new Date().toISOString(),
@@ -173,6 +190,11 @@ export default function InfluenceContrats({ influencers = [], setInfluencers }) 
         contractStatus: editContract.statut === 'actif' ? 'actif' : editContract.statut,
         contractEnd: editContract.dateFin || targetInf.contractEnd || '',
       };
+
+      // Mettre à jour l'objet directement en mémoire pour réactivité instantanée
+      targetInf.contracts = updatedContracts;
+      targetInf.contractStatus = influencerUpdates.contractStatus;
+      targetInf.contractEnd = influencerUpdates.contractEnd;
 
       // 1. Mise à jour via updateInfluencer (persistance Firestore & State global)
       if (typeof updateInfluencer === 'function') {
@@ -215,7 +237,7 @@ export default function InfluenceContrats({ influencers = [], setInfluencers }) 
   };
 
   const handleDeleteContract = async (infId, contractId) => {
-    const targetInf = (influencers || []).find(i => String(i.id) === String(infId));
+    const targetInf = (effectiveInfluencers || []).find(i => String(i.id) === String(infId));
     if (!targetInf) return;
 
     const updatedContracts = (targetInf.contracts || []).filter(c => String(c.id) !== String(contractId));
@@ -226,6 +248,10 @@ export default function InfluenceContrats({ influencers = [], setInfluencers }) 
       contractStatus: activeContract ? 'actif' : (updatedContracts.length > 0 ? updatedContracts[0].statut : 'non_renseigne'),
       contractEnd: activeContract?.dateFin || updatedContracts[0]?.dateFin || ''
     };
+
+    targetInf.contracts = updatedContracts;
+    targetInf.contractStatus = influencerUpdates.contractStatus;
+    targetInf.contractEnd = influencerUpdates.contractEnd;
 
     if (typeof updateInfluencer === 'function') {
       await updateInfluencer(targetInf.id, influencerUpdates);
@@ -274,7 +300,7 @@ export default function InfluenceContrats({ influencers = [], setInfluencers }) 
         <div className="inf-search-row">
           <select className="form-input" value={filterInf} onChange={e => setFilterInf(e.target.value)}>
             <option value="">Tous les influenceurs</option>
-            {influencers.map(i => (
+            {effectiveInfluencers.map(i => (
               <option key={i.id} value={String(i.id)}>
                 @{i.pseudo || i.name} — {i.realName || `${i.prenom || i.first_name || ''} ${i.nom || i.last_name || ''}`.trim() || i.name}
               </option>
@@ -400,7 +426,7 @@ export default function InfluenceContrats({ influencers = [], setInfluencers }) 
                   }}
                   disabled={!!editContract.id}
                 >
-                  {influencers.map(i => (
+                  {effectiveInfluencers.map(i => (
                     <option key={i.id} value={String(i.id)}>
                       @{i.pseudo || i.name} — {i.realName || `${i.prenom || i.first_name || ''} ${i.nom || i.last_name || ''}`.trim() || i.name}
                     </option>

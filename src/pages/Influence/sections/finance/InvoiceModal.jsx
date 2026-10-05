@@ -4,6 +4,7 @@ import { formatCurrency } from '../../../../utils/helpers.js';
 import { exportInvoiceToPdf } from './InvoicePdfExport.js';
 
 export default function InvoiceModal({ isOpen, onClose, onSave, influencer, initialInvoice = null, campaigns = [], contracts = [] }) {
+  const [formError, setFormError] = useState('');
   const [formData, setFormData] = useState({
     id: '',
     numeroFacture: '',
@@ -118,8 +119,9 @@ export default function InvoiceModal({ isOpen, onClose, onSave, influencer, init
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setFormError('');
     if (!formData.numeroFacture.trim()) {
-      alert('Veuillez spécifier un numéro de facture.');
+      setFormError('Veuillez spécifier un numéro de facture.');
       return;
     }
 
@@ -207,6 +209,12 @@ export default function InvoiceModal({ isOpen, onClose, onSave, influencer, init
         </div>
 
         <form onSubmit={handleSubmit}>
+          {formError && (
+            <div className="p-8 mb-14 rounded bg-red-50 border border-red-200 text-xs text-red font-semibold">
+              ⚠️ {formError}
+            </div>
+          )}
+
           {/* Ligne 1 : Numéro, Statut & Dates */}
           <div className="grid grid-4 gap-10 mb-14">
             <div>

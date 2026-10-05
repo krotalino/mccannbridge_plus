@@ -26,24 +26,53 @@ export default function FinancialSummaryTab({ influencer, influencers, setInflue
   const contracts = influencer?.contracts || [];
   const campaignsList = useMemo(() => {
     const list = [];
-    if (Array.isArray(influencer?.performanceHistory)) {
-      influencer.performanceHistory.forEach((h, idx) => {
-        list.push({
-          id: h.id || `HIST-${idx}`,
-          campaign: h.campaign || h.name || `Campagne #${idx + 1}`,
-          brand: h.brand || 'Orange Cameroun',
-          budgetAlloue: h.remuneration?.base ? h.remuneration.base + (h.remuneration.variable || 0) : (influencer?.cachetBase || 1500000),
-          montantNegocie: h.remuneration?.base ? h.remuneration.base + (h.remuneration.variable || 0) : (influencer?.cachetBase || 1500000),
-          statut: h.status || 'terminee'
-        });
+    const seenNames = new Set();
+
+    // 1. Depuis contracts
+    if (Array.isArray(influencer?.contracts)) {
+      influencer.contracts.forEach((c, idx) => {
+        const campName = c.campagne || c.titre || `Contrat #${c.id || idx + 1}`;
+        if (!seenNames.has(campName.toLowerCase())) {
+          seenNames.add(campName.toLowerCase());
+          list.push({
+            id: c.id || `CTR-${idx}`,
+            campaign: campName,
+            brand: 'Orange Cameroun',
+            budgetAlloue: Number(c.montant) || (influencer?.cachetBase || 1500000),
+            montantNegocie: Number(c.montant) || (influencer?.cachetBase || 1500000),
+            statut: c.statut === 'actif' ? 'en_cours' : (c.statut || 'en_cours')
+          });
+        }
       });
     }
+
+    // 2. Depuis performanceHistory
+    if (Array.isArray(influencer?.performanceHistory)) {
+      influencer.performanceHistory.forEach((h, idx) => {
+        const campName = h.campaign || h.name || `Campagne #${idx + 1}`;
+        if (!seenNames.has(campName.toLowerCase())) {
+          seenNames.add(campName.toLowerCase());
+          list.push({
+            id: h.id || `HIST-${idx}`,
+            campaign: campName,
+            brand: h.brand || 'Orange Cameroun',
+            budgetAlloue: h.remuneration?.base ? h.remuneration.base + (h.remuneration.variable || 0) : (influencer?.cachetBase || 1500000),
+            montantNegocie: h.remuneration?.base ? h.remuneration.base + (h.remuneration.variable || 0) : (influencer?.cachetBase || 1500000),
+            statut: h.status || 'terminee'
+          });
+        }
+      });
+    }
+
+    // 3. Depuis cahierDesCharges
     if (Array.isArray(influencer?.cahierDesCharges)) {
       influencer.cahierDesCharges.forEach((c) => {
-        if (!list.some(l => l.campaign === c.campagneNom)) {
+        const campName = c.campagneNom;
+        if (campName && !seenNames.has(campName.toLowerCase())) {
+          seenNames.add(campName.toLowerCase());
           list.push({
             id: c.campagneId || c.id,
-            campaign: c.campagneNom,
+            campaign: campName,
             brand: 'Orange Cameroun',
             budgetAlloue: influencer?.cachetBase || 2000000,
             montantNegocie: influencer?.cachetBase || 2000000,
@@ -52,6 +81,43 @@ export default function FinancialSummaryTab({ influencer, influencers, setInflue
         }
       });
     }
+
+    // 4. Depuis factures
+    if (Array.isArray(influencer?.factures)) {
+      influencer.factures.forEach((f, idx) => {
+        const campName = f.campagne;
+        if (campName && !seenNames.has(campName.toLowerCase())) {
+          seenNames.add(campName.toLowerCase());
+          list.push({
+            id: f.id || `FAC-${idx}`,
+            campaign: campName,
+            brand: 'Orange Cameroun',
+            budgetAlloue: Number(f.montantHT || f.montantTTC) || (influencer?.cachetBase || 1500000),
+            montantNegocie: Number(f.montantHT || f.montantTTC) || (influencer?.cachetBase || 1500000),
+            statut: f.statut === 'payee' ? 'terminee' : 'en_cours'
+          });
+        }
+      });
+    }
+
+    // 5. Depuis versements/paiements
+    if (Array.isArray(influencer?.paiements)) {
+      influencer.paiements.forEach((p, idx) => {
+        const campName = p.campagne;
+        if (campName && !seenNames.has(campName.toLowerCase())) {
+          seenNames.add(campName.toLowerCase());
+          list.push({
+            id: p.id || `PAY-${idx}`,
+            campaign: campName,
+            brand: 'Orange Cameroun',
+            budgetAlloue: Number(p.montant) || (influencer?.cachetBase || 1500000),
+            montantNegocie: Number(p.montant) || (influencer?.cachetBase || 1500000),
+            statut: 'en_cours'
+          });
+        }
+      });
+    }
+
     return list;
   }, [influencer]);
 
@@ -151,9 +217,8 @@ export default function FinancialSummaryTab({ influencer, influencers, setInflue
   };
 
   const handleDeletePayment = (paymentId) => {
-    if (!confirm('Voulez-vous supprimer cette ligne de versement ?')) return;
-    setInfluencers(prev => prev.map(inf => {
-      if (String(inf.id) !== String(influencer.id)) return inf;
+    setInfluencers(prev => (Array.isArray(prev) ? prev : []).map(inf => {
+      if (String(inf.id) !== String(influencer?.id)) return inf;
       return {
         ...inf,
         paiements: (inf.paiements || []).filter(p => p.id !== paymentId)
@@ -264,7 +329,14 @@ export default function FinancialSummaryTab({ influencer, influencers, setInflue
               </tr>
             </thead>
             <tbody>
-              {campaignsList.map((c, idx) => {
+              {campaignsList.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-24 text-center text-muted text-xs">
+                    Aucun contrat ou campagne actuellement budgétisé pour @{influencer?.pseudo || influencer?.name}. Utilisez les onglets ci-dessus pour émettre une facture, enregistrer un contrat ou effectuer un versement.
+                  </td>
+                </tr>
+              ) : (
+                campaignsList.map((c, idx) => {
                 // Paiements spécifiques à cette campagne
                 const campPaiements = paiements.filter(p => p.campagne === c.campaign);
                 const campPaye = campPaiements.filter(p => p.statut === 'paye').reduce((s, p) => s + (Number(p.montant) || 0), 0);
@@ -332,7 +404,7 @@ export default function FinancialSummaryTab({ influencer, influencers, setInflue
                     </td>
                   </tr>
                 );
-              })}
+              }))}
             </tbody>
           </table>
         </div>

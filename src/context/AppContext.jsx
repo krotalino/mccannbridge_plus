@@ -158,16 +158,16 @@ const loadSavedInfluencers = () => {
     if (saved) {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        // Sanitize: ensure no legacy example campaigns/cahiers/stats remain unless newly recorded
         return parsed.map(inf => ({
           ...inf,
           campaigns: typeof inf.campaigns === 'number' && inf.campaigns > 0 ? inf.campaigns : 0,
-          contracts: Array.isArray(inf.contracts) ? inf.contracts.filter(c => c && c.isNewlyCreated) : [],
-          cahierDesCharges: Array.isArray(inf.cahierDesCharges) ? inf.cahierDesCharges.filter(c => c && c.isNewlyCreated) : [],
-          publicationStats: Array.isArray(inf.publicationStats) ? inf.publicationStats.filter(p => p && p.isNewlyCreated) : [],
-          performanceHistory: Array.isArray(inf.performanceHistory) ? inf.performanceHistory.filter(h => h && h.isNewlyCreated) : [],
-          paiements: Array.isArray(inf.paiements) ? inf.paiements.filter(p => p && p.isNewlyCreated) : [],
-          pendingDeliverables: Array.isArray(inf.pendingDeliverables) ? inf.pendingDeliverables.filter(d => d && d.isNewlyCreated) : []
+          contracts: Array.isArray(inf.contracts) ? inf.contracts : [],
+          factures: Array.isArray(inf.factures) ? inf.factures : [],
+          cahierDesCharges: Array.isArray(inf.cahierDesCharges) ? inf.cahierDesCharges : [],
+          publicationStats: Array.isArray(inf.publicationStats) ? inf.publicationStats : [],
+          performanceHistory: Array.isArray(inf.performanceHistory) ? inf.performanceHistory : [],
+          paiements: Array.isArray(inf.paiements) ? inf.paiements : [],
+          pendingDeliverables: Array.isArray(inf.pendingDeliverables) ? inf.pendingDeliverables : []
         }));
       }
     }

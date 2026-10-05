@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { 
   FileText, 
   Download, 
@@ -188,7 +188,12 @@ export default function InvoicesTab({ influencer, influencers, setInfluencers })
     // 1. Mise à jour instantanée du state local
     setFacturesList(updated);
 
-    // 2. Mise à jour persistante via updateInfluencer (Firestore et State global AppContext)
+    // 2. Mise à jour directe de la référence pour éviter un rollback par useEffect
+    if (influencer) {
+      influencer.factures = updated;
+    }
+
+    // 3. Mise à jour persistante via updateInfluencer (Firestore et State global AppContext)
     if (typeof updateInfluencer === 'function') {
       try {
         await updateInfluencer(influencer.id, { factures: updated });
