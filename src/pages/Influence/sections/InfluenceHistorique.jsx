@@ -51,6 +51,9 @@ export default function InfluenceHistorique({ influencers = [], setInfluencers }
     // 1. Depuis performanceHistory
     if (Array.isArray(selectedInf.performanceHistory)) {
       selectedInf.performanceHistory.forEach((h, idx) => {
+        if (!h || (!h.isNewlyCreated && (h.isDemo || h.isExample || h.campaign === 'Orange Weekend Mars' || h.campaign === 'Pulse Jeunesse Fév' || h.campaign === 'OM Transfert Jan'))) {
+          return;
+        }
         const campName = h.campaign || h.name || `Campagne #${idx + 1}`;
         seenNames.add(campName.toLowerCase());
 

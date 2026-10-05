@@ -393,7 +393,11 @@ export default function InfluenceFiche({ influencers, setInfluencers, onViewProf
                     <div className="text-xs text-muted">Engagement</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-base font-bold text-orange">{inf.scorePerformance || inf.score || 4.0}/5</div>
+                    <div className="text-base font-bold text-orange">
+                      {(inf.isNewlyCreated && (inf.scorePerformance || inf.score)) || (Array.isArray(inf.performanceHistory) && inf.performanceHistory.some(h => h && h.isNewlyCreated && !h.isDemo && !h.isExample))
+                        ? `${inf.scorePerformance || inf.score}/5`
+                        : '—'}
+                    </div>
                     <div className="text-xs text-muted">Score</div>
                   </div>
                 </div>

@@ -56,42 +56,73 @@ export default function InfluencePerformance({ influencers = [], setInfluencers 
   const [editingInsight, setEditingInsight] = useState(null);
   const [showAddInsightModal, setShowAddInsightModal] = useState(false);
 
-  // Consolidation de la source des livrables
+  // Consolidation de la source des livrables : ne conserver QUE les publications réelles créées par l'utilisateur
   const allDeliverables = useMemo(() => {
-    if (influenceDeliverables && influenceDeliverables.length > 0) {
-      return influenceDeliverables;
+    const validFromDeliverables = (influenceDeliverables || []).filter(d =>
+      d &&
+      d.isNewlyCreated === true &&
+      !d.isDemo &&
+      !d.isExample &&
+      d.metrics?.views !== 205000 &&
+      d.views !== 205000 &&
+      d.metrics?.likes !== 16700 &&
+      d.likes !== 16700
+    );
+
+    if (validFromDeliverables.length > 0) {
+      return validFromDeliverables;
     }
-    // Fallback : extraire publicationStats depuis influencers si influenceDeliverables est vide
+
+    // Fallback : extraire publicationStats depuis influencers SEULEMENT si créés réellement
     const extracted = [];
     (influencers || []).forEach(inf => {
       if (Array.isArray(inf.publicationStats)) {
         inf.publicationStats.forEach(p => {
-          extracted.push({
-            id: p.id || `PUB-${Math.random().toString(36).substr(2, 6)}`,
-            title: p.titre || p.title || `Publication de ${inf.name}`,
-            talent_name: inf.name,
-            campaign_name: p.campagne || 'Campagne sans nom',
-            platform: (p.plateforme || p.platform || 'instagram').toLowerCase(),
-            content_type: (p.format || p.content_type || 'post').toLowerCase(),
-            content_subject: p.sujet || p.content_subject || 'Général',
-            published_at: p.date || p.published_at || new Date().toISOString().split('T')[0],
-            url: p.url || '',
-            status: 'publie',
-            metrics: {
-              views: p.vues || p.views || 0,
-              likes: p.likes || 0,
-              comments: p.commentaires || p.comments || 0,
-              shares: p.partages || p.shares || 0,
-              engagement_reported: p.engagement_reported || null,
-              engagement_calculated: (p.likes || 0) + (p.commentaires || p.comments || 0) + (p.partages || p.shares || 0),
-              engagement_rate: p.tauxEngagement || p.engagement_rate || 0,
-            }
-          });
+          if (
+            p &&
+            p.isNewlyCreated === true &&
+            !p.isDemo &&
+            !p.isExample &&
+            p.vues !== 205000 &&
+            p.views !== 205000
+          ) {
+            extracted.push({
+              id: p.id || `PUB-${Math.random().toString(36).substr(2, 6)}`,
+              title: p.titre || p.title || `Publication de ${inf.name || inf.pseudo}`,
+              talent_name: inf.name || inf.pseudo,
+              campaign_name: p.campagne || 'Campagne sans nom',
+              platform: (p.plateforme || p.platform || 'instagram').toLowerCase(),
+              content_type: (p.format || p.content_type || 'post').toLowerCase(),
+              content_subject: p.sujet || p.content_subject || 'Général',
+              published_at: p.date || p.published_at || new Date().toISOString().split('T')[0],
+              url: p.url || '',
+              status: 'publie',
+              metrics: {
+                views: p.vues || p.views || 0,
+                likes: p.likes || 0,
+                comments: p.commentaires || p.comments || 0,
+                shares: p.partages || p.shares || 0,
+                engagement_reported: p.engagement_reported || null,
+                engagement_calculated: (p.likes || 0) + (p.commentaires || p.comments || 0) + (p.partages || p.shares || 0),
+                engagement_rate: p.tauxEngagement || p.engagement_rate || 0,
+              }
+            });
+          }
         });
       }
     });
     return extracted;
   }, [influenceDeliverables, influencers]);
+
+  // Filtrer les insights pour exclure toute donnée d'exemple
+  const validInsights = useMemo(() => {
+    return (influenceInsights || []).filter(ins =>
+      ins &&
+      ins.isNewlyCreated === true &&
+      !ins.isDemo &&
+      !ins.isExample
+    );
+  }, [influenceInsights]);
 
   // Options pour les filtres déduites des données
   const campaignOptions = useMemo(() => {
@@ -343,13 +374,20 @@ export default function InfluencePerformance({ influencers = [], setInfluencers 
 
   // Gestion des modifications / ajouts de livrables
   const handleSaveDeliverable = (delivData) => {
+    const toSave = {
+      ...delivData,
+      isNewlyCreated: true,
+      isReal: true,
+      isDemo: false,
+      isExample: false,
+    };
     if (editingDeliverable) {
-      updateInfluenceDeliverable(delivData.id, delivData);
+      updateInfluenceDeliverable(delivData.id, toSave);
       if (addNotification) {
         addNotification(`Publication modifiée : ${delivData.title}`, 'success');
       }
     } else {
-      addInfluenceDeliverable(delivData);
+      addInfluenceDeliverable(toSave);
       if (addNotification) {
         addNotification(`Nouvelle publication ajoutée : ${delivData.title}`, 'success');
       }
@@ -358,12 +396,12 @@ export default function InfluencePerformance({ influencers = [], setInfluencers 
     // Synchronisation éventuelle avec l'état local influencers
     if (setInfluencers) {
       setInfluencers(prev => prev.map(inf => {
-        if (inf.name === delivData.talent_name) {
+        if (inf.name === delivData.talent_name || inf.pseudo === delivData.talent_name) {
           const existingPubs = inf.publicationStats || [];
           const exists = existingPubs.some(p => p.id === delivData.id);
           const updatedPubs = exists
-            ? existingPubs.map(p => p.id === delivData.id ? { ...p, ...delivData } : p)
-            : [delivData, ...existingPubs];
+            ? existingPubs.map(p => p.id === delivData.id ? { ...p, ...toSave } : p)
+            : [toSave, ...existingPubs];
           return { ...inf, publicationStats: updatedPubs };
         }
         return inf;
@@ -394,13 +432,20 @@ export default function InfluencePerformance({ influencers = [], setInfluencers 
 
   // Gestion des Insights
   const handleSaveInsight = (insightData) => {
+    const toSave = {
+      ...insightData,
+      isNewlyCreated: true,
+      isReal: true,
+      isDemo: false,
+      isExample: false,
+    };
     if (editingInsight) {
-      updateInfluenceInsight(insightData.id, insightData);
+      updateInfluenceInsight(insightData.id, toSave);
       if (addNotification) {
         addNotification(`Recommandation mise à jour`, 'success');
       }
     } else {
-      addInfluenceInsight(insightData);
+      addInfluenceInsight(toSave);
       if (addNotification) {
         addNotification(`Nouvel insight enregistré`, 'success');
       }
@@ -551,7 +596,7 @@ export default function InfluencePerformance({ influencers = [], setInfluencers 
           }`}
         >
           <Lightbulb size={15} />
-          Zone Insights & Recommandations ({influenceInsights.length})
+          Zone Insights & Recommandations ({validInsights.length})
         </button>
       </div>
 
@@ -610,7 +655,7 @@ export default function InfluencePerformance({ influencers = [], setInfluencers 
       {/* ─── RENDU DU SOUS-ONGLET 4 : ZONE INSIGHTS ─── */}
       {activeTab === 'insights' && (
         <PerformanceInsightsSection
-          insights={influenceInsights}
+          insights={validInsights}
           onAddNew={() => setShowAddInsightModal(true)}
           onEdit={(ins) => setEditingInsight(ins)}
           onDelete={handleDeleteInsight}

@@ -164,10 +164,24 @@ const loadSavedInfluencers = () => {
           contracts: Array.isArray(inf.contracts) ? inf.contracts : [],
           factures: Array.isArray(inf.factures) ? inf.factures : [],
           cahierDesCharges: Array.isArray(inf.cahierDesCharges) ? inf.cahierDesCharges : [],
-          publicationStats: Array.isArray(inf.publicationStats) ? inf.publicationStats : [],
-          performanceHistory: Array.isArray(inf.performanceHistory) ? inf.performanceHistory : [],
+          publicationStats: Array.isArray(inf.publicationStats)
+            ? inf.publicationStats.filter(p => p && p.isNewlyCreated && !p.isDemo && !p.isExample && p.vues !== 205000 && p.views !== 205000)
+            : [],
+          performanceHistory: Array.isArray(inf.performanceHistory)
+            ? inf.performanceHistory.filter(h =>
+                h &&
+                h.isNewlyCreated &&
+                !h.isDemo &&
+                !h.isExample &&
+                h.campaign !== 'Orange Weekend Mars' &&
+                h.campaign !== 'Pulse Jeunesse Fév' &&
+                h.campaign !== 'OM Transfert Jan'
+              )
+            : [],
           paiements: Array.isArray(inf.paiements) ? inf.paiements : [],
-          pendingDeliverables: Array.isArray(inf.pendingDeliverables) ? inf.pendingDeliverables : []
+          pendingDeliverables: Array.isArray(inf.pendingDeliverables) ? inf.pendingDeliverables : [],
+          scorePerformance: inf.isNewlyCreated ? inf.scorePerformance : null,
+          score: inf.isNewlyCreated ? inf.score : null
         }));
       }
     }
@@ -183,13 +197,22 @@ const loadSavedInfluenceDeliverables = () => {
     if (saved) {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        // Exclude legacy mock deliverables from old Excel seed, only keep newly recorded
-        return parsed.filter(d => d && !d.import_batch_id && d.campaign_id !== 'CAMP-ORANGE-Q4-2025' && !d.isDemo);
+        // Exclure les livrables d'exemple : conserver uniquement les créations réelles
+        return parsed.filter(d =>
+          d &&
+          d.isNewlyCreated === true &&
+          !d.isDemo &&
+          !d.isExample &&
+          d.metrics?.views !== 205000 &&
+          d.views !== 205000 &&
+          d.metrics?.likes !== 16700 &&
+          d.likes !== 16700
+        );
       }
     }
-    return INITIAL_INFLUENCE_DELIVERABLES;
+    return [];
   } catch (e) {
-    return INITIAL_INFLUENCE_DELIVERABLES;
+    return [];
   }
 };
 
@@ -240,11 +263,13 @@ const loadSavedInfluenceInsights = () => {
     const saved = localStorage.getItem('bridge_influence_insights_v2');
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.filter(i => i && i.isNewlyCreated === true && !i.isDemo && !i.isExample);
+      }
     }
-    return INITIAL_INFLUENCE_INSIGHTS;
+    return [];
   } catch (e) {
-    return INITIAL_INFLUENCE_INSIGHTS;
+    return [];
   }
 };
 
@@ -361,8 +386,33 @@ function appReducer(state, action) {
       return { ...state, auditLogs: action.auditLogs, firestoreReady: true };
 
     case 'SYNC_INFLUENCERS': {
-      try { localStorage.setItem('bridge_influencers_v2', JSON.stringify(action.influencers)); } catch (e) {}
-      return { ...state, influencers: action.influencers, influenceTalents: action.influencers, firestoreReady: true };
+      const sanitized = (action.influencers || []).map(inf => ({
+        ...inf,
+        campaigns: typeof inf.campaigns === 'number' && inf.campaigns > 0 ? inf.campaigns : 0,
+        contracts: Array.isArray(inf.contracts) ? inf.contracts : [],
+        factures: Array.isArray(inf.factures) ? inf.factures : [],
+        cahierDesCharges: Array.isArray(inf.cahierDesCharges) ? inf.cahierDesCharges : [],
+        publicationStats: Array.isArray(inf.publicationStats)
+          ? inf.publicationStats.filter(p => p && p.isNewlyCreated && !p.isDemo && !p.isExample && p.vues !== 205000 && p.views !== 205000)
+          : [],
+        performanceHistory: Array.isArray(inf.performanceHistory)
+          ? inf.performanceHistory.filter(h =>
+              h &&
+              h.isNewlyCreated &&
+              !h.isDemo &&
+              !h.isExample &&
+              h.campaign !== 'Orange Weekend Mars' &&
+              h.campaign !== 'Pulse Jeunesse Fév' &&
+              h.campaign !== 'OM Transfert Jan'
+            )
+          : [],
+        paiements: Array.isArray(inf.paiements) ? inf.paiements : [],
+        pendingDeliverables: Array.isArray(inf.pendingDeliverables) ? inf.pendingDeliverables : [],
+        scorePerformance: inf.isNewlyCreated ? inf.scorePerformance : null,
+        score: inf.isNewlyCreated ? inf.score : null
+      }));
+      try { localStorage.setItem('bridge_influencers_v2', JSON.stringify(sanitized)); } catch (e) {}
+      return { ...state, influencers: sanitized, influenceTalents: sanitized, firestoreReady: true };
     }
 
     case 'SYNC_FINANCIAL_DOCUMENTS': {

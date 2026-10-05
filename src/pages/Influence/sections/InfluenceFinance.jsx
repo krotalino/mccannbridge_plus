@@ -32,6 +32,21 @@ export default function InfluenceFinance({ influencers = [], setInfluencers, ini
     return effectiveInfluencers.find(i => String(i.id) === String(selectedInfId)) || effectiveInfluencers[0] || null;
   }, [effectiveInfluencers, selectedInfId]);
 
+  // Score réel calculé dynamiquement
+  const realScore = useMemo(() => {
+    const realHistory = Array.isArray(selectedInf?.performanceHistory)
+      ? selectedInf.performanceHistory.filter(h => h && h.isNewlyCreated && !h.isDemo && !h.isExample)
+      : [];
+    if (realHistory.length > 0) {
+      const avg = realHistory.reduce((s, c) => s + (Number(c.scorePerformance) || 4), 0) / realHistory.length;
+      return avg.toFixed(1);
+    }
+    if (selectedInf?.isNewlyCreated && (selectedInf?.scorePerformance || selectedInf?.score)) {
+      return selectedInf.scorePerformance || selectedInf.score;
+    }
+    return null;
+  }, [selectedInf]);
+
   // Calculs consolidés à l'échelle de TOUS les influenceurs (pour la bannière globale)
   const allPaiements = useMemo(() => {
     return effectiveInfluencers.flatMap(inf =>
@@ -131,7 +146,7 @@ export default function InfluenceFinance({ influencers = [], setInfluencers, ini
             <div className="text-right">
               <div className="text-xxs text-muted uppercase font-bold">Score Global</div>
               <div className="text-sm font-extrabold text-orange">
-                {selectedInf.scorePerformance || selectedInf.score || '—'} / 5 ⭐
+                {realScore ? `${realScore} / 5 ⭐` : '— (Non évalué)'}
               </div>
             </div>
           </div>
@@ -192,6 +207,7 @@ export default function InfluenceFinance({ influencers = [], setInfluencers, ini
         <PerformanceScoresTab
           influencer={selectedInf}
           influencers={effectiveInfluencers}
+          setInfluencers={setInfluencers}
         />
       )}
 
