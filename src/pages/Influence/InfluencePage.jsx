@@ -26,6 +26,7 @@ import InfluenceCahierCharges from './sections/InfluenceCahierCharges';
 import InfluencePerformance from './sections/InfluencePerformance';
 import InfluenceHistorique from './sections/InfluenceHistorique';
 import InfluenceFinance from './sections/InfluenceFinance';
+import InfluenceCalendrier from './sections/InfluenceCalendrier';
 import { ProfileModal, EditModal } from './InfluenceModals';
 import { INITIAL_INFLUENCE_TALENTS } from '../../data/influenceSeedData';
 
@@ -137,8 +138,8 @@ export default function InfluencePage() {
     if (subtabParam) {
       const norm = (subtabParam === 'budget' || subtabParam === 'budgets' || subtabParam === 'paiement' || subtabParam === 'paiements')
         ? 'finance'
-        : subtabParam;
-      if (['fiche', 'contrats', 'cahier', 'performance', 'historique', 'finance'].includes(norm)) {
+        : (subtabParam === 'calendar' ? 'calendrier' : subtabParam);
+      if (['fiche', 'contrats', 'cahier', 'performance', 'historique', 'finance', 'calendrier'].includes(norm)) {
         setLegacySubTab(norm);
       }
     }
@@ -223,7 +224,8 @@ export default function InfluencePage() {
     { id: 'cahier', label: '3. Cahier des charges' },
     { id: 'performance', label: '4. Performance & KPIs' },
     { id: 'historique', label: '5. Historique campagnes' },
-    { id: 'finance', label: '6. Budgets & Paiements' }
+    { id: 'finance', label: '6. Budgets & Paiements' },
+    { id: 'calendrier', label: '7. Calendrier Influenceurs' }
   ];
 
   const handleSave = async (form) => {
@@ -642,6 +644,15 @@ export default function InfluencePage() {
               influencers={effectiveInfluencers}
               setInfluencers={handleSetInfluencers}
               onSelect={setProfileInf}
+            />
+          )}
+
+          {legacySubTab === 'calendrier' && (
+            <InfluenceCalendrier
+              influencers={effectiveInfluencers}
+              setInfluencers={handleSetInfluencers}
+              initialInfluencerId={profileInf?.id}
+              onSelectInfluencer={setProfileInf}
             />
           )}
         </div>
