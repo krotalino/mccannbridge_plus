@@ -20,10 +20,12 @@ const getInitialData = () => {
       if (parsed && parsed.talents && parsed.talents.length > 0) {
         return {
           ...parsed,
-          campaigns: Array.isArray(parsed.campaigns) ? parsed.campaigns.filter(c => c && !c.import_batch_id && c.id !== 'CAMP-ORANGE-Q4-2025' && !c.isDemo) : [],
-          deliverables: Array.isArray(parsed.deliverables) ? parsed.deliverables.filter(d => d && !d.import_batch_id && d.campaign_id !== 'CAMP-ORANGE-Q4-2025' && !d.isDemo) : [],
-          snapshots: Array.isArray(parsed.snapshots) ? parsed.snapshots.filter(s => s && s.isNewlyCreated) : [],
-          insights: Array.isArray(parsed.insights) ? parsed.insights.filter(i => i && !i.isDemo) : []
+          campaigns: Array.isArray(parsed.campaigns) ? parsed.campaigns.filter(c => c && !c.import_batch_id && c.id !== 'CAMP-ORANGE-Q4-2025' && !c.isDemo && !c.isExample) : [],
+          deliverables: Array.isArray(parsed.deliverables) ? parsed.deliverables.filter(d => d && !d.import_batch_id && d.campaign_id !== 'CAMP-ORANGE-Q4-2025' && !d.isDemo && !d.isExample) : [],
+          snapshots: Array.isArray(parsed.snapshots) ? parsed.snapshots.filter(s => s && s.isNewlyCreated && !s.isDemo && !s.isExample) : [],
+          insights: Array.isArray(parsed.insights) ? parsed.insights.filter(i => i && !i.isDemo && !i.isExample) : [],
+          issues: Array.isArray(parsed.issues) ? parsed.issues.filter(i => i && !i.isDemo && !i.id?.startsWith('iss-dup-')) : [],
+          activations: Array.isArray(parsed.activations) ? parsed.activations.filter(a => a && a.isNewlyCreated) : []
         };
       }
     }
@@ -31,34 +33,9 @@ const getInitialData = () => {
     console.error('Failed to parse cached influence data:', e);
   }
 
-  // Initial issues from duplicates
-  const initialIssues = (INITIAL_INFLUENCE_DUPLICATES || []).map((dup, idx) => ({
-    id: `iss-dup-${idx + 1}`,
-    code: 'duplicate_candidate',
-    sheet_name: dup.sheet_a || "O'Ambassadeurs",
-    row_reference: dup.row_a || idx + 2,
-    message: `Doublon potentiel entre ${dup.name_a} et ${dup.name_b}`,
-    raw_value: JSON.stringify({ talentA: dup.talent_a_id, talentB: dup.talent_b_id }),
-    resolution_status: 'open',
-    created_at: new Date().toISOString()
-  }));
-
-  // Activations synthesised from deliverables
+  // Initial issues and activations (no example duplicates or mock activations)
+  const initialIssues = [];
   const initialActivations = [];
-  const actMap = new Set();
-  (INITIAL_INFLUENCE_DELIVERABLES || []).forEach(d => {
-    const key = `${d.campaign_id}|${d.talent_id}`;
-    if (!actMap.has(key)) {
-      actMap.add(key);
-      initialActivations.push({
-        id: `act-${initialActivations.length + 1}`,
-        campaign_id: d.campaign_id,
-        talent_id: d.talent_id,
-        contract_status: d.campaign_id === 'CAMP-ORANGE-Q4-2025' ? 'contrat_signe' : 'non_renseigne',
-        deliverable_commitment: true
-      });
-    }
-  });
 
   return {
     batches: [INITIAL_IMPORT_BATCH],
@@ -108,6 +85,7 @@ export const computeCockpitKpis = (data) => {
   let incomplete = 0, inconsistent = 0;
 
   for (const snap of snaps.values()) {
+    if (snap.isDemo || snap.isExample) continue;
     likes += snap.likes || 0;
     comments += snap.comments || 0;
     shares += snap.shares || 0;
@@ -124,17 +102,22 @@ export const computeCockpitKpis = (data) => {
 
   const rate = viewsWithCompletedEng > 0 ? Math.round((engagement / viewsWithCompletedEng) * 10000) / 100 : null;
 
+  const cleanActivations = (data.activations || []).filter(a => a && !a.isDemo && !a.isExample && a.isNewlyCreated);
+  const cleanCampaigns = (data.campaigns || []).filter(c => c && !c.isDemo && !c.isExample && c.id !== 'CAMP-ORANGE-Q4-2025' && !c.id?.startsWith('mock-'));
+  const cleanDeliverables = (data.deliverables || []).filter(u => u && !u.isDemo && !u.isExample && u.campaign_id !== 'CAMP-ORANGE-Q4-2025');
+  const cleanIssues = (data.issues || []).filter(i => i && !i.isDemo && !i.isExample && !i.id?.startsWith('iss-dup-'));
+
   return {
     talentsActifs: (data.talents || []).filter(u => u.record_status === 'active' && u.type !== 'ambassador').length,
-    activations: (data.activations || []).length,
-    publications: (data.deliverables || []).filter(u => u.status === 'publie').length,
+    activations: cleanActivations.length || cleanCampaigns.length,
+    publications: cleanDeliverables.filter(u => u.status === 'publie').length,
     engagement,
     views,
     rate,
     incomplete,
     inconsistent,
-    doublons: (data.issues || []).filter(u => u.code === 'duplicate_candidate' && u.resolution_status === 'open').length,
-    anomalies: (data.issues || []).filter(u => u.resolution_status === 'open' && u.code !== 'duplicate_candidate').length
+    doublons: cleanIssues.filter(u => u.code === 'duplicate_candidate' && u.resolution_status === 'open').length,
+    anomalies: cleanIssues.filter(u => u.resolution_status === 'open' && u.code !== 'duplicate_candidate').length
   };
 };
 

@@ -73,10 +73,10 @@ export function AnalyticsKpiCard({
   tag,
   tagColor = 'tag-orange',
   value,
-  sparklineData = [12, 18, 15, 22, 28, 24, 30],
+  sparklineData = null,
   sparklineColor = '#FF7900',
-  trend = '+14.2%',
-  trendLabel = 'vs période préc.',
+  trend = null,
+  trendLabel = '',
   isPositive = true,
   onClick,
   clickable = false
@@ -117,8 +117,8 @@ export function AnalyticsKpiCard({
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11, paddingTop: 8, borderTop: '1px solid #F0F0F0' }}>
-        <span style={{ color: isPositive ? '#27AE60' : '#E74C3C', fontWeight: 700 }}>
-          {trend ? (isPositive ? `▲ ${trend}` : `▼ ${trend}`) : '✓ Nominal'}
+        <span style={{ color: isPositive ? '#27AE60' : (trend && trend !== '—' ? '#E74C3C' : 'var(--muted)'), fontWeight: 700 }}>
+          {trend ? (trend === '—' ? '—' : (isPositive ? `▲ ${trend}` : `▼ ${trend}`)) : '—'}
         </span>
         <span style={{ color: 'var(--muted)' }}>{trendLabel}</span>
       </div>

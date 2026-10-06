@@ -55,10 +55,13 @@ export default function CockpitInfluence({ data, onNavigate }) {
     return [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6);
   }, [data.deliverables]);
 
-  // Campaigns performance overview
+  // Campaigns performance overview (strictly real data, filtering out demo/example campaigns)
   const campaignsSummary = useMemo(() => {
-    return (data.campaigns || []).map(camp => {
-      const delivs = (data.deliverables || []).filter(d => d.campaign_id === camp.id);
+    const cleanCampaigns = (data.campaigns || []).filter(
+      camp => camp && !camp.isDemo && !camp.isExample && camp.id !== 'CAMP-ORANGE-Q4-2025' && !camp.id?.startsWith('mock-')
+    );
+    return cleanCampaigns.map(camp => {
+      const delivs = (data.deliverables || []).filter(d => d.campaign_id === camp.id && !d.isDemo && !d.isExample);
       const talentSet = new Set(delivs.map(d => d.talent_id).filter(Boolean));
       let vues = 0;
       let eng = 0;
@@ -66,7 +69,7 @@ export default function CockpitInfluence({ data, onNavigate }) {
 
       for (const d of delivs) {
         const snap = snapshots.get(d.id);
-        if (snap) {
+        if (snap && !snap.isDemo && !snap.isExample) {
           if (snap.views !== null && snap.views !== undefined) {
             vues += snap.views;
             hasVues = true;
@@ -105,11 +108,11 @@ export default function CockpitInfluence({ data, onNavigate }) {
           title="TALENTS QUALIFIÉS"
           tag="👥 Vivier"
           tagColor="tag-orange"
-          value={formatNumber(kpis.talentsActifs)}
-          sparklineData={[15, 18, 22, 25, 24, 28, kpis.talentsActifs || 25]}
+          value={formatNumber(kpis.talentsActifs || 0)}
+          sparklineData={null}
           sparklineColor="#FF7900"
-          trend="+18.4%"
-          trendLabel={`${data.talents.length} au registre`}
+          trend={`${kpis.talentsActifs || 0} actif(s)`}
+          trendLabel={`${(data.talents || []).length} au registre`}
           isPositive={true}
           clickable={true}
           onClick={() => onNavigate('talents')}
@@ -119,12 +122,12 @@ export default function CockpitInfluence({ data, onNavigate }) {
           title="ACTIVATIONS EN COURS"
           tag="⚡ Campagnes"
           tagColor="tag-blue"
-          value={formatNumber(kpis.activations)}
-          sparklineData={[8, 12, 11, 15, 17, 19, kpis.activations || 20]}
+          value={formatNumber(kpis.activations || 0)}
+          sparklineData={null}
           sparklineColor="#2980B9"
-          trend="+8.5%"
-          trendLabel="talents engagés"
-          isPositive={true}
+          trend={kpis.activations > 0 ? `${kpis.activations} active(s)` : '0 activation'}
+          trendLabel={kpis.activations > 0 ? "en cours d'exécution" : "Aucune campagne active"}
+          isPositive={kpis.activations > 0}
           clickable={true}
           onClick={() => onNavigate('campagnes')}
         />
@@ -133,11 +136,11 @@ export default function CockpitInfluence({ data, onNavigate }) {
           title="PUBLICATIONS DIFFUSÉES"
           tag="📄 Contenus"
           tagColor="tag-green"
-          value={formatNumber(kpis.publications)}
-          sparklineData={[20, 35, 45, 60, 80, 95, kpis.publications || 105]}
+          value={formatNumber(kpis.publications || 0)}
+          sparklineData={null}
           sparklineColor="#27AE60"
-          trend="+22.1%"
-          trendLabel={`${data.deliverables.length} livrables suivis`}
+          trend={`${kpis.publications || 0} diffusée(s)`}
+          trendLabel={`${(data.deliverables || []).filter(d => !d.isDemo && !d.isExample).length} livrables suivis`}
           isPositive={true}
           clickable={true}
           onClick={() => onNavigate('livrables')}
@@ -147,12 +150,12 @@ export default function CockpitInfluence({ data, onNavigate }) {
           title="VUES TOTALES CERTIFIÉES"
           tag="👁 Impressions"
           tagColor="tag-orange"
-          value={kpis.views > 0 ? (kpis.views >= 1000000 ? `${(kpis.views / 1000000).toFixed(1)}M` : formatNumber(kpis.views)) : '14.8M'}
-          sparklineData={[5, 8, 7, 11, 13, 12, 15]}
+          value={kpis.views > 0 ? (kpis.views >= 1000000 ? `${(kpis.views / 1000000).toFixed(1)}M` : formatNumber(kpis.views)) : '0'}
+          sparklineData={null}
           sparklineColor="#FF7900"
-          trend="+14.0%"
-          trendLabel="vues réelles mesurées"
-          isPositive={true}
+          trend={kpis.views > 0 ? formatNumber(kpis.views) : '—'}
+          trendLabel={kpis.views > 0 ? "vues réelles mesurées" : "Aucune vue enregistrée"}
+          isPositive={kpis.views > 0}
           clickable={true}
           onClick={() => onNavigate('reporting')}
         />
@@ -161,12 +164,12 @@ export default function CockpitInfluence({ data, onNavigate }) {
           title="ENGAGEMENT CALCULÉ"
           tag="❤️ Réactions"
           tagColor="tag-purple"
-          value={kpis.engagement > 0 ? (kpis.engagement >= 1000000 ? `${(kpis.engagement / 1000000).toFixed(1)}M` : formatNumber(kpis.engagement)) : '685K'}
-          sparklineData={[120, 180, 240, 350, 420, 560, 685]}
+          value={kpis.engagement > 0 ? (kpis.engagement >= 1000000 ? `${(kpis.engagement / 1000000).toFixed(1)}M` : formatNumber(kpis.engagement)) : '0'}
+          sparklineData={null}
           sparklineColor="#8E44AD"
-          trend="+11.6%"
-          trendLabel="likes, coms, partages"
-          isPositive={true}
+          trend={kpis.engagement > 0 ? formatNumber(kpis.engagement) : '—'}
+          trendLabel={kpis.engagement > 0 ? "likes, coms, partages" : "0 interaction enregistrée"}
+          isPositive={kpis.engagement > 0}
           clickable={true}
           onClick={() => onNavigate('reporting')}
         />
@@ -175,12 +178,12 @@ export default function CockpitInfluence({ data, onNavigate }) {
           title="TAUX SUR VUES"
           tag="📈 Ratio"
           tagColor={kpis.rate !== null ? 'tag-green' : 'tag-yellow'}
-          value={kpis.rate !== null ? `${kpis.rate}%` : '4.8%'}
-          sparklineData={[3.8, 4.1, 4.0, 4.5, 4.7, 4.6, 4.8]}
+          value={kpis.rate !== null ? `${kpis.rate}%` : '—'}
+          sparklineData={null}
           sparklineColor="#27AE60"
-          trend="+0.6 pt"
-          trendLabel="sur données complètes"
-          isPositive={true}
+          trend={kpis.rate !== null ? `${kpis.rate}% effectif` : '—'}
+          trendLabel={kpis.rate !== null ? "sur données complètes" : "En attente de livrables et vues"}
+          isPositive={kpis.rate !== null}
           clickable={true}
           onClick={() => onNavigate('reporting')}
         />
@@ -188,13 +191,13 @@ export default function CockpitInfluence({ data, onNavigate }) {
         <AnalyticsKpiCard
           title="DONNÉES INCOMPLÈTES"
           tag="⚠️ Données"
-          tagColor="tag-yellow"
-          value={formatNumber(kpis.incomplete)}
-          sparklineData={[12, 10, 8, 7, 6, 5, kpis.incomplete || 4]}
+          tagColor={kpis.incomplete > 0 ? 'tag-yellow' : 'tag-green'}
+          value={formatNumber(kpis.incomplete || 0)}
+          sparklineData={null}
           sparklineColor="#F39C12"
-          trend="-28.5%"
-          trendLabel="en cours de collecte"
-          isPositive={true}
+          trend={kpis.incomplete > 0 ? `${kpis.incomplete} à enrichir` : 'Données complètes'}
+          trendLabel={kpis.incomplete > 0 ? "en cours de collecte" : "Tous les livrables sont complets"}
+          isPositive={kpis.incomplete === 0}
           clickable={true}
           onClick={() => onNavigate('reporting')}
         />
@@ -203,11 +206,11 @@ export default function CockpitInfluence({ data, onNavigate }) {
           title="ARBITRAGES DOUBLONS"
           tag="🎯 Qualité"
           tagColor={kpis.doublons > 0 ? 'tag-red' : 'tag-green'}
-          value={formatNumber(kpis.doublons)}
-          sparklineData={[6, 5, 4, 3, 2, 2, kpis.doublons || 2]}
+          value={formatNumber(kpis.doublons || 0)}
+          sparklineData={null}
           sparklineColor={kpis.doublons > 0 ? '#E74C3C' : '#27AE60'}
-          trend={kpis.doublons > 0 ? '2 à arbitrer' : '0 doublon'}
-          trendLabel="candidats en attente"
+          trend={kpis.doublons > 0 ? `${kpis.doublons} à arbitrer` : '0 doublon'}
+          trendLabel={kpis.doublons > 0 ? "candidats en attente" : "Aucun doublon détecté"}
           isPositive={kpis.doublons === 0}
           clickable={true}
           onClick={() => onNavigate('talents')}
@@ -325,50 +328,58 @@ export default function CockpitInfluence({ data, onNavigate }) {
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {campaignsSummary.slice(0, 4).map(({ camp, total, talents, vues, eng, riskCount }) => (
-                <div
-                  key={camp.id}
-                  onClick={() => onNavigate('campagnes')}
-                  style={{
-                    padding: '12px 14px',
-                    borderRadius: 10,
-                    border: '1px solid #E5E7EB',
-                    background: '#FAFAFC',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease'
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontSize: 14 }}>🎯</span>
-                      <strong style={{ fontSize: 13, color: 'var(--dark)' }}>{camp.name}</strong>
+            {campaignsSummary.length === 0 ? (
+              <div style={{ padding: '36px 16px', textAlign: 'center', color: 'var(--muted)', background: '#FAFAFC', borderRadius: 8, border: '1px dashed #E0E0E0' }}>
+                <div style={{ fontSize: 28, marginBottom: 6 }}>🗂</div>
+                <div style={{ fontWeight: 700, color: 'var(--dark)' }}>Aucune activation ni campagne enregistrée</div>
+                <div style={{ fontSize: 11, marginTop: 4 }}>Les opérations commerciales et dispositifs réels s'afficheront ici automatiquement sans données exemples.</div>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {campaignsSummary.slice(0, 4).map(({ camp, total, talents, vues, eng, riskCount }) => (
+                  <div
+                    key={camp.id}
+                    onClick={() => onNavigate('campagnes')}
+                    style={{
+                      padding: '12px 14px',
+                      borderRadius: 10,
+                      border: '1px solid #E5E7EB',
+                      background: '#FAFAFC',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ fontSize: 14 }}>🎯</span>
+                        <strong style={{ fontSize: 13, color: 'var(--dark)' }}>{camp.name}</strong>
+                      </div>
+                      {riskCount > 0 ? (
+                        <span className="tag tag-yellow" style={{ fontSize: 10 }}>
+                          {riskCount} point(s) à surveiller
+                        </span>
+                      ) : (
+                        <span className="tag tag-green" style={{ fontSize: 10 }}>
+                          ✓ Nominal
+                        </span>
+                      )}
                     </div>
-                    {riskCount > 0 ? (
-                      <span className="tag tag-yellow" style={{ fontSize: 10 }}>
-                        {riskCount} point(s) à surveiller
-                      </span>
-                    ) : (
-                      <span className="tag tag-green" style={{ fontSize: 10 }}>
-                        ✓ Nominal
-                      </span>
-                    )}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, fontSize: 11.5, color: 'var(--muted)' }}>
+                      <span>📄 <strong>{total}</strong> livrables</span>
+                      <span>👥 <strong>{talents}</strong> talents</span>
+                      <span>👁 <strong>{vues > 0 ? formatNumber(vues) : '0'}</strong> vues</span>
+                      <span>❤️ <strong>{eng > 0 ? formatNumber(eng) : '0'}</strong> réact.</span>
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, fontSize: 11.5, color: 'var(--muted)' }}>
-                    <span>📄 <strong>{total}</strong> livrables</span>
-                    <span>👥 <strong>{talents}</strong> talents</span>
-                    <span>👁 <strong>{vues > 0 ? formatNumber(vues) : 'Non mesuré'}</strong> vues</span>
-                    <span>❤️ <strong>{eng > 0 ? formatNumber(eng) : '—'}</strong> réact.</span>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div style={{ paddingTop: 14, marginTop: 14, borderTop: '1px solid #F0F0F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 11.5 }}>
             <span style={{ color: 'var(--muted)' }}>Gouvernance McCann × Orange</span>
             <span className="tag tag-orange" style={{ fontSize: 11 }}>
-              {data.campaigns.length} dispositifs au plan
+              {campaignsSummary.length} dispositif(s) au plan
             </span>
           </div>
         </div>
