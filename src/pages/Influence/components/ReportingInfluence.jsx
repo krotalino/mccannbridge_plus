@@ -63,7 +63,7 @@ export default function ReportingInfluence({ data, onAddInsight, onRemoveInsight
     const rate = viewsWithEng > 0 ? Math.round((engCalc / viewsWithEng) * 10000) / 100 : null;
     const completenessRate = filteredDeliverables.length > 0
       ? Math.round((completeCount / filteredDeliverables.length) * 100)
-      : 100;
+      : null;
 
     return {
       publications: filteredDeliverables.length,
@@ -178,60 +178,60 @@ export default function ReportingInfluence({ data, onAddInsight, onRemoveInsight
           title="PUBLICATIONS ANALYSÉES"
           tag="📄 Périmètre"
           tagColor="tag-blue"
-          value={formatNumber(metrics.publications)}
-          sparklineData={[15, 20, 28, 35, 45, 50, metrics.publications || 60]}
+          value={formatNumber(metrics.publications || 0)}
+          sparklineData={null}
           sparklineColor="#2980B9"
-          trend="+16.5%"
-          trendLabel="sur l'échantillon filtré"
-          isPositive={true}
+          trend={metrics.publications > 0 ? `${metrics.publications} analysée(s)` : '0 publication'}
+          trendLabel={metrics.publications > 0 ? "sur l'échantillon filtré" : "Aucun livrable dans le filtre"}
+          isPositive={metrics.publications > 0}
         />
 
         <AnalyticsKpiCard
           title="VUES TOTALES CUMULÉES"
           tag="👁 Portée"
           tagColor="tag-orange"
-          value={metrics.views > 0 ? (metrics.views >= 1000000 ? `${(metrics.views / 1000000).toFixed(1)}M` : formatNumber(metrics.views)) : '14.8M'}
-          sparklineData={[5, 8, 12, 14, 15, 18, 22]}
+          value={metrics.views > 0 ? (metrics.views >= 1000000 ? `${(metrics.views / 1000000).toFixed(1)}M` : formatNumber(metrics.views)) : '0'}
+          sparklineData={null}
           sparklineColor="#FF7900"
-          trend="+14.2%"
-          trendLabel="impressions certifiées"
-          isPositive={true}
+          trend={metrics.views > 0 ? formatNumber(metrics.views) : '—'}
+          trendLabel={metrics.views > 0 ? "impressions certifiées" : "Aucune vue enregistrée"}
+          isPositive={metrics.views > 0}
         />
 
         <AnalyticsKpiCard
           title="ENGAGEMENTS CALCULÉS"
           tag="❤️ Intérêt"
           tagColor="tag-purple"
-          value={metrics.engCalc > 0 ? (metrics.engCalc >= 1000000 ? `${(metrics.engCalc / 1000000).toFixed(1)}M` : formatNumber(metrics.engCalc)) : '685K'}
-          sparklineData={[120, 180, 250, 360, 480, 590, 685]}
+          value={metrics.engCalc > 0 ? (metrics.engCalc >= 1000000 ? `${(metrics.engCalc / 1000000).toFixed(1)}M` : formatNumber(metrics.engCalc)) : '0'}
+          sparklineData={null}
           sparklineColor="#8E44AD"
-          trend="+12.8%"
-          trendLabel="likes, coms & partages"
-          isPositive={true}
+          trend={metrics.engCalc > 0 ? formatNumber(metrics.engCalc) : '—'}
+          trendLabel={metrics.engCalc > 0 ? "likes, coms & partages" : "0 interaction enregistrée"}
+          isPositive={metrics.engCalc > 0}
         />
 
         <AnalyticsKpiCard
           title="TAUX D'ENGAGEMENT SUR VUES"
           tag="📈 Efficacité"
-          tagColor="tag-green"
-          value={metrics.rate !== null ? `${metrics.rate}%` : '4.8%'}
-          sparklineData={[3.8, 4.1, 4.0, 4.4, 4.6, 4.7, 4.8]}
+          tagColor={metrics.rate !== null ? 'tag-green' : 'tag-yellow'}
+          value={metrics.rate !== null ? `${metrics.rate}%` : '—'}
+          sparklineData={null}
           sparklineColor="#27AE60"
-          trend="+0.6 pt"
-          trendLabel="qualité des interactions"
-          isPositive={true}
+          trend={metrics.rate !== null ? `${metrics.rate}% effectif` : '—'}
+          trendLabel={metrics.rate !== null ? "qualité des interactions" : "En attente de livrables et vues"}
+          isPositive={metrics.rate !== null}
         />
 
         <AnalyticsKpiCard
           title="INDICE DE COMPLÉTUDE"
           tag="🎯 Qualité"
-          tagColor={metrics.completenessRate >= 80 ? 'tag-green' : 'tag-yellow'}
-          value={`${metrics.completenessRate}%`}
-          sparklineData={[60, 65, 70, 78, 82, 85, metrics.completenessRate]}
-          sparklineColor={metrics.completenessRate >= 80 ? '#27AE60' : '#F39C12'}
-          trend="Données fiables"
-          trendLabel="métriques auditées"
-          isPositive={metrics.completenessRate >= 80}
+          tagColor={metrics.completenessRate !== null && metrics.completenessRate >= 80 ? 'tag-green' : 'tag-yellow'}
+          value={metrics.completenessRate !== null ? `${metrics.completenessRate}%` : '—'}
+          sparklineData={null}
+          sparklineColor={metrics.completenessRate !== null && metrics.completenessRate >= 80 ? '#27AE60' : '#F39C12'}
+          trend={metrics.completenessRate !== null ? (metrics.completenessRate >= 80 ? 'Données fiables' : `${metrics.completenessRate}% auditées`) : '—'}
+          trendLabel={metrics.completenessRate !== null ? "métriques auditées" : "Aucun livrable à auditer"}
+          isPositive={metrics.completenessRate !== null && metrics.completenessRate >= 80}
         />
       </div>
 

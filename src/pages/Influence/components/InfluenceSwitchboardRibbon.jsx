@@ -71,8 +71,8 @@ export default function InfluenceSwitchboardRibbon({
       id: 'reporting',
       label: 'Reporting & Analyses',
       icon: '📈',
-      metric: kpis?.rate !== null && kpis?.rate !== undefined ? `${kpis.rate}% tx eng.` : '4.8% tx eng.',
-      sub: `${kpis?.views > 0 ? (kpis.views / 1000000).toFixed(1) + 'M vues' : '14.8M reach'}`,
+      metric: kpis?.rate !== null && kpis?.rate !== undefined ? `${kpis.rate}% tx eng.` : '— tx eng.',
+      sub: `${kpis?.views > 0 ? (kpis.views >= 1000000 ? `${(kpis.views / 1000000).toFixed(1)}M vues` : `${formatNumber(kpis.views)} vues`) : '0 vue mesurée'}`,
       color: '#8E44AD'
     },
     {
@@ -174,13 +174,13 @@ export default function InfluenceSwitchboardRibbon({
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: 11, opacity: 0.7 }}>Portée Cumulée (Reach)</div>
             <div style={{ fontSize: 15, fontWeight: 800, color: '#FF9D3D' }}>
-              {kpis?.views > 0 ? formatNumber(kpis.views) : '14.8M'} d'impressions
+              {kpis?.views > 0 ? (kpis.views >= 1000000 ? `${(kpis.views / 1000000).toFixed(1)}M` : formatNumber(kpis.views)) : '0'} d'impressions
             </div>
           </div>
           <div style={{ textAlign: 'right', borderLeft: '1px solid rgba(255,255,255,0.15)', paddingLeft: 16 }}>
             <div style={{ fontSize: 11, opacity: 0.7 }}>Engagements Cumulés</div>
             <div style={{ fontSize: 15, fontWeight: 800, color: '#2ECC71' }}>
-              {kpis?.engagement > 0 ? formatNumber(kpis.engagement) : '685 400'} réactions
+              {kpis?.engagement > 0 ? (kpis.engagement >= 1000000 ? `${(kpis.engagement / 1000000).toFixed(1)}M` : formatNumber(kpis.engagement)) : '0'} réaction{kpis?.engagement > 1 ? 's' : ''}
             </div>
           </div>
         </div>
