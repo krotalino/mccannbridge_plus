@@ -26,6 +26,7 @@ export default function PerformancePublicationModal({
     engagement_reported: '',
     status: 'publie',
   });
+  const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
     if (deliverable) {
@@ -60,13 +61,14 @@ export default function PerformancePublicationModal({
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!form.title.trim()) {
-      alert('Veuillez saisir un titre pour la publication.');
+      setErrorMsg('Veuillez saisir un titre pour la publication.');
       return;
     }
     if (!form.talent_name.trim()) {
-      alert('Veuillez renseigner le talent associé.');
+      setErrorMsg('Veuillez renseigner le talent associé.');
       return;
     }
+    setErrorMsg('');
 
     const payload = {
       ...(deliverable || {}),
@@ -135,6 +137,12 @@ export default function PerformancePublicationModal({
 
         {/* Formulaire avec scroll */}
         <form onSubmit={handleSubmit} className="p-20 overflow-y-auto flex-1 flex flex-col gap-16">
+          {errorMsg && (
+            <div className="p-8 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
+              ⚠️ {errorMsg}
+            </div>
+          )}
+
           {/* Bloc 1 : Métadonnées générales */}
           <div className="p-12 rounded-lg bg-gray-50 border border-gray-200">
             <h4 className="text-xs font-bold text-gray-700 uppercase mb-8 flex items-center gap-4">

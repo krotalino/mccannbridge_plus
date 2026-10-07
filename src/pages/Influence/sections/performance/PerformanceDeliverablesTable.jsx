@@ -18,7 +18,6 @@ export default function PerformanceDeliverablesTable({
   // Fonction d'export CSV conforme et respectant les filtres actifs
   const handleExportCSV = () => {
     if (deliverables.length === 0) {
-      alert('Aucune donnée à exporter avec les filtres actuels.');
       return;
     }
 

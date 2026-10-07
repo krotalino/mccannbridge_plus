@@ -408,6 +408,56 @@ export default function InfluencePerformance({ influencers = [], setInfluencers 
       }));
     }
 
+    // Synchronisation bidirectionnelle directe avec le Calendrier d'Influence
+    try {
+      const calKey = 'bridge_influence_calendar_v1';
+      const rawCal = localStorage.getItem(calKey);
+      if (rawCal) {
+        const parsedCal = JSON.parse(rawCal);
+        if (Array.isArray(parsedCal)) {
+          let calModified = false;
+          const updatedCal = parsedCal.map(p => {
+            if (
+              p && (
+                p.id === delivData.id ||
+                p.deliverableId === delivData.id ||
+                (p.title && delivData.title && p.title.trim().toLowerCase() === delivData.title.trim().toLowerCase())
+              )
+            ) {
+              calModified = true;
+              const viewsVal = toSave.metrics?.views ?? p.metrics?.views ?? 0;
+              const likesVal = toSave.metrics?.likes ?? p.metrics?.likes ?? 0;
+              const commsVal = toSave.metrics?.comments ?? p.metrics?.comments ?? 0;
+              const sharesVal = toSave.metrics?.shares ?? p.metrics?.shares ?? 0;
+              const engCalc = (Number(likesVal) || 0) + (Number(commsVal) || 0) + (Number(sharesVal) || 0);
+              const rateStr = toSave.metrics?.engagement_rate !== null && toSave.metrics?.engagement_rate !== undefined
+                ? `${toSave.metrics.engagement_rate}%`
+                : (viewsVal > 0 ? `${((engCalc / viewsVal) * 100).toFixed(2)}%` : (p.metrics?.rate || '—'));
+
+              return {
+                ...p,
+                metrics: {
+                  views: Number(viewsVal) || 0,
+                  likes: Number(likesVal) || 0,
+                  comments: Number(commsVal) || 0,
+                  shares: Number(sharesVal) || 0,
+                  rate: rateStr,
+                  engagement_calculated: engCalc,
+                  engagement_rate: toSave.metrics?.engagement_rate ?? null,
+                }
+              };
+            }
+            return p;
+          });
+          if (calModified) {
+            localStorage.setItem(calKey, JSON.stringify(updatedCal));
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Sync calendar error from performance:', e);
+    }
+
     setEditingDeliverable(null);
     setShowAddDeliverableModal(false);
   };

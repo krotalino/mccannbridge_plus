@@ -43,13 +43,59 @@ const getInitialInfluencePosts = () => {
   return [];
 };
 
+// Trouver le livrable correspondant dans influenceDeliverables (source de vérité pour Performances & KPIs)
+export const findMatchingDeliverable = (post, deliverables = []) => {
+  if (!post || !Array.isArray(deliverables)) return null;
+  return deliverables.find(d =>
+    d &&
+    (d.id === post.id ||
+     d.id === post.deliverableId ||
+     post.deliverableId === d.id ||
+     (d.title && post.title && d.title.trim().toLowerCase() === post.title.trim().toLowerCase()))
+  ) || null;
+};
+
+// Récupération certifiée et normalisée des métriques de performance
+export const getPostCertifiedMetrics = (post, deliverables = []) => {
+  if (!post) {
+    return { views: 0, likes: 0, comments: 0, shares: 0, calculatedEngagement: 0, rate: '—' };
+  }
+  const matchingDeliv = findMatchingDeliverable(post, deliverables);
+
+  // Si le livrable existe dans la section Performances & KPIs, ses chiffres font foi
+  const views = matchingDeliv?.metrics?.views ?? post?.metrics?.views ?? 0;
+  const likes = matchingDeliv?.metrics?.likes ?? post?.metrics?.likes ?? 0;
+  const comments = matchingDeliv?.metrics?.comments ?? post?.metrics?.comments ?? 0;
+  const shares = matchingDeliv?.metrics?.shares ?? post?.metrics?.shares ?? 0;
+  const calculatedEngagement = (Number(likes) || 0) + (Number(comments) || 0) + (Number(shares) || 0);
+
+  let engagementRate = '—';
+  if (matchingDeliv?.metrics?.engagement_rate !== null && matchingDeliv?.metrics?.engagement_rate !== undefined) {
+    engagementRate = `${matchingDeliv.metrics.engagement_rate}%`;
+  } else if (Number(views) > 0) {
+    engagementRate = `${((calculatedEngagement / Number(views)) * 100).toFixed(2)}%`;
+  } else if (post?.metrics?.rate && post.metrics.rate !== '—') {
+    engagementRate = post.metrics.rate;
+  }
+
+  return {
+    views: Number(views) || 0,
+    likes: Number(likes) || 0,
+    comments: Number(comments) || 0,
+    shares: Number(shares) || 0,
+    calculatedEngagement,
+    rate: engagementRate,
+    matchingDeliverable: matchingDeliv
+  };
+};
+
 export default function InfluenceCalendrier({
   influencers = [],
   setInfluencers,
   initialInfluencerId = null,
   onSelectInfluencer
 }) {
-  const { addInfluenceDeliverable, updateInfluenceDeliverable, deleteInfluenceDeliverable } = useApp();
+  const { influenceDeliverables = [], addInfluenceDeliverable, updateInfluenceDeliverable, deleteInfluenceDeliverable } = useApp();
 
   // Liste garantie d'influenceurs
   const effectiveInfluencers = useMemo(() => {
@@ -82,6 +128,77 @@ export default function InfluenceCalendrier({
       }
     } catch (e) {}
   }, []);
+
+  // Synchronisation bidirectionnelle avec influenceDeliverables (Section Performances & KPIs)
+  useEffect(() => {
+    if (!Array.isArray(influenceDeliverables)) return;
+    const realDelivs = influenceDeliverables.filter(d =>
+      d &&
+      d.isNewlyCreated === true &&
+      !d.isDemo &&
+      !d.isExample &&
+      d.metrics?.views !== 205000 &&
+      d.views !== 205000
+    );
+
+    if (realDelivs.length === 0) return;
+
+    setPosts(prevPosts => {
+      let hasChanges = false;
+      const existingIds = new Set(prevPosts.map(p => p.id));
+      const newlyAdded = [];
+
+      realDelivs.forEach(deliv => {
+        if (!existingIds.has(deliv.id)) {
+          hasChanges = true;
+          const pubDate = deliv.published_at || deliv.date_raw || '2026-10-06';
+          const dayNum = parseInt(pubDate.split('-')[2], 10) || 6;
+          const matchedInf = effectiveInfluencers.find(i =>
+            String(i.id) === String(deliv.talent_id) ||
+            i.name === deliv.talent_name ||
+            i.pseudo === deliv.talent_name
+          );
+
+          newlyAdded.push({
+            id: deliv.id,
+            influencerId: matchedInf?.id || deliv.talent_id || '',
+            influencerName: deliv.talent_name || matchedInf?.name || 'Influenceur Orange',
+            influencerPseudo: matchedInf?.pseudo || (deliv.talent_name ? `@${deliv.talent_name.toLowerCase().replace(/\s+/g, '')}` : '@talent'),
+            title: deliv.title,
+            canal: deliv.platform ? (deliv.platform.charAt(0).toUpperCase() + deliv.platform.slice(1)) : 'Instagram',
+            format: deliv.content_type || 'Reel dynamique',
+            date: pubDate,
+            time: '12:00',
+            day: dayNum,
+            status: deliv.status === 'publie' ? 'PUBLISHED' : 'SCHEDULED',
+            campaign: deliv.campaign_name || '',
+            client: 'Orange Cameroun',
+            desc: deliv.content_subject || '',
+            url: deliv.url || '',
+            image: '',
+            isSponsored: false,
+            metrics: {
+              views: deliv.metrics?.views || 0,
+              likes: deliv.metrics?.likes || 0,
+              comments: deliv.metrics?.comments || 0,
+              shares: deliv.metrics?.shares || 0,
+              rate: deliv.metrics?.engagement_rate ? `${deliv.metrics.engagement_rate}%` : '—'
+            },
+            isNewlyCreated: true
+          });
+        }
+      });
+
+      if (hasChanges && newlyAdded.length > 0) {
+        const merged = [...newlyAdded, ...prevPosts];
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+        } catch (e) {}
+        return merged;
+      }
+      return prevPosts;
+    });
+  }, [influenceDeliverables, effectiveInfluencers]);
 
   // Sauvegarde persistante (seules les données nouvellement enregistrées sont conservées)
   const savePosts = (newPosts) => {
@@ -382,6 +499,11 @@ export default function InfluenceCalendrier({
         url: '',
         image: '',
         isSponsored: false,
+        views: '',
+        likes: '',
+        comments: '',
+        shares: '',
+        rate: '',
         metrics: { views: 0, likes: 0, comments: 0, shares: 0, rate: '—' },
         isNewlyCreated: true
       }
@@ -389,12 +511,27 @@ export default function InfluenceCalendrier({
   };
 
   const handleOpenEditModal = (post) => {
+    const certMetrics = getPostCertifiedMetrics(post, influenceDeliverables);
     setEditModalState({
       mode: 'edit',
       data: {
         ...post,
         date: getPostDateStr(post),
-        day: post.day || (post.date ? parseInt(post.date.split('-')[2], 10) : 6)
+        day: post.day || (post.date ? parseInt(post.date.split('-')[2], 10) : 6),
+        // Chiffres certifiés pré-remplis identiques à Performances & KPIs
+        views: certMetrics.views,
+        likes: certMetrics.likes,
+        comments: certMetrics.comments,
+        shares: certMetrics.shares,
+        rate: certMetrics.rate,
+        metrics: {
+          views: certMetrics.views,
+          likes: certMetrics.likes,
+          comments: certMetrics.comments,
+          shares: certMetrics.shares,
+          engagement_calculated: certMetrics.calculatedEngagement,
+          rate: certMetrics.rate
+        }
       }
     });
     if (viewModalPost) setViewModalPost(null);
@@ -407,6 +544,35 @@ export default function InfluenceCalendrier({
 
     // Récupérer les infos de l'influenceur
     const matchedInf = effectiveInfluencers.find(i => String(i.id) === String(formData.influencerId));
+
+    // Normalisation des métriques manuelles éditées
+    const viewsNum = formData.views !== '' && formData.views !== undefined ? Number(formData.views) : (formData.metrics?.views || 0);
+    const likesNum = formData.likes !== '' && formData.likes !== undefined ? Number(formData.likes) : (formData.metrics?.likes || 0);
+    const commentsNum = formData.comments !== '' && formData.comments !== undefined ? Number(formData.comments) : (formData.metrics?.comments || 0);
+    const sharesNum = formData.shares !== '' && formData.shares !== undefined ? Number(formData.shares) : (formData.metrics?.shares || 0);
+    const calcEngagement = (Number(likesNum) || 0) + (Number(commentsNum) || 0) + (Number(sharesNum) || 0);
+
+    let rateNum = null;
+    let rateStr = formData.rate;
+    if (viewsNum > 0) {
+      rateNum = Number(((calcEngagement / viewsNum) * 100).toFixed(2));
+      if (!rateStr || rateStr === '—') {
+        rateStr = `${rateNum}%`;
+      }
+    } else {
+      rateStr = rateStr || '—';
+    }
+
+    const updatedMetrics = {
+      views: viewsNum,
+      likes: likesNum,
+      comments: commentsNum,
+      shares: sharesNum,
+      engagement_calculated: calcEngagement,
+      engagement_rate: rateNum,
+      rate: rateStr
+    };
+
     const finalPost = {
       ...formData,
       isNewlyCreated: true,
@@ -414,36 +580,86 @@ export default function InfluenceCalendrier({
       influencerPseudo: matchedInf?.pseudo || formData.influencerPseudo || '@orange_talent',
       day: formData.date ? parseInt(formData.date.split('-')[2], 10) : formData.day || 6,
       url: (formData.url || '').trim(),
+      metrics: updatedMetrics,
       updatedAt: new Date().toISOString()
+    };
+
+    // Payload rigoureusement identique pour la section Performances & KPIs
+    const deliverablePayload = {
+      id: finalPost.id,
+      deliverableId: finalPost.id,
+      title: finalPost.title,
+      talent_id: finalPost.influencerId,
+      talent_name: finalPost.influencerName,
+      campaign_name: finalPost.campaign || 'Campagne sans nom',
+      platform: (finalPost.canal || 'instagram').toLowerCase(),
+      content_type: (finalPost.format || 'video').toLowerCase(),
+      content_subject: finalPost.campaign || finalPost.title,
+      published_at: finalPost.date,
+      date_raw: finalPost.date,
+      url: finalPost.url,
+      status: finalPost.status === 'PUBLISHED' ? 'publie' : 'programme',
+      isNewlyCreated: true,
+      isReal: true,
+      isDemo: false,
+      isExample: false,
+      metrics: {
+        views: viewsNum,
+        likes: likesNum,
+        comments: commentsNum,
+        shares: sharesNum,
+        engagement_reported: null,
+        engagement_calculated: calcEngagement,
+        engagement_rate: rateNum,
+      }
     };
 
     if (editModalState.mode === 'create') {
       const updated = [finalPost, ...posts];
       savePosts(updated);
       if (addInfluenceDeliverable) {
-        addInfluenceDeliverable({
-          id: finalPost.id,
-          talent_id: finalPost.influencerId,
-          title: finalPost.title,
-          platform: finalPost.canal.toLowerCase(),
-          format: finalPost.format,
-          status: finalPost.status === 'PUBLISHED' ? 'publie' : 'programme',
-          url: finalPost.url,
-          isNewlyCreated: true
-        });
+        addInfluenceDeliverable(deliverablePayload);
       }
-      showToast('Publication influence planifiée avec succès !');
+      showToast('Publication planifiée et KPIs enregistrés avec succès !');
     } else {
       const updated = posts.map(p => p.id === finalPost.id ? finalPost : p);
       savePosts(updated);
-      if (updateInfluenceDeliverable) {
-        updateInfluenceDeliverable(finalPost.id, {
-          title: finalPost.title,
-          url: finalPost.url,
-          status: finalPost.status === 'PUBLISHED' ? 'publie' : 'programme'
-        });
+      // Synchronisation directe avec influenceDeliverables
+      const existingDeliv = (influenceDeliverables || []).find(d =>
+        d && (d.id === finalPost.id || (d.talent_name === finalPost.influencerName && d.title === finalPost.title))
+      );
+      if (existingDeliv && updateInfluenceDeliverable) {
+        updateInfluenceDeliverable(existingDeliv.id, deliverablePayload);
+      } else if (updateInfluenceDeliverable) {
+        updateInfluenceDeliverable(finalPost.id, deliverablePayload);
+      } else if (addInfluenceDeliverable) {
+        addInfluenceDeliverable(deliverablePayload);
       }
-      showToast('Publication mise à jour !');
+      showToast('Publication et performances certifiées mises à jour !');
+    }
+
+    // Synchronisation avec influencers.publicationStats
+    if (setInfluencers) {
+      setInfluencers(prev => (prev || []).map(inf => {
+        if (
+          String(inf.id) === String(finalPost.influencerId) ||
+          inf.name === finalPost.influencerName ||
+          inf.pseudo === finalPost.influencerPseudo
+        ) {
+          const stats = Array.isArray(inf.publicationStats) ? inf.publicationStats : [];
+          const exists = stats.some(s => s.id === finalPost.id);
+          const updatedStats = exists
+            ? stats.map(s => s.id === finalPost.id ? { ...s, ...deliverablePayload, vues: viewsNum, views: viewsNum, likes: likesNum, commentaires: commentsNum, comments: commentsNum, partages: sharesNum, shares: sharesNum, tauxEngagement: rateNum } : s)
+            : [{ ...deliverablePayload, vues: viewsNum, views: viewsNum, likes: likesNum, commentaires: commentsNum, comments: commentsNum, partages: sharesNum, shares: sharesNum, tauxEngagement: rateNum }, ...stats];
+          return { ...inf, publicationStats: updatedStats };
+        }
+        return inf;
+      }));
+    }
+
+    // Mettre à jour viewModalPost s'il s'agit de la même publication
+    if (viewModalPost && viewModalPost.id === finalPost.id) {
+      setViewModalPost(finalPost);
     }
 
     setEditModalState(null);
@@ -475,20 +691,35 @@ export default function InfluenceCalendrier({
   };
 
   const handleQuickPublish = (post) => {
+    const certMetrics = getPostCertifiedMetrics(post, influenceDeliverables);
     const updatedPost = {
       ...post,
       isNewlyCreated: true,
       status: 'PUBLISHED',
       metrics: {
-        views: post.metrics?.views || 0,
-        likes: post.metrics?.likes || 0,
-        comments: post.metrics?.comments || 0,
-        shares: post.metrics?.shares || 0,
-        rate: post.metrics?.rate || '—'
+        views: certMetrics.views,
+        likes: certMetrics.likes,
+        comments: certMetrics.comments,
+        shares: certMetrics.shares,
+        rate: certMetrics.rate,
+        engagement_calculated: certMetrics.calculatedEngagement
       }
     };
     const updated = posts.map(p => p.id === post.id ? updatedPost : p);
     savePosts(updated);
+    if (updateInfluenceDeliverable) {
+      updateInfluenceDeliverable(post.id, {
+        status: 'publie',
+        metrics: {
+          views: certMetrics.views,
+          likes: certMetrics.likes,
+          comments: certMetrics.comments,
+          shares: certMetrics.shares,
+          engagement_calculated: certMetrics.calculatedEngagement,
+          engagement_rate: certMetrics.views > 0 ? Number(((certMetrics.calculatedEngagement / certMetrics.views) * 100).toFixed(2)) : null
+        }
+      });
+    }
     setViewModalPost(updatedPost);
     showToast('Statut mis à jour : PUBLIÉ en direct ✅');
   };
@@ -505,7 +736,7 @@ export default function InfluenceCalendrier({
         }));
       }
     } catch (err) {
-      alert(err.message || 'Erreur lors du traitement de l\'image.');
+      showToast(err.message || 'Erreur lors du traitement de l\'image.');
     }
   };
 
@@ -967,28 +1198,34 @@ export default function InfluenceCalendrier({
                           )}
                         </div>
 
-                        {/* Métriques si post publié */}
-                        {post.status === 'PUBLISHED' && post.metrics?.views > 0 && (
-                          <div 
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                              fontSize: 10.5,
-                              color: '#94A3B8',
-                              background: 'rgba(255,255,255,0.03)',
-                              padding: '4px 8px',
-                              borderRadius: 6,
-                              margin: '6px 0',
-                              border: '1px solid rgba(255,255,255,0.05)'
-                            }}
-                          >
-                            <span>👁 <strong>{post.metrics.views.toLocaleString()}</strong> vues</span>
-                            <span>❤️ <strong>{post.metrics.likes.toLocaleString()}</strong></span>
-                            <span>💬 <strong>{post.metrics.comments}</strong></span>
-                            <span style={{ color: '#2ECC71', fontWeight: 700 }}>{post.metrics.rate}</span>
-                          </div>
-                        )}
+                        {/* Métriques certifiées si post publié ou avec vues */}
+                        {(() => {
+                          const postMetrics = getPostCertifiedMetrics(post, influenceDeliverables);
+                          if (postMetrics.views > 0 || post.status === 'PUBLISHED') {
+                            return (
+                              <div 
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'space-between',
+                                  fontSize: 10.5,
+                                  color: '#CBD5E1',
+                                  background: 'rgba(0,0,0,0.25)',
+                                  padding: '4px 8px',
+                                  borderRadius: 6,
+                                  margin: '6px 0',
+                                  border: '1px solid rgba(255,255,255,0.05)'
+                                }}
+                              >
+                                <span>👁 <strong>{postMetrics.views.toLocaleString()}</strong> vues</span>
+                                <span>❤️ <strong>{postMetrics.likes.toLocaleString()}</strong></span>
+                                <span>💬 <strong>{postMetrics.comments.toLocaleString()}</strong></span>
+                                <span style={{ color: '#2ECC71', fontWeight: 700 }}>{postMetrics.rate}</span>
+                              </div>
+                            );
+                          }
+                          return null;
+                        })()}
 
                         <div className="adv-post-footer">
                           <div className="adv-post-actions-left">
@@ -1303,40 +1540,68 @@ export default function InfluenceCalendrier({
               </div>
             </div>
 
-            {/* Métriques si publié */}
-            {viewModalPost.status === 'PUBLISHED' && (
-              <div style={{ marginBottom: 20 }}>
-                <div style={{ fontSize: 12, color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase', marginBottom: 8 }}>
-                  Performances Réelles Certifiées
+            {/* Métriques certifiées de performance */}
+            {(() => {
+              const certMetrics = getPostCertifiedMetrics(viewModalPost, influenceDeliverables);
+              const hasMetrics = certMetrics.views > 0 || certMetrics.likes > 0 || viewModalPost.status === 'PUBLISHED';
+              if (!hasMetrics) return null;
+
+              return (
+                <div style={{ marginBottom: 20 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexWrap: 'wrap', gap: 6 }}>
+                    <div style={{ fontSize: 12, color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase' }}>
+                      Performances Réelles Certifiées
+                    </div>
+                    <span
+                      style={{
+                        fontSize: 10.5,
+                        color: '#38BDF8',
+                        fontWeight: 700,
+                        padding: '2px 8px',
+                        borderRadius: 4,
+                        background: 'rgba(56, 189, 248, 0.12)',
+                        border: '1px solid rgba(56, 189, 248, 0.25)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4
+                      }}
+                    >
+                      ✓ Chiffres certifiés (Section Performances & KPIs)
+                    </span>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+                    <div style={{ padding: 10, borderRadius: 8, background: 'rgba(255,255,255,0.04)', textAlign: 'center', border: '1px solid rgba(255,255,255,0.06)' }}>
+                      <div style={{ fontSize: 11, color: '#94A3B8' }}>VUES TOTALES</div>
+                      <div style={{ fontSize: 16, fontWeight: 900, color: '#FF7900', marginTop: 2 }}>
+                        {certMetrics.views > 0 ? certMetrics.views.toLocaleString() : (certMetrics.views === 0 ? '0' : '—')}
+                      </div>
+                    </div>
+                    <div style={{ padding: 10, borderRadius: 8, background: 'rgba(255,255,255,0.04)', textAlign: 'center', border: '1px solid rgba(255,255,255,0.06)' }}>
+                      <div style={{ fontSize: 11, color: '#94A3B8' }}>LIKES</div>
+                      <div style={{ fontSize: 16, fontWeight: 900, color: '#FFFFFF', marginTop: 2 }}>
+                        {certMetrics.likes > 0 ? certMetrics.likes.toLocaleString() : (certMetrics.likes === 0 ? '0' : '—')}
+                      </div>
+                    </div>
+                    <div style={{ padding: 10, borderRadius: 8, background: 'rgba(255,255,255,0.04)', textAlign: 'center', border: '1px solid rgba(255,255,255,0.06)' }}>
+                      <div style={{ fontSize: 11, color: '#94A3B8' }}>COMMENTAIRES</div>
+                      <div style={{ fontSize: 16, fontWeight: 900, color: '#FFFFFF', marginTop: 2 }}>
+                        {certMetrics.comments > 0 ? certMetrics.comments.toLocaleString() : (certMetrics.comments === 0 ? '0' : '—')}
+                      </div>
+                    </div>
+                    <div style={{ padding: 10, borderRadius: 8, background: 'rgba(255,255,255,0.04)', textAlign: 'center', border: '1px solid rgba(255,255,255,0.06)' }}>
+                      <div style={{ fontSize: 11, color: '#94A3B8' }}>TAUX SUR VUES</div>
+                      <div style={{ fontSize: 16, fontWeight: 900, color: '#2ECC71', marginTop: 2 }}>
+                        {certMetrics.rate || '—'}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ marginTop: 8, display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94A3B8', padding: '0 4px', flexWrap: 'wrap', gap: 6 }}>
+                    <span>Partages certifiés : <strong style={{ color: '#fff' }}>{certMetrics.shares.toLocaleString()}</strong></span>
+                    <span>Engagement cumulé : <strong style={{ color: '#FF7900' }}>{certMetrics.calculatedEngagement.toLocaleString()}</strong> interactions</span>
+                  </div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
-                  <div style={{ padding: 10, borderRadius: 8, background: 'rgba(255,255,255,0.04)', textAlign: 'center' }}>
-                    <div style={{ fontSize: 11, color: '#94A3B8' }}>VUES TOTALES</div>
-                    <div style={{ fontSize: 16, fontWeight: 900, color: '#FF7900', marginTop: 2 }}>
-                      {viewModalPost.metrics?.views?.toLocaleString() || '—'}
-                    </div>
-                  </div>
-                  <div style={{ padding: 10, borderRadius: 8, background: 'rgba(255,255,255,0.04)', textAlign: 'center' }}>
-                    <div style={{ fontSize: 11, color: '#94A3B8' }}>LIKES</div>
-                    <div style={{ fontSize: 16, fontWeight: 900, color: '#FFFFFF', marginTop: 2 }}>
-                      {viewModalPost.metrics?.likes?.toLocaleString() || '—'}
-                    </div>
-                  </div>
-                  <div style={{ padding: 10, borderRadius: 8, background: 'rgba(255,255,255,0.04)', textAlign: 'center' }}>
-                    <div style={{ fontSize: 11, color: '#94A3B8' }}>COMMENTAIRES</div>
-                    <div style={{ fontSize: 16, fontWeight: 900, color: '#FFFFFF', marginTop: 2 }}>
-                      {viewModalPost.metrics?.comments?.toLocaleString() || '—'}
-                    </div>
-                  </div>
-                  <div style={{ padding: 10, borderRadius: 8, background: 'rgba(255,255,255,0.04)', textAlign: 'center' }}>
-                    <div style={{ fontSize: 11, color: '#94A3B8' }}>TAUX SUR VUES</div>
-                    <div style={{ fontSize: 16, fontWeight: 900, color: '#2ECC71', marginTop: 2 }}>
-                      {viewModalPost.metrics?.rate || '—'}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* Actions modale */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.08)', flexWrap: 'wrap', gap: 10 }}>
@@ -1757,7 +2022,7 @@ export default function InfluenceCalendrier({
                   borderRadius: 8,
                   background: 'rgba(255, 121, 0, 0.08)',
                   border: '1px solid rgba(255, 121, 0, 0.25)',
-                  marginBottom: 20,
+                  marginBottom: 16,
                   display: 'flex',
                   alignItems: 'center',
                   gap: 12
@@ -1773,6 +2038,190 @@ export default function InfluenceCalendrier({
                 <label htmlFor="chk-sponsor" style={{ fontSize: 12.5, color: '#FFFFFF', fontWeight: 700, cursor: 'pointer' }}>
                   ⚡ Activer le Sponsoring Média / Boost Ads sur cette publication
                 </label>
+              </div>
+
+              {/* ─── SECTION MODIFICATION MANUELLE DES PERFORMANCES RÉELLES CERTIFIÉES & KPIS ─── */}
+              <div
+                style={{
+                  padding: '16px',
+                  borderRadius: 10,
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(255, 121, 0, 0.35)',
+                  marginBottom: 20
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 6 }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: '#FF7900', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span>📊</span> Performances Réelles Certifiées & KPIs
+                    </div>
+                    <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 2 }}>
+                      Saisie manuelle certifiée des métriques réelles. Ces chiffres sont synchronisés directement avec la section « Performances & KPIs ».
+                    </div>
+                  </div>
+                  <span
+                    style={{
+                      fontSize: 10.5,
+                      fontWeight: 700,
+                      padding: '3px 8px',
+                      borderRadius: 4,
+                      background: 'rgba(46, 204, 113, 0.15)',
+                      color: '#2ECC71',
+                      border: '1px solid rgba(46, 204, 113, 0.3)'
+                    }}
+                  >
+                    ✓ Synchronisation Active
+                  </span>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 12, marginBottom: 12 }}>
+                  {/* Vues réelles */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#CBD5E1', marginBottom: 4 }}>
+                      Vues Totales *
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="0"
+                      style={{
+                        width: '100%',
+                        padding: '8px 10px',
+                        borderRadius: 6,
+                        background: '#0F172A',
+                        border: '1px solid rgba(255, 121, 0, 0.4)',
+                        color: '#FF7900',
+                        fontSize: 13,
+                        fontWeight: 700
+                      }}
+                      value={editModalState.data.views !== undefined ? editModalState.data.views : ''}
+                      onChange={(e) => setEditModalState(prev => ({
+                        ...prev,
+                        data: { ...prev.data, views: e.target.value }
+                      }))}
+                    />
+                  </div>
+
+                  {/* Likes */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#CBD5E1', marginBottom: 4 }}>
+                      Likes / J'aime
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="0"
+                      style={{
+                        width: '100%',
+                        padding: '8px 10px',
+                        borderRadius: 6,
+                        background: '#0F172A',
+                        border: '1px solid rgba(255,255,255,0.15)',
+                        color: '#FFFFFF',
+                        fontSize: 13
+                      }}
+                      value={editModalState.data.likes !== undefined ? editModalState.data.likes : ''}
+                      onChange={(e) => setEditModalState(prev => ({
+                        ...prev,
+                        data: { ...prev.data, likes: e.target.value }
+                      }))}
+                    />
+                  </div>
+
+                  {/* Commentaires */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#CBD5E1', marginBottom: 4 }}>
+                      Commentaires
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="0"
+                      style={{
+                        width: '100%',
+                        padding: '8px 10px',
+                        borderRadius: 6,
+                        background: '#0F172A',
+                        border: '1px solid rgba(255,255,255,0.15)',
+                        color: '#FFFFFF',
+                        fontSize: 13
+                      }}
+                      value={editModalState.data.comments !== undefined ? editModalState.data.comments : ''}
+                      onChange={(e) => setEditModalState(prev => ({
+                        ...prev,
+                        data: { ...prev.data, comments: e.target.value }
+                      }))}
+                    />
+                  </div>
+
+                  {/* Partages */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#CBD5E1', marginBottom: 4 }}>
+                      Partages
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="0"
+                      style={{
+                        width: '100%',
+                        padding: '8px 10px',
+                        borderRadius: 6,
+                        background: '#0F172A',
+                        border: '1px solid rgba(255,255,255,0.15)',
+                        color: '#FFFFFF',
+                        fontSize: 13
+                      }}
+                      value={editModalState.data.shares !== undefined ? editModalState.data.shares : ''}
+                      onChange={(e) => setEditModalState(prev => ({
+                        ...prev,
+                        data: { ...prev.data, shares: e.target.value }
+                      }))}
+                    />
+                  </div>
+
+                  {/* Taux d'engagement sur vues */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#CBD5E1', marginBottom: 4 }}>
+                      Taux sur Vues (%)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Auto ou ex: 4.8%"
+                      style={{
+                        width: '100%',
+                        padding: '8px 10px',
+                        borderRadius: 6,
+                        background: '#0F172A',
+                        border: '1px solid rgba(46, 204, 113, 0.4)',
+                        color: '#2ECC71',
+                        fontSize: 13,
+                        fontWeight: 700
+                      }}
+                      value={
+                        editModalState.data.rate !== undefined && editModalState.data.rate !== ''
+                          ? editModalState.data.rate
+                          : (Number(editModalState.data.views) > 0
+                              ? `${(((Number(editModalState.data.likes) || 0) + (Number(editModalState.data.comments) || 0) + (Number(editModalState.data.shares) || 0)) / Number(editModalState.data.views) * 100).toFixed(2)}%`
+                              : '—')
+                      }
+                      onChange={(e) => setEditModalState(prev => ({
+                        ...prev,
+                        data: { ...prev.data, rate: e.target.value }
+                      }))}
+                    />
+                  </div>
+                </div>
+
+                {/* Récapitulatif calculé en direct */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 11, color: '#94A3B8', paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.06)', flexWrap: 'wrap', gap: 6 }}>
+                  <span>
+                    Total interactions calculées : <strong style={{ color: '#fff' }}>{((Number(editModalState.data.likes) || 0) + (Number(editModalState.data.comments) || 0) + (Number(editModalState.data.shares) || 0)).toLocaleString()}</strong>
+                  </span>
+                  <span style={{ color: '#64748B' }}>
+                    Formule certifiée : (Likes + Commentaires + Partages) / Vues
+                  </span>
+                </div>
               </div>
 
               {/* Boutons validation */}
