@@ -21,122 +21,26 @@ const isSameDay = (d1, d2) => {
 
 const STORAGE_KEY = 'bridge_influence_calendar_v1';
 
-// Seed initial réaliste centré sur la semaine du 5 au 11 octobre 2026 (date active du système)
-const getInitialInfluencePosts = (influencers = []) => {
+// Ne charge que les publications réellement créées par l'utilisateur (exclut tout exemple ou démo)
+const getInitialInfluencePosts = () => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed)) {
+        return parsed.filter(p =>
+          p &&
+          p.isNewlyCreated === true &&
+          !p.isDemo &&
+          !p.isExample &&
+          !['INF-POST-101', 'INF-POST-102', 'INF-POST-103', 'INF-POST-104'].includes(p.id)
+        );
+      }
     }
   } catch (e) {
     console.error('Storage parse error', e);
   }
-
-  const findInf = (query) => {
-    return influencers.find(inf => 
-      (inf.pseudo && inf.pseudo.toLowerCase().includes(query.toLowerCase())) ||
-      (inf.name && inf.name.toLowerCase().includes(query.toLowerCase()))
-    ) || influencers[0] || null;
-  };
-
-  const inf1 = findInf('carles') || { id: 'INF-001', name: 'Carles Antonio', pseudo: '@carlesantonio' };
-  const inf2 = findInf('simplest') || { id: 'INF-002', name: 'Simplest Tuthi', pseudo: '@simplesttuthi' };
-  const inf3 = findInf('ange_mbayen') || { id: 'INF-003', name: 'Ange Mbayen', pseudo: '@ange_mbayen' };
-  const inf4 = findInf('mimie') || { id: 'INF-004', name: 'Mimie', pseudo: '@mimie_officiel' };
-
-  return [
-    {
-      id: 'INF-POST-101',
-      influencerId: inf2.id,
-      influencerName: inf2.name || 'Simplest Tuthi',
-      influencerPseudo: inf2.pseudo || '@simplesttuthi',
-      title: 'Tutoriel Carrousel : Activer la Sécurité Renforcée Orange Money',
-      canal: 'Instagram',
-      format: 'Post Carrousel',
-      date: '2026-10-06',
-      time: '11:30',
-      day: 6,
-      status: 'PUBLISHED',
-      campaign: 'Orange Money Sécurité 2026',
-      client: 'Orange Cameroun',
-      desc: 'Guide visuel pas à pas expliquant la double authentification et les alertes SMS instantanées pour les retraits sécurisés.',
-      url: 'https://instagram.com/p/om-securite-2026',
-      image: BRAND_IMAGE_PRESETS[1]?.url || '',
-      isSponsored: true,
-      metrics: {
-        views: 48500,
-        likes: 3820,
-        comments: 294,
-        shares: 610,
-        rate: '7.8%'
-      },
-      createdAt: '2026-10-06T08:00:00.000Z'
-    },
-    {
-      id: 'INF-POST-102',
-      influencerId: inf3.id,
-      influencerName: inf3.name || 'Ange Mbayen',
-      influencerPseudo: inf3.pseudo || '@ange_mbayen',
-      title: 'Sketch Vidéo : Quand ton pote n\'a plus de Data en plein appel',
-      canal: 'TikTok',
-      format: 'TikTok sketch',
-      date: '2026-10-07',
-      time: '18:00',
-      day: 7,
-      status: 'SCHEDULED',
-      campaign: 'Orange Pulse Jeunesse',
-      client: 'Orange Cameroun',
-      desc: 'Mise en scène humoristique avec chute sur le Pass Pulse Nuit et Maxi Data. Intégration du jingle Orange en outro.',
-      url: 'https://tiktok.com/@ange_mbayen/video/orange-pulse-01',
-      image: BRAND_IMAGE_PRESETS[2]?.url || '',
-      isSponsored: false,
-      metrics: { views: 0, likes: 0, comments: 0, shares: 0, rate: '—' },
-      createdAt: '2026-10-05T14:20:00.000Z'
-    },
-    {
-      id: 'INF-POST-103',
-      influencerId: inf1.id,
-      influencerName: inf1.name || 'Carles Antonio',
-      influencerPseudo: inf1.pseudo || '@carlesantonio',
-      title: 'Reel Dynamique : Les Coulisses du Tournage Orange Weekend',
-      canal: 'Instagram',
-      format: 'Reel dynamique',
-      date: '2026-10-09',
-      time: '19:30',
-      day: 9,
-      status: 'SCHEDULED',
-      campaign: 'Orange Weekend Spécial',
-      client: 'Orange Cameroun',
-      desc: 'Format immersif face cam avec micro cravate, immersion dans une agence Orange et jeu concours pour gagner 100 Go de data.',
-      url: '',
-      image: BRAND_IMAGE_PRESETS[0]?.url || '',
-      isSponsored: true,
-      metrics: { views: 0, likes: 0, comments: 0, shares: 0, rate: '—' },
-      createdAt: '2026-10-05T16:00:00.000Z'
-    },
-    {
-      id: 'INF-POST-104',
-      influencerId: inf4.id,
-      influencerName: inf4.name || 'Mimie',
-      influencerPseudo: inf4.pseudo || '@mimie_officiel',
-      title: 'Story Interactive & Sondage : Quelle est votre playlist pour bosser ?',
-      canal: 'Instagram',
-      format: 'Story interactive',
-      date: '2026-10-08',
-      time: '14:00',
-      day: 8,
-      status: 'PENDING',
-      campaign: 'Max it Lifestyle & Musique',
-      client: 'Orange Cameroun',
-      desc: 'Série de 3 stories avec sticker question, intégration du lien swipe-up vers le catalogue musical de l\'application Max it.',
-      url: '',
-      image: BRAND_IMAGE_PRESETS[2]?.url || '',
-      isSponsored: false,
-      metrics: { views: 0, likes: 0, comments: 0, shares: 0, rate: '—' },
-      createdAt: '2026-10-06T09:10:00.000Z'
-    }
-  ];
+  return [];
 };
 
 export default function InfluenceCalendrier({
@@ -153,14 +57,44 @@ export default function InfluenceCalendrier({
     return [];
   }, [influencers]);
 
-  // Posts du calendrier
-  const [posts, setPosts] = useState(() => getInitialInfluencePosts(effectiveInfluencers));
+  // Posts du calendrier : uniquement les créations réelles
+  const [posts, setPosts] = useState(getInitialInfluencePosts);
 
-  // Sauvegarde persistante
-  const savePosts = (newPosts) => {
-    setPosts(newPosts);
+  // Nettoyage immédiat de tout exemple résiduel dans le stockage local au chargement
+  useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newPosts));
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          const cleaned = parsed.filter(p =>
+            p &&
+            p.isNewlyCreated === true &&
+            !p.isDemo &&
+            !p.isExample &&
+            !['INF-POST-101', 'INF-POST-102', 'INF-POST-103', 'INF-POST-104'].includes(p.id)
+          );
+          if (cleaned.length !== parsed.length) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned));
+            setPosts(cleaned);
+          }
+        }
+      }
+    } catch (e) {}
+  }, []);
+
+  // Sauvegarde persistante (seules les données nouvellement enregistrées sont conservées)
+  const savePosts = (newPosts) => {
+    const validOnly = (newPosts || []).filter(p =>
+      p &&
+      p.isNewlyCreated === true &&
+      !p.isDemo &&
+      !p.isExample &&
+      !['INF-POST-101', 'INF-POST-102', 'INF-POST-103', 'INF-POST-104'].includes(p.id)
+    );
+    setPosts(validOnly);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(validOnly));
     } catch (e) {
       console.error('Save error', e);
     }
@@ -431,7 +365,7 @@ export default function InfluenceCalendrier({
     setEditModalState({
       mode: 'create',
       data: {
-        id: `INF-POST-${Date.now().toString().slice(-5)}`,
+        id: `INF-POST-${Date.now().toString().slice(-6)}`,
         influencerId: defaultInf?.id || '',
         influencerName: defaultInf?.name || defaultInf?.display_name || '',
         influencerPseudo: defaultInf?.pseudo || '',
@@ -442,13 +376,14 @@ export default function InfluenceCalendrier({
         time: presetTime,
         day: dayNumber,
         status: 'SCHEDULED',
-        campaign: 'Orange Weekend 2026',
+        campaign: '',
         client: 'Orange Cameroun',
         desc: '',
         url: '',
-        image: BRAND_IMAGE_PRESETS[0]?.url || '',
+        image: '',
         isSponsored: false,
-        metrics: { views: 0, likes: 0, comments: 0, shares: 0, rate: '—' }
+        metrics: { views: 0, likes: 0, comments: 0, shares: 0, rate: '—' },
+        isNewlyCreated: true
       }
     });
   };
@@ -474,6 +409,7 @@ export default function InfluenceCalendrier({
     const matchedInf = effectiveInfluencers.find(i => String(i.id) === String(formData.influencerId));
     const finalPost = {
       ...formData,
+      isNewlyCreated: true,
       influencerName: matchedInf?.name || matchedInf?.display_name || formData.influencerName || 'Influenceur Orange',
       influencerPseudo: matchedInf?.pseudo || formData.influencerPseudo || '@orange_talent',
       day: formData.date ? parseInt(formData.date.split('-')[2], 10) : formData.day || 6,
@@ -525,7 +461,7 @@ export default function InfluenceCalendrier({
   };
 
   const handleArchivePost = (post) => {
-    setArchivedPosts(prev => [post, ...prev]);
+    setArchivedPosts(prev => [{ ...post, isNewlyCreated: true }, ...prev]);
     const updated = posts.filter(p => p.id !== post.id);
     savePosts(updated);
     if (viewModalPost?.id === post.id) setViewModalPost(null);
@@ -534,20 +470,21 @@ export default function InfluenceCalendrier({
 
   const handleRestoreArchived = (post) => {
     setArchivedPosts(prev => prev.filter(p => p.id !== post.id));
-    savePosts([post, ...posts]);
+    savePosts([{ ...post, isNewlyCreated: true }, ...posts]);
     showToast('Publication restaurée dans le calendrier');
   };
 
   const handleQuickPublish = (post) => {
     const updatedPost = {
       ...post,
+      isNewlyCreated: true,
       status: 'PUBLISHED',
       metrics: {
-        views: post.metrics?.views || 12500,
-        likes: post.metrics?.likes || 980,
-        comments: post.metrics?.comments || 64,
-        shares: post.metrics?.shares || 112,
-        rate: post.metrics?.rate || '8.2%'
+        views: post.metrics?.views || 0,
+        likes: post.metrics?.likes || 0,
+        comments: post.metrics?.comments || 0,
+        shares: post.metrics?.shares || 0,
+        rate: post.metrics?.rate || '—'
       }
     };
     const updated = posts.map(p => p.id === post.id ? updatedPost : p);
@@ -844,6 +781,44 @@ export default function InfluenceCalendrier({
             </button>
           </div>
         </div>
+
+        {/* Notice si aucun contenu enregistré */}
+        {posts.length === 0 && (
+          <div
+            style={{
+              margin: '0 16px 16px 16px',
+              padding: '12px 18px',
+              borderRadius: 10,
+              background: 'rgba(255, 121, 0, 0.08)',
+              border: '1px dashed rgba(255, 121, 0, 0.35)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 12,
+              flexWrap: 'wrap'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 20 }}>✨</span>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: '#FF7900' }}>
+                  Calendrier des Contenus d'Influence vierge
+                </div>
+                <div style={{ fontSize: 11.5, color: '#94A3B8' }}>
+                  Toutes les données d’exemple ont été retirées. Seules les publications que vous enregistrez apparaîtront ici.
+                </div>
+              </div>
+            </div>
+            <button
+              type="button"
+              className="btn btn-orange btn-xs"
+              onClick={() => handleOpenCreateModal()}
+              style={{ fontWeight: 800 }}
+            >
+              ➕ Planifier une publication
+            </button>
+          </div>
+        )}
 
         {/* ─── 3. VUE 1 : MOIS (MONTH) ─── */}
         {viewMode === 'month' && (
