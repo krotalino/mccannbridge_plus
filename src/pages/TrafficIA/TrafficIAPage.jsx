@@ -46,6 +46,71 @@ import {
   INITIAL_CLIENT_LIVRABLES,
 } from '../../data/clientTrafficData';
 
+const loadSavedClientDossiers = () => {
+  try {
+    const saved = localStorage.getItem('bridge_client_dossiers_v2');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) {
+        return parsed.filter(d => d && !d.isDemo && !d.isExample && !d.id?.startsWith('TK-2026-OM-040') && !d.id?.startsWith('TK-2026-PULSE-081') && !d.id?.startsWith('TK-2026-TELCO-102') && !d.id?.startsWith('TK-2026-B2B-015') && !d.id?.startsWith('TK-2026-SPON-094') && !d.id?.startsWith('TK-2026-VEIL-022') && !d.id?.startsWith('TK-2026-REP-S38') && !d.id?.startsWith('TK-2026-REC-003'));
+      }
+    }
+  } catch (e) {}
+  return [];
+};
+
+const loadSavedClientValidations = () => {
+  try {
+    const saved = localStorage.getItem('bridge_client_validations_v2');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) {
+        return parsed.filter(v => v && !v.isDemo && !v.isExample && !v.id?.startsWith('VAL-00'));
+      }
+    }
+  } catch (e) {}
+  return [];
+};
+
+const loadSavedClientRecommendations = () => {
+  try {
+    const saved = localStorage.getItem('bridge_client_recommendations_v2');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) {
+        return parsed.filter(r => r && !r.isDemo && !r.isExample && !r.id?.startsWith('REC-2026-00'));
+      }
+    }
+  } catch (e) {}
+  return [];
+};
+
+const loadSavedClientCalendarItems = () => {
+  try {
+    const saved = localStorage.getItem('bridge_client_calendar_items_v2');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) {
+        return parsed.filter(c => c && !c.isDemo && !c.isExample && !c.id?.startsWith('CAL-00'));
+      }
+    }
+  } catch (e) {}
+  return [];
+};
+
+const loadSavedClientLivrables = () => {
+  try {
+    const saved = localStorage.getItem('bridge_client_livrables_v2');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) {
+        return parsed.filter(l => l && !l.isDemo && !l.isExample && !l.id?.startsWith('LIV-2026-'));
+      }
+    }
+  } catch (e) {}
+  return [];
+};
+
 export default function TrafficIAPage() {
   const {
     tickets = [],
@@ -74,13 +139,50 @@ export default function TrafficIAPage() {
   const [selectedUniverse, setSelectedUniverse] = useState('all');
   const [lastSyncTime, setLastSyncTime] = useState('15:50');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [toastMessage, setToastMessage] = useState(null);
 
-  // Données dynamiques de la vue client
-  const [clientDossiers, setClientDossiers] = useState(INITIAL_CLIENT_DOSSIERS);
-  const [clientValidations, setClientValidations] = useState(INITIAL_CLIENT_VALIDATIONS);
-  const [clientRecommendations, setClientRecommendations] = useState(INITIAL_CLIENT_RECOMMENDATIONS);
-  const [clientCalendarItems, setClientCalendarItems] = useState(INITIAL_CLIENT_CALENDAR_ITEMS);
-  const [clientLivrables, setClientLivrables] = useState(INITIAL_CLIENT_LIVRABLES);
+  const showToast = (msg) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 4000);
+  };
+
+  // Données dynamiques de la vue client (sans données exemples)
+  const [clientDossiers, setClientDossiers] = useState(loadSavedClientDossiers);
+  const [clientValidations, setClientValidations] = useState(loadSavedClientValidations);
+  const [clientRecommendations, setClientRecommendations] = useState(loadSavedClientRecommendations);
+  const [clientCalendarItems, setClientCalendarItems] = useState(loadSavedClientCalendarItems);
+  const [clientLivrables, setClientLivrables] = useState(loadSavedClientLivrables);
+
+  // Sauvegarde automatique lors des modifications
+  React.useEffect(() => {
+    try {
+      localStorage.setItem('bridge_client_dossiers_v2', JSON.stringify(clientDossiers));
+    } catch (e) {}
+  }, [clientDossiers]);
+
+  React.useEffect(() => {
+    try {
+      localStorage.setItem('bridge_client_validations_v2', JSON.stringify(clientValidations));
+    } catch (e) {}
+  }, [clientValidations]);
+
+  React.useEffect(() => {
+    try {
+      localStorage.setItem('bridge_client_recommendations_v2', JSON.stringify(clientRecommendations));
+    } catch (e) {}
+  }, [clientRecommendations]);
+
+  React.useEffect(() => {
+    try {
+      localStorage.setItem('bridge_client_calendar_items_v2', JSON.stringify(clientCalendarItems));
+    } catch (e) {}
+  }, [clientCalendarItems]);
+
+  React.useEffect(() => {
+    try {
+      localStorage.setItem('bridge_client_livrables_v2', JSON.stringify(clientLivrables));
+    } catch (e) {}
+  }, [clientLivrables]);
 
   // Modals de la vue client
   const [isClientNewBriefOpen, setIsClientNewBriefOpen] = useState(false);
@@ -132,7 +234,7 @@ export default function TrafficIAPage() {
         return d;
       })
     );
-    alert('Validation validée avec succès ! Le flux de production a été notifié.');
+    showToast('Validation validée avec succès ! Le flux de production a été notifié.');
   };
 
   // 2. Traitement d'action modale (commenter, modifier, repousser, refuser)
@@ -150,7 +252,7 @@ export default function TrafficIAPage() {
         return v;
       })
     );
-    alert(`Action "${actionType}" enregistrée et transmise à McCann Douala.`);
+    showToast(`Action "${actionType}" enregistrée et transmise à McCann Douala.`);
   };
 
   // 3. Arbitrage direct d'une recommandation digitale
@@ -196,7 +298,7 @@ export default function TrafficIAPage() {
 
     setClientDossiers(prev => [newDossier, ...prev]);
     setClientTab('travaux');
-    alert(`Le brief ${newId} a été transmis à McCann Douala avec succès.`);
+    showToast(`Le brief ${newId} a été transmis à McCann Douala avec succès.`);
   };
 
   // 5. Rafraîchissement simulé
@@ -475,6 +577,7 @@ export default function TrafficIAPage() {
               validations={clientValidations}
               recommendations={clientRecommendations}
               calendarItems={clientCalendarItems}
+              livrables={clientLivrables}
               onNavigateTab={setClientTab}
               onOpenValidation={(val) => {
                 setSelectedClientValidation(val);
@@ -562,6 +665,10 @@ export default function TrafficIAPage() {
             content={selectedClientContent}
             isOpen={Boolean(selectedClientContent)}
             onClose={() => setSelectedClientContent(null)}
+            onValidate={(content) => {
+              showToast(`Contenu « ${content.title || content.network} » validé avec succès.`);
+              setSelectedClientContent(null);
+            }}
           />
         </div>
       )}
@@ -770,6 +877,24 @@ export default function TrafficIAPage() {
               onClose={() => setIsWeeklyReportOpen(false)}
             />
           )}
+        </div>
+      )}
+
+      {/* Toast Feedback */}
+      {toastMessage && (
+        <div
+          className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl text-white text-sm font-bold animate-fade"
+          style={{ background: '#111827', border: '1px solid #374151' }}
+        >
+          <span>✨</span>
+          <span>{toastMessage}</span>
+          <button
+            type="button"
+            onClick={() => setToastMessage(null)}
+            className="ml-2 text-gray-400 hover:text-white"
+          >
+            ✕
+          </button>
         </div>
       )}
     </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { X, CheckCircle2, Calendar, Share2, Eye, DollarSign, Target, User } from 'lucide-react';
 
-export default function ClientContentDetailModal({ content, isOpen, onClose }) {
+export default function ClientContentDetailModal({ content, isOpen, onClose, onValidate }) {
   if (!isOpen || !content) return null;
 
   return (
@@ -150,7 +150,9 @@ export default function ClientContentDetailModal({ content, isOpen, onClose }) {
             type="button"
             className="btn btn-primary btn-sm"
             onClick={() => {
-              alert('Publication marquée comme validée avec succès.');
+              if (onValidate) {
+                onValidate(content);
+              }
               onClose();
             }}
             style={{ fontSize: 12, fontWeight: 800, background: '#2E7D32', border: 'none' }}

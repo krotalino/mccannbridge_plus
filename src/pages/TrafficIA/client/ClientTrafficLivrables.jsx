@@ -58,16 +58,41 @@ export default function ClientTrafficLivrables({
     }
   };
 
+  const [downloadFeedback, setDownloadFeedback] = useState(null);
+
   const handleDownload = (liv) => {
-    const link = document.createElement('a');
-    link.href = '#';
-    link.setAttribute('download', `${liv.name}.${liv.fileType.toLowerCase()}`);
-    // Simulate instantaneous download feedback
-    alert(`Téléchargement initié : ${liv.name} (${liv.version} - ${liv.fileSize})`);
+    setDownloadFeedback(`Téléchargement de « ${liv.name} » (${liv.version} - ${liv.fileSize}) initié.`);
+    setTimeout(() => setDownloadFeedback(null), 3500);
   };
 
   return (
     <div className="client-traffic-livrables space-y-20 animate-fade">
+      {downloadFeedback && (
+        <div
+          style={{
+            padding: '10px 16px',
+            borderRadius: 8,
+            background: '#F0FDF4',
+            border: '1px solid #BBF7D0',
+            color: '#166534',
+            fontSize: 12,
+            fontWeight: 800,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <span>📥 {downloadFeedback}</span>
+          <button
+            type="button"
+            onClick={() => setDownloadFeedback(null)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#166534', fontWeight: 900 }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* ─── BANDEAU HEADER LIVRABLES & BILANS ─── */}
       <div
         className="card p-16"
@@ -85,7 +110,7 @@ export default function ClientTrafficLivrables({
                 BIBLIOTHÈQUE DES LIVRABLES, BILANS & ASSETS CERTIFIÉS
               </h2>
               <span className="tag tag-green" style={{ fontSize: 11, fontWeight: 800 }}>
-                {filteredLivrables.length} documents disponibles
+                {filteredLivrables.length} document{filteredLivrables.length > 1 ? 's' : ''} disponible{filteredLivrables.length > 1 ? 's' : ''}
               </span>
             </div>
             <p style={{ margin: '4px 0 0 0', color: 'var(--muted)', fontSize: 12.5 }}>
@@ -100,16 +125,16 @@ export default function ClientTrafficLivrables({
                 fontWeight: 800,
                 padding: '4px 10px',
                 borderRadius: 8,
-                background: '#F0FDF4',
-                color: '#166534',
-                border: '1px solid #BBF7D0',
+                background: filteredLivrables.length > 0 ? '#F0FDF4' : '#F9FAFB',
+                color: filteredLivrables.length > 0 ? '#166534' : 'var(--muted)',
+                border: filteredLivrables.length > 0 ? '1px solid #BBF7D0' : '1px solid #E5E7EB',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 5,
               }}
             >
               <FolderCheck size={14} />
-              <span>Bilan S38 Certifié disponible</span>
+              <span>{filteredLivrables.length > 0 ? `${filteredLivrables.length} livrable(s) certifié(s)` : 'Aucun livrable archivé'}</span>
             </span>
           </div>
         </div>
@@ -193,8 +218,26 @@ export default function ClientTrafficLivrables({
       </div>
 
       {/* ─── LISTE DES DOCUMENTS & LIVRABLES (Page 6 du Cahier des Charges) ─── */}
-      <div className="space-y-12">
-        {filteredLivrables.map(liv => {
+      {filteredLivrables.length === 0 ? (
+        <div
+          className="card p-32 text-center"
+          style={{
+            background: '#F9FAFB',
+            borderRadius: 12,
+            border: '1px dashed #D1D5DB',
+          }}
+        >
+          <div style={{ fontSize: 32, marginBottom: 8 }}>📁</div>
+          <div style={{ fontSize: 15, fontWeight: 900, color: 'var(--dark)' }}>
+            Aucun livrable disponible
+          </div>
+          <div style={{ fontSize: 12.5, color: 'var(--muted)', marginTop: 4, maxWidth: 440, margin: '4px auto 0' }}>
+            Les livrables finaux, déclinaisons créatives, bilans hebdomadaires et assets certifiés déposés par l’agence apparaîtront ici.
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-12">
+          {filteredLivrables.map(liv => {
           const statusBadge = getStatusBadge(liv.status);
           const icon = getFileTypeIcon(liv.fileType);
 
@@ -295,7 +338,8 @@ export default function ClientTrafficLivrables({
             </div>
           );
         })}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

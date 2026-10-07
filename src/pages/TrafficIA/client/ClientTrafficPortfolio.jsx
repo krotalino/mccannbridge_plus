@@ -325,8 +325,25 @@ export default function ClientTrafficPortfolio({
 
       {/* MODE 1: VUE LISTE PRIORISÉE (Idéale pour les responsables Orange) */}
       {viewMode === 'list' && (
-        <div className="space-y-12">
-          {filteredDossiers.map(dossier => {
+        filteredDossiers.length === 0 ? (
+          <div className="card p-32 text-center" style={{ background: '#F9FAFB', borderRadius: 12, border: '1px dashed #D1D5DB' }}>
+            <div style={{ fontSize: 32, marginBottom: 8 }}>📂</div>
+            <div style={{ fontSize: 15, fontWeight: 900, color: 'var(--dark)' }}>Aucun dossier en cours</div>
+            <div style={{ fontSize: 12.5, color: 'var(--muted)', marginTop: 4, maxWidth: 440, margin: '4px auto 16px' }}>
+              Aucun brief ou projet actif ne correspond aux filtres sélectionnés. Vous pouvez déposer un nouveau brief pour démarrer.
+            </div>
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              onClick={onOpenNewBrief}
+              style={{ background: '#FF7900', border: 'none', fontWeight: 800 }}
+            >
+              + Déposer un nouveau brief
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-12">
+            {filteredDossiers.map(dossier => {
             const prioBadge = getPriorityBadge(dossier.priority);
             const aarrrBadge = getAarrrBadge(dossier.aarrr);
             const riskBadge = getRiskBadge(dossier.risk);
@@ -476,6 +493,7 @@ export default function ClientTrafficPortfolio({
             );
           })}
         </div>
+        )
       )}
 
       {/* MODE 2: VUE KANBAN SIMPLIFIÉE (Visualisation du parcours, Page 2) */}
@@ -542,7 +560,12 @@ export default function ClientTrafficPortfolio({
 
                 {/* Cards in column */}
                 <div className="space-y-8">
-                  {dossiersInStatus.map(dossier => {
+                  {dossiersInStatus.length === 0 ? (
+                    <div style={{ padding: '20px 8px', textAlign: 'center', color: 'var(--muted)', fontSize: 11, border: '1px dashed #E5E7EB', borderRadius: 8, background: '#FFFFFF' }}>
+                      Aucun flux à cette étape
+                    </div>
+                  ) : (
+                    dossiersInStatus.map(dossier => {
                     const prio = getPriorityBadge(dossier.priority);
                     const risk = getRiskBadge(dossier.risk);
 
@@ -604,13 +627,7 @@ export default function ClientTrafficPortfolio({
                         </div>
                       </div>
                     );
-                  })}
-
-                  {dossiersInStatus.length === 0 && (
-                    <div style={{ padding: '16px 8px', textAlign: 'center', color: '#9CA3AF', fontSize: 11, fontStyle: 'italic' }}>
-                      Aucun dossier à cette étape
-                    </div>
-                  )}
+                  }))}
                 </div>
               </div>
             );
@@ -637,11 +654,18 @@ export default function ClientTrafficPortfolio({
             </p>
           </div>
 
-          <div className="space-y-16">
-            {filteredDossiers
-              .slice()
-              .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
-              .map((dossier, idx) => {
+          {filteredDossiers.length === 0 ? (
+            <div style={{ padding: '36px 16px', textAlign: 'center', background: '#FAFAFA', borderRadius: 10, border: '1px dashed #E5E7EB' }}>
+              <Calendar size={32} style={{ color: '#9CA3AF', margin: '0 auto 8px' }} />
+              <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--dark)' }}>Aucune échéance planifiée</div>
+              <div style={{ fontSize: 11.5, color: 'var(--muted)', marginTop: 2 }}>Les prochaines dates de remise s’afficheront ici par ordre chronologique.</div>
+            </div>
+          ) : (
+            <div className="space-y-16">
+              {filteredDossiers
+                .slice()
+                .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
+                .map((dossier, idx) => {
                 const statusConfig = CLIENT_STATUSES.find(s => s.id === dossier.clientStatus) || CLIENT_STATUSES[0];
                 const risk = getRiskBadge(dossier.risk);
 
@@ -718,7 +742,8 @@ export default function ClientTrafficPortfolio({
                   </div>
                 );
               })}
-          </div>
+            </div>
+          )}
         </div>
       )}
     </div>

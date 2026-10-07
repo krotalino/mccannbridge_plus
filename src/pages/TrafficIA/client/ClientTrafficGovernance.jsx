@@ -180,56 +180,77 @@ export default function ClientTrafficGovernance() {
           </div>
 
           <div className="space-y-12">
-            {INITIAL_CLIENT_GOVERNANCE_EVENTS.map(evt => (
+            {INITIAL_CLIENT_GOVERNANCE_EVENTS.length === 0 ? (
               <div
-                key={evt.id}
                 style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: 14,
-                  padding: '12px 14px',
-                  borderRadius: 10,
+                  padding: '32px 20px',
+                  textAlign: 'center',
                   background: '#F9FAFB',
-                  border: '1px solid #E5E7EB',
+                  border: '1px dashed #D1D5DB',
+                  borderRadius: 10,
+                  color: 'var(--muted)',
                 }}
               >
-                <div
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 8,
-                    background: '#FFF3E0',
-                    color: '#E65100',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 16,
-                    flexShrink: 0,
-                  }}
-                >
-                  📜
+                <div style={{ fontSize: 24, marginBottom: 8 }}>📜</div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--dark)' }}>
+                  Journal d’audit vierge
                 </div>
-
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
-                    <span style={{ fontSize: 12, fontWeight: 900, color: 'var(--dark)' }}>
-                      {evt.action}
-                    </span>
-                    <span style={{ fontSize: 11, color: 'var(--muted)' }}>
-                      {evt.date}
-                    </span>
-                  </div>
-
-                  <div style={{ fontSize: 11.5, color: '#374151', marginBottom: 4 }}>
-                    {evt.details}
-                  </div>
-
-                  <div style={{ fontSize: 11, color: 'var(--muted)' }}>
-                    Acteur : <strong>{evt.actor}</strong> • Périmètre : <strong>{evt.entity}</strong>
-                  </div>
+                <div style={{ fontSize: 12, marginTop: 4, maxWidth: 440, margin: '4px auto 0' }}>
+                  Toutes les actions horodatées, dépôts de livrables et arbitrages paritaires Orange × McCann seront automatiquement tracés ici en temps réel.
                 </div>
               </div>
-            ))}
+            ) : (
+              INITIAL_CLIENT_GOVERNANCE_EVENTS.map(evt => (
+                <div
+                  key={evt.id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: 14,
+                    padding: '12px 14px',
+                    borderRadius: 10,
+                    background: '#F9FAFB',
+                    border: '1px solid #E5E7EB',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: 8,
+                      background: '#FFF3E0',
+                      color: '#E65100',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: 16,
+                      flexShrink: 0,
+                    }}
+                  >
+                    📜
+                  </div>
+
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+                      <span style={{ fontSize: 12, fontWeight: 900, color: 'var(--dark)' }}>
+                        {evt.action}
+                      </span>
+                      <span style={{ fontSize: 11, color: 'var(--muted)' }}>
+                        {evt.date}
+                      </span>
+                    </div>
+
+                    <div style={{ fontSize: 11.5, color: '#374151', marginBottom: 4 }}>
+                      {evt.details}
+                    </div>
+
+                    <div style={{ fontSize: 11, color: 'var(--muted)' }}>
+                      Acteur : <strong>{evt.actor}</strong> • Périmètre : <strong>{evt.entity}</strong>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       )}
@@ -260,29 +281,20 @@ export default function ClientTrafficGovernance() {
 
           <div
             style={{
-              padding: '16px',
+              padding: '32px 20px',
+              textAlign: 'center',
+              background: '#F9FAFB',
+              border: '1px dashed #D1D5DB',
               borderRadius: 10,
-              background: '#F0FDF4',
-              border: '1.5px solid #BBF7D0',
-              marginBottom: 16,
+              color: 'var(--muted)',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <div style={{ fontSize: 13, fontWeight: 900, color: '#166534' }}>
-                📋 Relevé de Décisions — COPIL S37 (Vendredi 18 Septembre 2026)
-              </div>
-              <span style={{ fontSize: 11, fontWeight: 800, color: '#166534' }}>Certifié & Signé</span>
+            <div style={{ fontSize: 24, marginBottom: 8 }}>📋</div>
+            <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--dark)' }}>
+              Aucun relevé de décision COPIL archivé
             </div>
-
-            <ul style={{ margin: '0 0 10px 16px', padding: 0, fontSize: 12, color: '#14532D', lineHeight: 1.6 }}>
-              <li><strong>Validation du Bilan S37 :</strong> Portée globale de 10.99M validée avec félicitations du directoire Orange.</li>
-              <li><strong>Priorité S38 :</strong> Lancement du découpage vidéo 9:16 Orange Money Transfert sans dépassement budgétaire.</li>
-              <li><strong>Arbitrage Pulse Lions4Life :</strong> Accord pour intégrer 6 carrousels et un jeu WhatsApp interactif.</li>
-              <li><strong>Veille Riposte MTN :</strong> Activation d’une cellule éclair pour monitorer les offres concurrentes à frais zéro.</li>
-            </ul>
-
-            <div style={{ fontSize: 11, color: '#15803D', fontStyle: 'italic' }}>
-              Présents : Patrick Tuete (Orange), Stéphane Engo (Orange), Audrey Mballa (Orange), Fabrice Tchounga (McCann), Directeur Conseil McCann.
+            <div style={{ fontSize: 12, marginTop: 4, maxWidth: 440, margin: '4px auto 0' }}>
+              Les comptes-rendus certifiés des comités de pilotage hebdomadaires paritaires Orange Cameroun × McCann Douala seront répertoriés ici dès leur validation conjointe.
             </div>
           </div>
         </div>

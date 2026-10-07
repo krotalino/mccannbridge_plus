@@ -309,8 +309,23 @@ const loadSavedFinancialDocuments = () => {
   }
 };
 
+const loadSavedTickets = () => {
+  try {
+    const saved = localStorage.getItem('bridge_traffic_tickets_v2');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.filter(t => t && !t.isDemo && !t.isExample && !t.id?.startsWith('TK-04') && t.isNewlyCreated === true);
+      }
+    }
+    return [];
+  } catch (e) {
+    return [];
+  }
+};
+
 const initialState = {
-  tickets: INITIAL_TICKETS,
+  tickets: loadSavedTickets(),
   calendar: INITIAL_CALENDAR,
   publications: loadSavedPublications(),
   calendarPosts: loadSavedCalendarPosts(),
@@ -1398,19 +1413,13 @@ export function AppProvider({ children }) {
         });
         unsubs.push(unsubReports);
 
-        // 3. Tickets Listener
+        // 3. Tickets Listener (Sync real database documents only)
         const ticketsCol = collection(db, 'tickets');
-        const unsubTickets = onSnapshot(ticketsCol, async (snapshot) => {
-          if (snapshot.empty && !isInitializedRef.current) {
-            for (const ticket of INITIAL_TICKETS) {
-              await setDoc(doc(db, 'tickets', ticket.id), ticket);
-            }
-          } else {
-            const list = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
-            if (list.length > 0) {
-              dispatch({ type: 'SYNC_TICKETS', tickets: list });
-            }
-          }
+        const unsubTickets = onSnapshot(ticketsCol, (snapshot) => {
+          const list = snapshot.docs
+            .map(d => ({ ...d.data(), id: d.id }))
+            .filter(t => !t.isDemo && !t.isExample && !t.id?.startsWith('TK-04'));
+          dispatch({ type: 'SYNC_TICKETS', tickets: list });
         }, (err) => {
           handleFirestoreError(err, OperationType.LIST, 'tickets');
         });

@@ -149,193 +149,221 @@ export default function ClientTrafficSharedCalendar({
         style={{
           borderRadius: 12,
           padding: '16px 20px',
-          background: '#FFFDF0',
-          border: '1.5px solid #FFE082',
+          background: CALENDAR_CONFLICT_ALERTS.length > 0 ? '#FFFDF0' : '#F0FDF4',
+          border: CALENDAR_CONFLICT_ALERTS.length > 0 ? '1.5px solid #FFE082' : '1.5px solid #BBF7D0',
           marginBottom: 20,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: CALENDAR_CONFLICT_ALERTS.length > 0 ? 10 : 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <AlertTriangle size={18} className="text-amber-600" />
-            <span style={{ fontSize: 13, fontWeight: 900, color: '#B45309', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
-              DÉTECTION AUTOMATIQUE DES CONFLITS DE CALENDRIER
+            {CALENDAR_CONFLICT_ALERTS.length > 0 ? (
+              <AlertTriangle size={18} className="text-amber-600" />
+            ) : (
+              <CheckCircle2 size={18} className="text-emerald-600" />
+            )}
+            <span style={{ fontSize: 13, fontWeight: 900, color: CALENDAR_CONFLICT_ALERTS.length > 0 ? '#B45309' : '#166534', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+              RÉGULATION & DÉTECTION DES CONFLITS DE CALENDRIER
             </span>
           </div>
-          <span style={{ fontSize: 11, fontWeight: 800, color: '#B45309' }}>
-            2 alertes de régulation
+          <span style={{ fontSize: 11, fontWeight: 800, color: CALENDAR_CONFLICT_ALERTS.length > 0 ? '#B45309' : '#166534' }}>
+            {CALENDAR_CONFLICT_ALERTS.length > 0 ? `${CALENDAR_CONFLICT_ALERTS.length} alerte(s) de régulation` : 'Aucun conflit détecté'}
           </span>
         </div>
 
-        <div className="space-y-8">
-          {CALENDAR_CONFLICT_ALERTS.map(alert => (
-            <div
-              key={alert.id}
-              style={{
-                padding: '10px 14px',
-                borderRadius: 8,
-                background: '#FFFFFF',
-                border: '1px solid #FDE68A',
-                display: 'flex',
-                alignItems: 'flex-start',
-                justifyContent: 'space-between',
-                flexWrap: 'wrap',
-                gap: 10,
-              }}
-            >
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 12.5, fontWeight: 800, color: '#92400E', marginBottom: 2 }}>
-                  ⚠️ {alert.title}
-                </div>
-                <div style={{ fontSize: 11.5, color: '#4B5563', marginBottom: 4 }}>
-                  {alert.desc}
-                </div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#15803D' }}>
-                  💡 <strong>Arbitrage recommandé :</strong> {alert.recommendedFix}
-                </div>
-              </div>
-              <span
+        {CALENDAR_CONFLICT_ALERTS.length === 0 ? (
+          <div style={{ fontSize: 11.5, color: '#15803D', marginTop: 4 }}>
+            Prises de parole harmonisées. Aucun chevauchement non maîtrisé ou cannibalisation de créneaux sur les canaux Orange.
+          </div>
+        ) : (
+          <div className="space-y-8">
+            {CALENDAR_CONFLICT_ALERTS.map(alert => (
+              <div
+                key={alert.id}
                 style={{
-                  fontSize: 10,
-                  fontWeight: 800,
-                  padding: '2px 8px',
-                  borderRadius: 10,
-                  background: alert.severity === 'moyen' ? '#FEF3C7' : '#EFF6FF',
-                  color: alert.severity === 'moyen' ? '#B45309' : '#1D4ED8',
-                  textTransform: 'uppercase',
+                  padding: '10px 14px',
+                  borderRadius: 8,
+                  background: '#FFFFFF',
+                  border: '1px solid #FDE68A',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: 10,
                 }}
               >
-                Sévérité {alert.severity}
-              </span>
-            </div>
-          ))}
-        </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 12.5, fontWeight: 800, color: '#92400E', marginBottom: 2 }}>
+                    ⚠️ {alert.title}
+                  </div>
+                  <div style={{ fontSize: 11.5, color: '#4B5563', marginBottom: 4 }}>
+                    {alert.desc}
+                  </div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#15803D' }}>
+                    💡 <strong>Arbitrage recommandé :</strong> {alert.recommendedFix}
+                  </div>
+                </div>
+                <span
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 800,
+                    padding: '2px 8px',
+                    borderRadius: 10,
+                    background: alert.severity === 'moyen' ? '#FEF3C7' : '#EFF6FF',
+                    color: alert.severity === 'moyen' ? '#B45309' : '#1D4ED8',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  Sévérité {alert.severity}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ─── GRILLE DES CONTENUS & TEMPS FORTS ─── */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-          gap: 14,
-        }}
-      >
-        {filteredItems.map(item => {
-          const statusBadge = getStatusBadge(item.status);
-          const icon = getNetworkIcon(item.network);
+      {filteredItems.length === 0 ? (
+        <div className="card p-32 text-center" style={{ background: '#F9FAFB', borderRadius: 12, border: '1px dashed #D1D5DB' }}>
+          <Calendar size={32} style={{ color: '#9CA3AF', margin: '0 auto 8px' }} />
+          <div style={{ fontSize: 15, fontWeight: 900, color: 'var(--dark)' }}>Aucun contenu ou jalon programmé</div>
+          <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4, maxWidth: 440, margin: '4px auto 16px' }}>
+            Aucune publication ou temps fort ne correspond aux critères sélectionnés pour cette période.
+          </div>
+          <button
+            type="button"
+            className="btn btn-primary btn-sm"
+            onClick={onOpenNewContent}
+            style={{ background: '#FF7900', border: 'none', fontWeight: 800 }}
+          >
+            + Programmer un contenu
+          </button>
+        </div>
+      ) : (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+            gap: 14,
+          }}
+        >
+          {filteredItems.map(item => {
+            const statusBadge = getStatusBadge(item.status);
+            const icon = getNetworkIcon(item.network);
 
-          return (
-            <div
-              key={item.id}
-              className="card"
-              onClick={() => onOpenContentDetail(item)}
-              style={{
-                borderRadius: 12,
-                padding: '16px 18px',
-                background: '#FFFFFF',
-                border: '1px solid #E5E7EB',
-                boxShadow: '0 2px 6px rgba(0,0,0,0.02)',
-                cursor: 'pointer',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              <div>
-                {/* Header Card */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 16 }}>{icon}</span>
-                    <span style={{ fontSize: 12, fontWeight: 900, color: 'var(--dark)' }}>
-                      {item.network}
-                    </span>
-                    <span style={{ fontSize: 11, color: 'var(--muted)' }}>• {item.brand}</span>
-                  </div>
+            return (
+              <div
+                key={item.id}
+                className="card"
+                onClick={() => onOpenContentDetail(item)}
+                style={{
+                  borderRadius: 12,
+                  padding: '16px 18px',
+                  background: '#FFFFFF',
+                  border: '1px solid #E5E7EB',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.02)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                <div>
+                  {/* Header Card */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: 16 }}>{icon}</span>
+                      <span style={{ fontSize: 12, fontWeight: 900, color: 'var(--dark)' }}>
+                        {item.network}
+                      </span>
+                      <span style={{ fontSize: 11, color: 'var(--muted)' }}>• {item.brand}</span>
+                    </div>
 
-                  <span
-                    style={{
-                      fontSize: 10.5,
-                      fontWeight: 800,
-                      padding: '2px 8px',
-                      borderRadius: 12,
-                      background: statusBadge.bg,
-                      color: statusBadge.text,
-                      border: `1px solid ${statusBadge.border}`,
-                    }}
-                  >
-                    {statusBadge.label}
-                  </span>
-                </div>
-
-                {/* Title */}
-                <h4 style={{ fontSize: 14, fontWeight: 900, color: 'var(--dark)', margin: '0 0 6px 0' }}>
-                  {item.title}
-                </h4>
-
-                {/* Message preview */}
-                <p style={{ fontSize: 11.5, color: '#4B5563', margin: '0 0 10px 0', lineHeight: 1.4 }}>
-                  « {item.message} »
-                </p>
-
-                {/* Format & Budget badges */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
-                  <span
-                    style={{
-                      fontSize: 10.5,
-                      fontWeight: 700,
-                      padding: '2px 7px',
-                      borderRadius: 4,
-                      background: '#F3F4F6',
-                      color: '#374151',
-                    }}
-                  >
-                    📐 {item.format}
-                  </span>
-                  {item.mediaBudget && (
                     <span
                       style={{
                         fontSize: 10.5,
                         fontWeight: 800,
-                        padding: '2px 7px',
-                        borderRadius: 4,
-                        background: '#E0F2FE',
-                        color: '#0369A1',
+                        padding: '2px 8px',
+                        borderRadius: 12,
+                        background: statusBadge.bg,
+                        color: statusBadge.text,
+                        border: `1px solid ${statusBadge.border}`,
                       }}
                     >
-                      💰 {item.mediaBudget}
+                      {statusBadge.label}
                     </span>
-                  )}
+                  </div>
+
+                  {/* Title */}
+                  <h4 style={{ fontSize: 14, fontWeight: 900, color: 'var(--dark)', margin: '0 0 6px 0' }}>
+                    {item.title}
+                  </h4>
+
+                  {/* Message preview */}
+                  <p style={{ fontSize: 11.5, color: '#4B5563', margin: '0 0 10px 0', lineHeight: 1.4 }}>
+                    « {item.message} »
+                  </p>
+
+                  {/* Format & Budget badges */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
+                    <span
+                      style={{
+                        fontSize: 10.5,
+                        fontWeight: 700,
+                        padding: '2px 7px',
+                        borderRadius: 4,
+                        background: '#F3F4F6',
+                        color: '#374151',
+                      }}
+                    >
+                      📐 {item.format}
+                    </span>
+                    {item.mediaBudget && (
+                      <span
+                        style={{
+                          fontSize: 10.5,
+                          fontWeight: 800,
+                          padding: '2px 7px',
+                          borderRadius: 4,
+                          background: '#E0F2FE',
+                          color: '#0369A1',
+                        }}
+                      >
+                        💰 {item.mediaBudget}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Footer info: Date, KPI, Creator */}
+                <div
+                  style={{
+                    paddingTop: 10,
+                    borderTop: '1px solid #F3F4F6',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    fontSize: 11,
+                    color: 'var(--muted)',
+                  }}
+                >
+                  <div>
+                    <span style={{ fontWeight: 800, color: '#FF7900' }}>
+                      📅 {item.date}
+                    </span>{' '}
+                    à {item.time}
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Eye size={13} className="text-gray-400" />
+                    <span style={{ fontSize: 10.5, fontWeight: 700 }}>Détail complet →</span>
+                  </div>
                 </div>
               </div>
-
-              {/* Footer info: Date, KPI, Creator */}
-              <div
-                style={{
-                  paddingTop: 10,
-                  borderTop: '1px solid #F3F4F6',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  fontSize: 11,
-                  color: 'var(--muted)',
-                }}
-              >
-                <div>
-                  <span style={{ fontWeight: 800, color: '#FF7900' }}>
-                    📅 {item.date}
-                  </span>{' '}
-                  à {item.time}
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <Eye size={13} className="text-gray-400" />
-                  <span style={{ fontSize: 10.5, fontWeight: 700 }}>Détail complet →</span>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

@@ -22,6 +22,8 @@ export default function ClientNewBriefModal({ isOpen, onClose, onSubmitBrief }) 
     referenceLinks: '',
   });
 
+  const [errorMsg, setErrorMsg] = useState(null);
+
   const availableChannels = ['Facebook', 'Instagram', 'TikTok', 'LinkedIn', 'X (Twitter)', 'YouTube', 'WhatsApp Bot', 'CRM Push / SMS'];
 
   if (!isOpen) return null;
@@ -38,9 +40,10 @@ export default function ClientNewBriefModal({ isOpen, onClose, onSubmitBrief }) 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.title.trim()) {
-      alert('Veuillez renseigner au minimum le titre du sujet.');
+      setErrorMsg('Veuillez renseigner au minimum le titre du sujet.');
       return;
     }
+    setErrorMsg(null);
     onSubmitBrief(formData);
     onClose();
   };
@@ -102,6 +105,21 @@ export default function ClientNewBriefModal({ isOpen, onClose, onSubmitBrief }) 
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-16">
+          {errorMsg && (
+            <div
+              style={{
+                padding: '8px 12px',
+                borderRadius: 8,
+                background: '#FFEBEE',
+                border: '1px solid #FFCDD2',
+                color: '#C62828',
+                fontSize: 12,
+                fontWeight: 800,
+              }}
+            >
+              ⚠️ {errorMsg}
+            </div>
+          )}
           {/* Section 1: Contexte & Titre */}
           <div style={{ background: '#F8FAFC', padding: 14, borderRadius: 10, border: '1px solid #E2E8F0' }}>
             <h4 style={{ fontSize: 13, fontWeight: 900, color: '#1E293B', margin: '0 0 10px 0' }}>

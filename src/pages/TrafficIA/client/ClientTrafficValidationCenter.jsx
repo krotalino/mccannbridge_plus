@@ -116,8 +116,26 @@ export default function ClientTrafficValidationCenter({
       </div>
 
       {/* ─── LISTE DES VALIDATIONS DÉTAILLÉES (Page 5 du Cahier des Charges) ─── */}
-      <div className="space-y-16">
-        {filteredValidations.map(val => {
+      {filteredValidations.length === 0 ? (
+        <div
+          className="card p-32 text-center"
+          style={{
+            background: '#F9FAFB',
+            borderRadius: 12,
+            border: '1px dashed #D1D5DB',
+          }}
+        >
+          <div style={{ fontSize: 32, marginBottom: 8 }}>⚡</div>
+          <div style={{ fontSize: 15, fontWeight: 900, color: 'var(--dark)' }}>
+            Aucune validation en attente d’Orange
+          </div>
+          <div style={{ fontSize: 12.5, color: 'var(--muted)', marginTop: 4, maxWidth: 440, margin: '4px auto 0' }}>
+            Toutes les demandes de retour, BAT créatifs, validations de plannings et arbitrages de devis apparaîtront ici avec leur minuteur SLA de 48h.
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-16">
+          {filteredValidations.map(val => {
           const catBadge = getCategoryBadge(val.category);
 
           return (
@@ -366,7 +384,8 @@ export default function ClientTrafficValidationCenter({
             </div>
           );
         })}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

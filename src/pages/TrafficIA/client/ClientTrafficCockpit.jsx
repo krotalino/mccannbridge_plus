@@ -1,12 +1,12 @@
 import React from 'react';
-import { CLIENT_PILOTAGE_KPIS } from '../../../data/clientTrafficData';
-import { Zap, AlertTriangle, Calendar, CheckCircle2, ArrowRight, Clock, ShieldAlert, Sparkles, FileText, ChevronRight } from 'lucide-react';
+import { Zap, AlertTriangle, Calendar, CheckCircle2, ArrowRight, Clock, Sparkles } from 'lucide-react';
 
 export default function ClientTrafficCockpit({
   dossiers = [],
   validations = [],
   recommendations = [],
   calendarItems = [],
+  livrables = [],
   onNavigateTab,
   onOpenValidation,
   onOpenDossier,
@@ -15,6 +15,96 @@ export default function ClientTrafficCockpit({
   const pendingValidations = validations.filter(v => v.status === 'en_attente');
   const atRiskDossiers = dossiers.filter(d => d.risk?.level === 'rouge' || d.risk?.level === 'orange');
   const upcomingMilestones = calendarItems.slice(0, 4);
+  const activeDossiersCount = dossiers.filter(d => d.clientStatus !== 'livre').length;
+  const readyRecommendationsCount = recommendations.filter(r => r.clientDecision === 'a_examiner' || !r.clientDecision).length;
+  const deliveredLivrablesCount = (livrables || []).filter(l => l.status === 'livre').length;
+
+  const dynamicKpis = [
+    {
+      id: 'travaux_actifs',
+      title: 'TRAVAUX ACTIFS',
+      value: activeDossiersCount,
+      unit: 'dossiers',
+      subtitle: 'Demandes prises en charge',
+      trend: activeDossiersCount > 0 ? `${activeDossiersCount} en cours` : 'Aucun actif',
+      trendPositive: true,
+      tag: 'Activité en cours',
+      tagClass: 'tag-orange',
+      icon: '⚙️',
+      color: '#FF7900',
+      interet: 'Mesurer l’activité en cours',
+    },
+    {
+      id: 'a_valider_orange',
+      title: 'À VALIDER PAR ORANGE',
+      value: pendingValidations.length,
+      unit: 'actions',
+      subtitle: 'Feedbacks ou validations requis',
+      trend: pendingValidations.length > 0 ? `${pendingValidations.length} en attente` : 'À jour',
+      trendPositive: pendingValidations.length === 0,
+      tag: 'Décision requise',
+      tagClass: 'tag-blue',
+      icon: '⚡',
+      color: '#1E88E5',
+      interet: 'Réduire les retards de décision',
+    },
+    {
+      id: 'jalons_semaine',
+      title: 'JALONS DE LA SEMAINE',
+      value: calendarItems.length,
+      unit: 'échéances',
+      subtitle: 'Livrables, lancements & réunions',
+      trend: calendarItems.length > 0 ? `${calendarItems.length} planifié(s)` : '0 planifié',
+      trendPositive: true,
+      tag: 'Planning',
+      tagClass: 'tag-purple',
+      icon: '📅',
+      color: '#8E24AA',
+      interet: 'Anticiper les échéances',
+    },
+    {
+      id: 'a_risque',
+      title: 'POINTS DE VIGILANCE',
+      value: atRiskDossiers.length,
+      unit: 'à risque',
+      subtitle: 'Risque de décalage identifié',
+      trend: atRiskDossiers.length > 0 ? 'Vigilance requise' : 'Aucun risque',
+      trendPositive: atRiskDossiers.length === 0,
+      tag: 'Alerte délai',
+      tagClass: 'tag-yellow',
+      icon: '⚠️',
+      color: '#E65100',
+      interet: 'Permettre l’arbitrage tôt',
+    },
+    {
+      id: 'livrables_remis',
+      title: 'LIVRABLES REMIS',
+      value: deliveredLivrablesCount,
+      unit: 'documents',
+      subtitle: 'Créas, bilans & plannings déposés',
+      trend: deliveredLivrablesCount > 0 ? `${deliveredLivrablesCount} déposé(s)` : 'À jour',
+      trendPositive: true,
+      tag: 'Visibilité réelle',
+      tagClass: 'tag-green',
+      icon: '📁',
+      color: '#2E7D32',
+      interet: 'Donner de la visibilité sur l’avancement réel',
+    },
+    {
+      id: 'recommandations_arbitrer',
+      title: 'RECOMMANDATIONS À DÉCIDER',
+      value: readyRecommendationsCount,
+      unit: 'propositions',
+      subtitle: 'Innovations & opportunités prêtes',
+      trend: readyRecommendationsCount > 0 ? `${readyRecommendationsCount} à arbitrer` : '0 en attente',
+      trendPositive: true,
+      tag: 'Go / No-go',
+      tagClass: 'tag-purple',
+      icon: '💡',
+      color: '#6A1B9A',
+      interet: 'Faire vivre la proactivité de l’agence',
+    },
+  ];
 
   return (
     <div className="client-traffic-cockpit space-y-20 animate-fade">
@@ -50,13 +140,13 @@ export default function ClientTrafficCockpit({
           <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
               <span style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.6px', color: '#E65100' }}>
-                SYNTHÈSE DÉCISIONNELLE S38 EN QUELQUES SECONDES
+                SYNTHÈSE DÉCISIONNELLE EN TEMPS RÉEL
               </span>
               <span className="tag tag-orange" style={{ fontSize: 10, fontWeight: 800 }}>
                 Directoire Marketing Orange
               </span>
             </div>
-            {/* The exact message from Page 2 */}
+            
             <p
               style={{
                 fontSize: 16,
@@ -66,21 +156,32 @@ export default function ClientTrafficCockpit({
                 lineHeight: 1.45,
               }}
             >
-              « <strong style={{ color: '#FF7900' }}>8 sujets sont actifs</strong> ;{' '}
-              <strong style={{ color: '#1E88E5' }}>2 validations Orange sont requises avant vendredi</strong> ;{' '}
-              <strong style={{ color: '#E65100' }}>1 échéance présente un risque de décalage</strong> ;{' '}
-              <strong style={{ color: '#6A1B9A' }}>3 recommandations sont prêtes à arbitrer</strong>. »
+              {activeDossiersCount === 0 && pendingValidations.length === 0 && atRiskDossiers.length === 0 && readyRecommendationsCount === 0 ? (
+                <>
+                  « <strong style={{ color: '#FF7900' }}>0 sujet actif</strong> ;{' '}
+                  <strong style={{ color: '#1E88E5' }}>0 validation requise</strong> ;{' '}
+                  <strong style={{ color: '#E65100' }}>0 point de vigilance</strong> ;{' '}
+                  <strong style={{ color: '#6A1B9A' }}>0 recommandation en attente</strong>. »
+                </>
+              ) : (
+                <>
+                  « <strong style={{ color: '#FF7900' }}>{activeDossiersCount} sujet{activeDossiersCount > 1 ? 's actifs' : ' actif'}</strong> ;{' '}
+                  <strong style={{ color: '#1E88E5' }}>{pendingValidations.length} validation{pendingValidations.length > 1 ? 's Orange requises' : ' requise'}</strong> ;{' '}
+                  <strong style={{ color: '#E65100' }}>{atRiskDossiers.length} échéance{atRiskDossiers.length > 1 ? 's à risque' : ' à risque'}</strong> ;{' '}
+                  <strong style={{ color: '#6A1B9A' }}>{readyRecommendationsCount} recommandation{readyRecommendationsCount > 1 ? 's prêtes à arbitrer' : ' prête à arbitrer'}</strong>. »
+                </>
+              )}
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap', fontSize: 12, color: '#555' }}>
-              <span>• <strong>Qu’est-ce qui est en cours ?</strong> 8 campagnes & formats en production ou cadrage</span>
+              <span>• <strong>Qu’est-ce qui est en cours ?</strong> {activeDossiersCount > 0 ? `${activeDossiersCount} campagne(s) & livrable(s) en cadrage ou production` : 'Aucun projet en production'}</span>
               <span>• <strong>Qui le traite ?</strong> Équipes dédiées McCann Douala sous la régulation du Traffic</span>
-              <span>• <strong>Qu’attend McCann d’Orange ?</strong> 2 validations sur OM Transfert et Pulse</span>
+              <span>• <strong>Qu’attend McCann d’Orange ?</strong> {pendingValidations.length > 0 ? `${pendingValidations.length} validation(s) en attente de retour client` : 'Aucune action requise d’Orange'}</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ─── 2. LES 6 CARTES KPI DE PILOTAGE (Page 2 du Cahier des Charges) ─── */}
+      {/* ─── 2. LES 6 CARTES KPI DE PILOTAGE ─── */}
       <div
         style={{
           display: 'grid',
@@ -89,7 +190,7 @@ export default function ClientTrafficCockpit({
           marginBottom: 24,
         }}
       >
-        {CLIENT_PILOTAGE_KPIS.map(kpi => (
+        {dynamicKpis.map(kpi => (
           <div
             key={kpi.id}
             className="card"
@@ -123,7 +224,7 @@ export default function ClientTrafficCockpit({
                 {kpi.title}
               </div>
 
-              {/* Huge Value with unit */}
+              {/* Value with unit */}
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, margin: '6px 0' }}>
                 <span style={{ fontSize: 28, fontWeight: 900, color: 'var(--dark)', letterSpacing: '-0.5px' }}>
                   {kpi.value}
@@ -189,7 +290,7 @@ export default function ClientTrafficCockpit({
                   Actions attendues de votre part
                 </h3>
                 <p style={{ fontSize: 11.5, color: 'var(--muted)', margin: 0 }}>
-                  2 validations pour maintenir les calendriers de diffusion
+                  {pendingValidations.length > 0 ? `${pendingValidations.length} validation(s) pour maintenir les calendriers de diffusion` : 'Flux de validation nominal'}
                 </p>
               </div>
             </div>
@@ -204,92 +305,102 @@ export default function ClientTrafficCockpit({
           </div>
 
           <div className="space-y-12">
-            {pendingValidations.map(val => (
-              <div
-                key={val.id}
-                style={{
-                  padding: '12px 14px',
-                  borderRadius: 10,
-                  border: '1px solid #BBDEFB',
-                  background: '#F8FAFC',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 6 }}>
-                  <div>
-                    <span
-                      style={{
-                        fontSize: 10,
-                        fontWeight: 800,
-                        padding: '2px 6px',
-                        borderRadius: 4,
-                        background: '#E3F2FD',
-                        color: '#1565C0',
-                        marginRight: 6,
-                      }}
-                    >
-                      {val.categoryLabel}
-                    </span>
-                    <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--muted)' }}>
-                      {val.entity}
-                    </span>
-                  </div>
-                  <span
-                    style={{
-                      fontSize: 10.5,
-                      fontWeight: 800,
-                      color: '#C62828',
-                      background: '#FFEBEE',
-                      padding: '2px 8px',
-                      borderRadius: 12,
-                    }}
-                  >
-                    ⏳ {val.deadlineHoursLeft}h restantes
-                  </span>
-                </div>
-
-                <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--dark)', marginBottom: 4 }}>
-                  {val.subject}
-                </div>
-
-                <div style={{ fontSize: 11.5, color: '#4B5563', marginBottom: 8, lineHeight: 1.35 }}>
-                  <strong>Attente :</strong> {val.whatIsExpected}
-                </div>
-
+            {pendingValidations.length === 0 ? (
+              <div style={{ padding: '36px 16px', textAlign: 'center', background: '#F8FAFC', borderRadius: 10, border: '1px dashed #CBD5E1' }}>
+                <CheckCircle2 size={32} style={{ color: '#10B981', margin: '0 auto 8px' }} />
+                <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--dark)' }}>Toutes les validations sont à jour</div>
+                <div style={{ fontSize: 11.5, color: 'var(--muted)', marginTop: 2 }}>Aucune décision ou arbitrage Orange n’est en attente pour le moment.</div>
+              </div>
+            ) : (
+              pendingValidations.map(val => (
                 <div
+                  key={val.id}
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    flexWrap: 'wrap',
-                    gap: 8,
-                    paddingTop: 8,
-                    borderTop: '1px solid #E2E8F0',
+                    padding: '12px 14px',
+                    borderRadius: 10,
+                    border: '1px solid #BBDEFB',
+                    background: '#F8FAFC',
                   }}
                 >
-                  <span style={{ fontSize: 11, color: 'var(--muted)' }}>
-                    👤 <strong>Destinataire :</strong> {val.whoMustAnswer}
-                  </span>
-                  <button
-                    type="button"
-                    className="btn btn-primary btn-xs"
-                    onClick={() => onOpenValidation(val)}
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 6 }}>
+                    <div>
+                      <span
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 800,
+                          padding: '2px 6px',
+                          borderRadius: 4,
+                          background: '#E3F2FD',
+                          color: '#1565C0',
+                          marginRight: 6,
+                        }}
+                      >
+                        {val.categoryLabel}
+                      </span>
+                      <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--muted)' }}>
+                        {val.entity}
+                      </span>
+                    </div>
+                    {val.deadlineHoursLeft && (
+                      <span
+                        style={{
+                          fontSize: 10.5,
+                          fontWeight: 800,
+                          color: '#C62828',
+                          background: '#FFEBEE',
+                          padding: '2px 8px',
+                          borderRadius: 12,
+                        }}
+                      >
+                        ⏳ {val.deadlineHoursLeft}h restantes
+                      </span>
+                    )}
+                  </div>
+
+                  <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--dark)', marginBottom: 4 }}>
+                    {val.subject}
+                  </div>
+
+                  <div style={{ fontSize: 11.5, color: '#4B5563', marginBottom: 8, lineHeight: 1.35 }}>
+                    <strong>Attente :</strong> {val.whatIsExpected}
+                  </div>
+
+                  <div
                     style={{
-                      fontSize: 11,
-                      fontWeight: 800,
-                      background: '#1E88E5',
-                      border: 'none',
-                      padding: '4px 10px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      flexWrap: 'wrap',
+                      gap: 8,
+                      paddingTop: 8,
+                      borderTop: '1px solid #E2E8F0',
                     }}
                   >
-                    Arbitrer maintenant →
-                  </button>
+                    <span style={{ fontSize: 11, color: 'var(--muted)' }}>
+                      👤 <strong>Destinataire :</strong> {val.whoMustAnswer}
+                    </span>
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-xs"
+                      onClick={() => onOpenValidation(val)}
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 800,
+                        background: '#1E88E5',
+                        border: 'none',
+                        padding: '4px 10px',
+                      }}
+                    >
+                      Arbitrer maintenant →
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 
-        {/* Block B: Dépendances & Points de vigilance (Cahier des charges Page 6) */}
+        {/* Block B: Dépendances & Points de vigilance */}
         <div
           className="card"
           style={{
@@ -319,77 +430,92 @@ export default function ClientTrafficCockpit({
                 fontWeight: 800,
                 padding: '2px 8px',
                 borderRadius: 12,
-                background: '#FFEBEE',
-                color: '#C62828',
+                background: atRiskDossiers.length > 0 ? '#FFEBEE' : '#E8F5E9',
+                color: atRiskDossiers.length > 0 ? '#C62828' : '#2E7D32',
               }}
             >
-              1 risque identifié
+              {atRiskDossiers.length} {atRiskDossiers.length > 1 ? 'risques identifiés' : 'risque identifié'}
             </span>
           </div>
 
           <div className="space-y-12">
-            {atRiskDossiers.map(dossier => (
-              <div
-                key={dossier.id}
-                style={{
-                  padding: '12px 14px',
-                  borderRadius: 10,
-                  border: '1.5px solid #FFCC80',
-                  background: '#FFFDF9',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 11, fontWeight: 900, color: '#E65100' }}>{dossier.id}</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)' }}>• {dossier.brand}</span>
-                  </div>
-                  <span
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 800,
-                      padding: '2px 6px',
-                      borderRadius: 4,
-                      background: '#FFEBEE',
-                      color: '#C62828',
-                      textTransform: 'uppercase',
-                    }}
-                  >
-                    Risque {dossier.risk.level}
-                  </span>
-                </div>
-
-                <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--dark)', marginBottom: 6 }}>
-                  {dossier.title}
-                </div>
-
-                {/* 4 specific fields required by the cahier des charges (Page 6) */}
-                <div style={{ fontSize: 11.5, lineHeight: 1.4, color: '#374151' }} className="space-y-4">
-                  <div>
-                    <strong style={{ color: '#E65100' }}>Cause :</strong> {dossier.risk.cause}
-                  </div>
-                  <div>
-                    <strong style={{ color: '#C62828' }}>Conséquence :</strong> {dossier.risk.consequence}
-                  </div>
-                  <div>
-                    <strong style={{ color: '#1565C0' }}>Date de décision requise :</strong> {dossier.risk.decisionDate}
-                  </div>
-                  <div>
-                    <strong style={{ color: '#2E7D32' }}>Action recommandée :</strong> {dossier.risk.recommendedAction}
-                  </div>
-                </div>
-
-                <div style={{ marginTop: 10, textAlign: 'right' }}>
-                  <button
-                    type="button"
-                    className="btn btn-ghost btn-xs"
-                    onClick={() => onOpenDossier(dossier)}
-                    style={{ fontSize: 11, fontWeight: 800, color: '#E65100' }}
-                  >
-                    Ouvrir la fiche du dossier →
-                  </button>
-                </div>
+            {atRiskDossiers.length === 0 ? (
+              <div style={{ padding: '36px 16px', textAlign: 'center', background: '#F0FDF4', borderRadius: 10, border: '1px dashed #86EFAC' }}>
+                <CheckCircle2 size={32} style={{ color: '#16A34A', margin: '0 auto 8px' }} />
+                <div style={{ fontSize: 13, fontWeight: 800, color: '#166534' }}>Aucun point de vigilance actif</div>
+                <div style={{ fontSize: 11.5, color: '#15803D', marginTop: 2 }}>Tous les livrables progressent selon le planning contractuel nominal.</div>
               </div>
-            ))}
+            ) : (
+              atRiskDossiers.map(dossier => (
+                <div
+                  key={dossier.id}
+                  style={{
+                    padding: '12px 14px',
+                    borderRadius: 10,
+                    border: '1.5px solid #FFCC80',
+                    background: '#FFFDF9',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: 11, fontWeight: 900, color: '#E65100' }}>{dossier.id}</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)' }}>• {dossier.brand}</span>
+                    </div>
+                    <span
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 800,
+                        padding: '2px 6px',
+                        borderRadius: 4,
+                        background: '#FFEBEE',
+                        color: '#C62828',
+                        textTransform: 'uppercase',
+                      }}
+                    >
+                      Risque {dossier.risk?.level}
+                    </span>
+                  </div>
+
+                  <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--dark)', marginBottom: 6 }}>
+                    {dossier.title}
+                  </div>
+
+                  <div style={{ fontSize: 11.5, lineHeight: 1.4, color: '#374151' }} className="space-y-4">
+                    {dossier.risk?.cause && (
+                      <div>
+                        <strong style={{ color: '#E65100' }}>Cause :</strong> {dossier.risk.cause}
+                      </div>
+                    )}
+                    {dossier.risk?.consequence && (
+                      <div>
+                        <strong style={{ color: '#C62828' }}>Conséquence :</strong> {dossier.risk.consequence}
+                      </div>
+                    )}
+                    {dossier.risk?.decisionDate && (
+                      <div>
+                        <strong style={{ color: '#1565C0' }}>Date de décision requise :</strong> {dossier.risk.decisionDate}
+                      </div>
+                    )}
+                    {dossier.risk?.recommendedAction && (
+                      <div>
+                        <strong style={{ color: '#2E7D32' }}>Action recommandée :</strong> {dossier.risk.recommendedAction}
+                      </div>
+                    )}
+                  </div>
+
+                  <div style={{ marginTop: 10, textAlign: 'right' }}>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-xs"
+                      onClick={() => onOpenDossier(dossier)}
+                      style={{ fontSize: 11, fontWeight: 800, color: '#E65100' }}
+                    >
+                      Ouvrir la fiche du dossier →
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
 
             {/* Note sur la transparence maîtrisée */}
             <div
@@ -448,70 +574,78 @@ export default function ClientTrafficCockpit({
           </button>
         </div>
 
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-            gap: 12,
-          }}
-        >
-          {upcomingMilestones.map(item => (
-            <div
-              key={item.id}
-              style={{
-                padding: '12px 14px',
-                borderRadius: 10,
-                border: '1px solid #E5E7EB',
-                background: '#FAFAFA',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-              }}
-            >
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <span
-                    style={{
-                      fontSize: 10.5,
-                      fontWeight: 800,
-                      padding: '2px 6px',
-                      borderRadius: 4,
-                      background: item.type === 'paid_media' ? '#E3F2FD' : item.type === 'temps_fort_orange' ? '#FFF3E0' : '#F3E5F5',
-                      color: item.type === 'paid_media' ? '#1565C0' : item.type === 'temps_fort_orange' ? '#E65100' : '#7B1FA2',
-                    }}
-                  >
-                    {item.network} • {item.type}
-                  </span>
-                  <span style={{ fontSize: 11, fontWeight: 800, color: '#FF7900' }}>
-                    {item.date} à {item.time}
-                  </span>
-                </div>
-
-                <div style={{ fontSize: 12.5, fontWeight: 800, color: 'var(--dark)', marginBottom: 4 }}>
-                  {item.title}
-                </div>
-                <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 8 }}>
-                  {item.brand}
-                </div>
-              </div>
-
+        {upcomingMilestones.length === 0 ? (
+          <div style={{ padding: '36px 16px', textAlign: 'center', background: '#F9FAFB', borderRadius: 10, border: '1px dashed #E5E7EB' }}>
+            <Calendar size={32} style={{ color: '#9CA3AF', margin: '0 auto 8px' }} />
+            <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--dark)' }}>Aucun jalon planifié pour cette semaine</div>
+            <div style={{ fontSize: 11.5, color: 'var(--muted)', marginTop: 2 }}>Les futures diffusions et remises s’afficheront ici dès leur programmation.</div>
+          </div>
+        ) : (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+              gap: 12,
+            }}
+          >
+            {upcomingMilestones.map(item => (
               <div
+                key={item.id}
                 style={{
-                  fontSize: 11,
-                  paddingTop: 8,
-                  borderTop: '1px solid #EEEEEE',
-                  color: '#4B5563',
+                  padding: '12px 14px',
+                  borderRadius: 10,
+                  border: '1px solid #E5E7EB',
+                  background: '#FAFAFA',
                   display: 'flex',
-                  alignItems: 'center',
+                  flexDirection: 'column',
                   justifyContent: 'space-between',
                 }}
               >
-                <span>Statut : <strong>{item.status}</strong></span>
-                <span style={{ fontSize: 10, color: 'var(--muted)' }}>👤 {item.creator.split(' ')[0]}</span>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                    <span
+                      style={{
+                        fontSize: 10.5,
+                        fontWeight: 800,
+                        padding: '2px 6px',
+                        borderRadius: 4,
+                        background: item.type === 'paid_media' ? '#E3F2FD' : item.type === 'temps_fort_orange' ? '#FFF3E0' : '#F3E5F5',
+                        color: item.type === 'paid_media' ? '#1565C0' : item.type === 'temps_fort_orange' ? '#E65100' : '#7B1FA2',
+                      }}
+                    >
+                      {item.network} • {item.type}
+                    </span>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: '#FF7900' }}>
+                      {item.date} {item.time ? `à ${item.time}` : ''}
+                    </span>
+                  </div>
+
+                  <div style={{ fontSize: 12.5, fontWeight: 800, color: 'var(--dark)', marginBottom: 4 }}>
+                    {item.title}
+                  </div>
+                  <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 8 }}>
+                    {item.brand}
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    fontSize: 11,
+                    paddingTop: 8,
+                    borderTop: '1px solid #EEEEEE',
+                    color: '#4B5563',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <span>Statut : <strong>{item.status}</strong></span>
+                  {item.creator && <span style={{ fontSize: 10, color: 'var(--muted)' }}>👤 {item.creator.split(' ')[0]}</span>}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

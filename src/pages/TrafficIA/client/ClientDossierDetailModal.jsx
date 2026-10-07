@@ -266,7 +266,11 @@ export default function ClientDossierDetailModal({ dossier, isOpen, onClose }) {
                     <button
                       type="button"
                       className="btn btn-ghost btn-xs"
-                      onClick={() => alert(`Téléchargement de ${asset.name}`)}
+                      onClick={() => {
+                        const link = document.createElement('a');
+                        link.href = '#';
+                        link.setAttribute('download', asset.name || 'document');
+                      }}
                       style={{ fontSize: 11, fontWeight: 800, color: '#FF7900' }}
                     >
                       <Download size={12} /> Télécharger

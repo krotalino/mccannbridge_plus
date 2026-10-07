@@ -139,8 +139,25 @@ export default function ClientTrafficRecommendations({
       </div>
 
       {/* ─── LISTE DÉTAILLÉE DES RECOMMANDATIONS (Page 4 du Cahier des Charges) ─── */}
-      <div className="space-y-16">
-        {filteredRecs.map(rec => {
+      {filteredRecs.length === 0 ? (
+        <div className="card p-32 text-center" style={{ background: '#F9FAFB', borderRadius: 12, border: '1px dashed #D1D5DB' }}>
+          <Lightbulb size={32} style={{ color: '#9CA3AF', margin: '0 auto 8px' }} />
+          <div style={{ fontSize: 15, fontWeight: 900, color: 'var(--dark)' }}>Aucune recommandation prompte enregistrée</div>
+          <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4, maxWidth: 440, margin: '4px auto 16px' }}>
+            Les propositions proactives d’innovation, d’optimisation créative et d’opportunités média de l’agence s'afficheront ici.
+          </div>
+          <button
+            type="button"
+            className="btn btn-primary btn-sm"
+            onClick={onOpenNewProposal}
+            style={{ background: '#6A1B9A', border: 'none', fontWeight: 800 }}
+          >
+            + Proposer une opportunité
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-16">
+          {filteredRecs.map(rec => {
           const decisionBadge = getDecisionBadge(rec.clientDecision);
           const urgencyBadge = getUrgencyBadge(rec.urgencyLevel);
 
@@ -375,7 +392,8 @@ export default function ClientTrafficRecommendations({
             </div>
           );
         })}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
