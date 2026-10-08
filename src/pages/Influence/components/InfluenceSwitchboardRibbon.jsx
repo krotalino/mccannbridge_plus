@@ -55,8 +55,8 @@ export default function InfluenceSwitchboardRibbon({
       id: 'campagnes',
       label: 'Campagnes & Activations',
       icon: '🗂',
-      metric: `${(data.campaigns || []).length} campagnes`,
-      sub: 'Orange Weekend, Pulse...',
+      metric: `${(data.campaigns || []).filter(c => c && c.isNewlyCreated === true && !c.isDemo && !c.isExample).length} dispositif(s)`,
+      sub: (data.campaigns || []).filter(c => c && c.isNewlyCreated === true && !c.isDemo && !c.isExample).length > 0 ? 'Dispositifs actifs' : 'Nouvelles activations',
       color: '#F39C12'
     },
     {

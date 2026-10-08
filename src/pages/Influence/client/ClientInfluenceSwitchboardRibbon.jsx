@@ -28,8 +28,8 @@ export default function ClientInfluenceSwitchboardRibbon({
       id: 'campagnes',
       label: 'Campagnes & Activations',
       icon: '🗂',
-      metric: `${kpis.activationsEnCours || 6} opérations`,
-      sub: 'Pulse, OM Otélé, B2B Cloud...',
+      metric: `${kpis.activationsEnCours || 0} opération(s)`,
+      sub: (kpis.activationsEnCours || 0) > 0 ? 'Dispositifs actifs' : 'Nouvelles créations',
       color: '#F39C12'
     },
     {

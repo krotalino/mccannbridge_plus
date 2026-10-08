@@ -220,12 +220,11 @@ export default function InsightTransformationModal({ item, onClose, onTransforme
                   onChange={(e) => setFormData({ ...formData, associated_campaign_id: e.target.value })}
                 >
                   <option value="">-- Aucune campagne spécifique --</option>
-                  {influenceCampaigns.map(c => (
-                    <option key={c.id} value={c.id}>{c.name || c.title || c.id}</option>
-                  ))}
-                  <option value="CAMP-001">Orange Weekend Mars 2026</option>
-                  <option value="CAMP-002">Ramadan & Générosité Orange</option>
-                  <option value="CAMP-003">Pulse Jeunesse & Gaming</option>
+                  {(influenceCampaigns || [])
+                    .filter(c => c && c.isNewlyCreated === true && !c.isDemo && !c.isExample)
+                    .map(c => (
+                      <option key={c.id} value={c.id}>{c.name || c.title || c.id}</option>
+                    ))}
                 </select>
               </div>
               <div>

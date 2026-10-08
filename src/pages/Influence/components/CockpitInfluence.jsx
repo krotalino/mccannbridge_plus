@@ -58,7 +58,14 @@ export default function CockpitInfluence({ data, onNavigate }) {
   // Campaigns performance overview (strictly real data, filtering out demo/example campaigns)
   const campaignsSummary = useMemo(() => {
     const cleanCampaigns = (data.campaigns || []).filter(
-      camp => camp && !camp.isDemo && !camp.isExample && camp.id !== 'CAMP-ORANGE-Q4-2025' && !camp.id?.startsWith('mock-')
+      camp =>
+        camp &&
+        camp.isNewlyCreated === true &&
+        !camp.isDemo &&
+        !camp.isExample &&
+        !['CAMP-ORANGE-WEEKEND', 'CAMP-ORANGE-RELAY-2025', 'CAMP-ORANGE-Q4-2025', 'CAMP-001', 'CAMP-002', 'CAMP-003'].includes(camp.id) &&
+        !['Orange Weekend 2025', 'Relais Média & Webzines', 'Campagnes & Challenges Q4 2025'].includes(camp.name) &&
+        !camp.id?.startsWith('mock-')
     );
     return cleanCampaigns.map(camp => {
       const delivs = (data.deliverables || []).filter(d => d.campaign_id === camp.id && !d.isDemo && !d.isExample);

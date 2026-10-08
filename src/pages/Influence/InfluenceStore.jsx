@@ -20,7 +20,17 @@ const getInitialData = () => {
       if (parsed && parsed.talents && parsed.talents.length > 0) {
         return {
           ...parsed,
-          campaigns: Array.isArray(parsed.campaigns) ? parsed.campaigns.filter(c => c && !c.import_batch_id && c.id !== 'CAMP-ORANGE-Q4-2025' && !c.isDemo && !c.isExample) : [],
+          campaigns: Array.isArray(parsed.campaigns)
+            ? parsed.campaigns.filter(c =>
+                c &&
+                c.isNewlyCreated === true &&
+                !c.isDemo &&
+                !c.isExample &&
+                !['CAMP-ORANGE-WEEKEND', 'CAMP-ORANGE-RELAY-2025', 'CAMP-ORANGE-Q4-2025', 'CAMP-001', 'CAMP-002', 'CAMP-003'].includes(c.id) &&
+                !['Orange Weekend 2025', 'Relais Média & Webzines', 'Campagnes & Challenges Q4 2025'].includes(c.name) &&
+                !c.id?.startsWith('mock-')
+              )
+            : [],
           deliverables: Array.isArray(parsed.deliverables) ? parsed.deliverables.filter(d => d && !d.import_batch_id && d.campaign_id !== 'CAMP-ORANGE-Q4-2025' && !d.isDemo && !d.isExample) : [],
           snapshots: Array.isArray(parsed.snapshots) ? parsed.snapshots.filter(s => s && s.isNewlyCreated && !s.isDemo && !s.isExample) : [],
           insights: Array.isArray(parsed.insights) ? parsed.insights.filter(i => i && !i.isDemo && !i.isExample) : [],
@@ -41,7 +51,7 @@ const getInitialData = () => {
     batches: [INITIAL_IMPORT_BATCH],
     talents: INITIAL_INFLUENCE_TALENTS || [],
     groups: INITIAL_AMBASSADOR_GROUPS || [],
-    campaigns: INITIAL_INFLUENCE_CAMPAIGNS || [],
+    campaigns: [], // Uniquement les campagnes nouvellement créées
     activations: initialActivations,
     deliverables: INITIAL_INFLUENCE_DELIVERABLES || [],
     snapshots: INITIAL_INFLUENCE_SNAPSHOTS || [],
@@ -103,7 +113,15 @@ export const computeCockpitKpis = (data) => {
   const rate = viewsWithCompletedEng > 0 ? Math.round((engagement / viewsWithCompletedEng) * 10000) / 100 : null;
 
   const cleanActivations = (data.activations || []).filter(a => a && !a.isDemo && !a.isExample && a.isNewlyCreated);
-  const cleanCampaigns = (data.campaigns || []).filter(c => c && !c.isDemo && !c.isExample && c.id !== 'CAMP-ORANGE-Q4-2025' && !c.id?.startsWith('mock-'));
+  const cleanCampaigns = (data.campaigns || []).filter(c =>
+    c &&
+    c.isNewlyCreated === true &&
+    !c.isDemo &&
+    !c.isExample &&
+    !['CAMP-ORANGE-WEEKEND', 'CAMP-ORANGE-RELAY-2025', 'CAMP-ORANGE-Q4-2025'].includes(c.id) &&
+    !['Orange Weekend 2025', 'Relais Média & Webzines', 'Campagnes & Challenges Q4 2025'].includes(c.name) &&
+    !c.id?.startsWith('mock-')
+  );
   const cleanDeliverables = (data.deliverables || []).filter(u => u && !u.isDemo && !u.isExample && u.campaign_id !== 'CAMP-ORANGE-Q4-2025');
   const cleanIssues = (data.issues || []).filter(i => i && !i.isDemo && !i.isExample && !i.id?.startsWith('iss-dup-'));
 
@@ -196,6 +214,78 @@ export function useInfluenceStore() {
   useEffect(() => {
     listeners.add(setData);
     return () => listeners.delete(setData);
+  }, []);
+
+  // Nettoyage immédiat au chargement de toute campagne d'exemple résiduelle
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed.campaigns)) {
+          const cleaned = parsed.campaigns.filter(c =>
+            c &&
+            c.isNewlyCreated === true &&
+            !c.isDemo &&
+            !c.isExample &&
+            !['CAMP-ORANGE-WEEKEND', 'CAMP-ORANGE-RELAY-2025', 'CAMP-ORANGE-Q4-2025', 'CAMP-001', 'CAMP-002', 'CAMP-003'].includes(c.id) &&
+            !['Orange Weekend 2025', 'Relais Média & Webzines', 'Campagnes & Challenges Q4 2025'].includes(c.name) &&
+            !c.id?.startsWith('mock-')
+          );
+          if (cleaned.length !== parsed.campaigns.length) {
+            updateGlobalState(prev => ({
+              ...prev,
+              campaigns: cleaned
+            }));
+          }
+        }
+      }
+    } catch (e) {}
+  }, []);
+
+  const addCampaign = useCallback((campaign) => {
+    const newCamp = {
+      ...campaign,
+      id: campaign.id || `CAMP-${Date.now().toString().slice(-6)}`,
+      isNewlyCreated: true,
+      isReal: true,
+      isDemo: false,
+      isExample: false,
+      created_at: new Date().toISOString()
+    };
+    updateGlobalState(prev => {
+      const existing = (prev.campaigns || []).filter(c =>
+        c &&
+        c.isNewlyCreated === true &&
+        !c.isDemo &&
+        !c.isExample &&
+        !['CAMP-ORANGE-WEEKEND', 'CAMP-ORANGE-RELAY-2025', 'CAMP-ORANGE-Q4-2025', 'CAMP-001', 'CAMP-002', 'CAMP-003'].includes(c.id) &&
+        !['Orange Weekend 2025', 'Relais Média & Webzines', 'Campagnes & Challenges Q4 2025'].includes(c.name) &&
+        !c.id?.startsWith('mock-') &&
+        c.id !== newCamp.id
+      );
+      return {
+        ...prev,
+        campaigns: [newCamp, ...existing]
+      };
+    });
+    return newCamp;
+  }, []);
+
+  const updateCampaign = useCallback((campaignId, updates) => {
+    updateGlobalState(prev => ({
+      ...prev,
+      campaigns: (prev.campaigns || []).map(c =>
+        c.id === campaignId ? { ...c, ...updates, updated_at: new Date().toISOString() } : c
+      )
+    }));
+  }, []);
+
+  const deleteCampaign = useCallback((campaignId) => {
+    updateGlobalState(prev => ({
+      ...prev,
+      campaigns: (prev.campaigns || []).filter(c => c.id !== campaignId)
+    }));
   }, []);
 
   const runImport = useCallback(({ importedBy = 'Utilisateur Bridge' } = {}) => {
@@ -326,6 +416,9 @@ export function useInfluenceStore() {
   return {
     data,
     runImport,
+    addCampaign,
+    updateCampaign,
+    deleteCampaign,
     setDeliverableStatus,
     addInsight,
     removeInsight,

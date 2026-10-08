@@ -222,13 +222,21 @@ const loadSavedInfluenceCampaigns = () => {
     if (saved) {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        // Exclude legacy mock campaigns, only keep newly recorded
-        return parsed.filter(c => c && !c.import_batch_id && c.id !== 'CAMP-ORANGE-Q4-2025' && !c.isDemo);
+        // Exclude legacy mock campaigns, strictly keep newly recorded campaigns
+        return parsed.filter(c =>
+          c &&
+          c.isNewlyCreated === true &&
+          !c.isDemo &&
+          !c.isExample &&
+          !['CAMP-ORANGE-WEEKEND', 'CAMP-ORANGE-RELAY-2025', 'CAMP-ORANGE-Q4-2025', 'CAMP-001', 'CAMP-002', 'CAMP-003'].includes(c.id) &&
+          !['Orange Weekend 2025', 'Relais Média & Webzines', 'Campagnes & Challenges Q4 2025'].includes(c.name) &&
+          !c.id?.startsWith('mock-')
+        );
       }
     }
-    return INITIAL_INFLUENCE_CAMPAIGNS;
+    return [];
   } catch (e) {
-    return INITIAL_INFLUENCE_CAMPAIGNS;
+    return [];
   }
 };
 
@@ -2602,6 +2610,10 @@ export function AppProvider({ children }) {
     const newCamp = {
       ...campaign,
       id: campaign.id || `CAMP-${Date.now().toString().slice(-6)}`,
+      isNewlyCreated: true,
+      isReal: true,
+      isDemo: false,
+      isExample: false,
       created_at: new Date().toISOString()
     };
     dispatch({ type: 'ADD_INFLUENCE_CAMPAIGN', campaign: newCamp });

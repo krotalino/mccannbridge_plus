@@ -274,110 +274,78 @@ export default function VeilleInfluenceursCampagnesView({
 
           {/* Comparatif des campagnes actives */}
           <div className="flex flex-col gap-12">
-            {[
-              {
-                id: 'CAMP-001',
-                name: 'Campagne Orange Weekend (Mars 2026)',
-                status: 'En cours',
-                objective: 'Notoriété offres data & bonus week-end',
-                talentsCount: 6,
-                deliverablesProgress: '12 / 16 livrables validés (75%)',
-                realReach: '1.45M vues',
-                realEngagement: '5.6% (Supérieur à la médiane)',
-                varianceVsBenchmark: '+33%',
-                statusBadge: 'tag-green',
-                opportunity: 'Reel de Simplest Tuthi à 248K vues (+185%) prêt pour amplification payante',
-                risk: 'Risque de saturation sur les stories du dimanche'
-              },
-              {
-                id: 'CAMP-002',
-                name: 'Offres Ramadan & Partage Orange Money',
-                status: 'En cours',
-                objective: 'Promotion des transferts solidaires sans frais',
-                talentsCount: 4,
-                deliverablesProgress: '8 / 10 livrables validés (80%)',
-                realReach: '820K vues',
-                realEngagement: '4.9% (Conforme benchmark)',
-                varianceVsBenchmark: '+16%',
-                statusBadge: 'tag-green',
-                opportunity: 'Storytimes culinaires très partagés en fin de journée',
-                risk: 'Concurrence directe avec les promotions MoMo de MTN'
-              },
-              {
-                id: 'CAMP-003',
-                name: 'Orange Pulse Jeunesse & Gaming',
-                status: 'À surveiller',
-                objective: 'Recrutement étudiants et jeunes urbains',
-                talentsCount: 3,
-                deliverablesProgress: '3 / 8 livrables validés (37%)',
-                realReach: '310K vues',
-                realEngagement: '2.8% (Inférieur au benchmark)',
-                varianceVsBenchmark: '-33%',
-                statusBadge: 'tag-yellow',
-                opportunity: 'Migrer les formats carrousels statiques vers des vidéos TikTok dynamiques',
-                risk: 'Retard de 5 jours sur la livraison de deux capsules vidéo'
+            {(() => {
+              const cleanCampaigns = (campaigns || []).filter(c =>
+                c &&
+                c.isNewlyCreated === true &&
+                !c.isDemo &&
+                !c.isExample &&
+                !['CAMP-ORANGE-WEEKEND', 'CAMP-ORANGE-RELAY-2025', 'CAMP-ORANGE-Q4-2025', 'CAMP-001', 'CAMP-002', 'CAMP-003'].includes(c.id) &&
+                !['Orange Weekend 2025', 'Relais Média & Webzines', 'Campagnes & Challenges Q4 2025'].includes(c.name) &&
+                !c.id?.startsWith('mock-')
+              );
+
+              if (cleanCampaigns.length === 0) {
+                return (
+                  <div className="card p-24 text-center text-muted" style={{ background: '#FAFAFC', border: '1px dashed #CBD5E1' }}>
+                    <div style={{ fontSize: 24, marginBottom: 8 }}>🗂</div>
+                    <div style={{ fontWeight: 700, color: 'var(--dark)', fontSize: 14 }}>Aucune campagne active enregistrée</div>
+                    <div style={{ fontSize: 12, marginTop: 4 }}>
+                      Les analyses comparatives de vos campagnes réelles s'afficheront ici au fur et à mesure de leurs créations.
+                    </div>
+                  </div>
+                );
               }
-            ].map(camp => (
-              <div key={camp.id} className="card p-16 shadow-sm" style={{ borderLeft: `4px solid ${camp.varianceVsBenchmark.startsWith('+') ? '#28A745' : '#FF7900'}` }}>
-                <div className="flex justify-between items-start mb-8">
-                  <div>
-                    <h4 className="text-base font-bold text-dark mb-2">{camp.name}</h4>
-                    <div className="text-xs text-muted">
-                      Objectif : {camp.objective} • {camp.talentsCount} talents mobilisés • Avancement : {camp.deliverablesProgress}
+
+              return cleanCampaigns.map(camp => (
+                <div key={camp.id} className="card p-16 shadow-sm" style={{ borderLeft: '4px solid #FF7900' }}>
+                  <div className="flex justify-between items-start mb-8">
+                    <div>
+                      <h4 className="text-base font-bold text-dark mb-2">{camp.name}</h4>
+                      <div className="text-xs text-muted">
+                        Période : {camp.period || 'Non spécifiée'} • Dispositif : {camp.entity || camp.source_sheet || 'Orange Cameroun'}
+                      </div>
+                    </div>
+                    <span className="tag tag-green">
+                      {camp.status || 'Active'}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-3 gap-12 p-10 rounded mb-12" style={{ background: '#F8F9FA' }}>
+                    <div>
+                      <div className="text-xs text-muted">Objectif Principal</div>
+                      <div className="text-sm font-bold text-dark">{camp.objective || 'Notoriété & Engagement'}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted">Budget Enveloppe</div>
+                      <div className="text-sm font-bold text-dark">{camp.budget || camp.budgetEnveloppe || 'Standard'}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted">Statut Activation</div>
+                      <div className="text-sm font-bold text-green-700">Enregistrée</div>
                     </div>
                   </div>
-                  <span className={`tag ${camp.statusBadge}`}>
-                    {camp.status}
-                  </span>
-                </div>
 
-                <div className="grid grid-3 gap-12 p-10 rounded mb-12" style={{ background: '#F8F9FA' }}>
-                  <div>
-                    <div className="text-xs text-muted">Reach Réel Constaté</div>
-                    <div className="text-sm font-bold text-dark">{camp.realReach}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-muted">Engagement Calculé</div>
-                    <div className="text-sm font-bold text-dark">{camp.realEngagement}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-muted">Écart vs Médiane Interne</div>
-                    <div className="text-sm font-bold" style={{ color: camp.varianceVsBenchmark.startsWith('+') ? '#28A745' : '#DC3545' }}>
-                      {camp.varianceVsBenchmark}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-2 gap-12 text-xs mb-12">
-                  <div className="p-8 rounded" style={{ background: '#E8F5E9', border: '1px solid #C8E6C9' }}>
-                    <span className="font-bold text-green-900">🟢 Opportunité d’amplification : </span>
-                    <span className="text-green-800">{camp.opportunity}</span>
-                  </div>
-                  <div className="p-8 rounded" style={{ background: '#FFF3E0', border: '1px solid #FFE0B2' }}>
-                    <span className="font-bold text-orange-900">⚠️ Point de vigilance : </span>
-                    <span className="text-orange-800">{camp.risk}</span>
+                  <div className="flex justify-end gap-8 pt-8 border-t border-gray-100">
+                    <button
+                      onClick={() => {
+                        const item = {
+                          title: `Ajustement stratégique pour ${camp.name}`,
+                          summary: `Campagne : ${camp.name}`,
+                          associated_campaign_ids: [camp.id],
+                          recommended_action: `Suivi des livrables et optimisation pour ${camp.name}`
+                        };
+                        onOpenTransformModal(item);
+                      }}
+                      className="btn btn-sm"
+                      style={{ background: '#FF7900', color: '#fff', fontSize: 11, fontWeight: 700 }}
+                    >
+                      + Créer une Décision d’Amplification
+                    </button>
                   </div>
                 </div>
-
-                <div className="flex justify-end gap-8 pt-8 border-t border-gray-100">
-                  <button
-                    onClick={() => {
-                      const item = {
-                        title: `Ajustement stratégique pour ${camp.name}`,
-                        summary: `Performance vs Médiane : ${camp.varianceVsBenchmark}. Reach ${camp.realReach}.`,
-                        associated_campaign_ids: [camp.id],
-                        recommended_action: camp.opportunity
-                      };
-                      onOpenTransformModal(item);
-                    }}
-                    className="btn btn-sm"
-                    style={{ background: '#FF7900', color: '#fff', fontSize: 11, fontWeight: 700 }}
-                  >
-                    + Créer une Décision d’Amplification
-                  </button>
-                </div>
-              </div>
-            ))}
+              ));
+            })()}
           </div>
         </div>
       )}

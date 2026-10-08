@@ -888,57 +888,8 @@ export const parseInfluenceWorkbook = (workbook, fileName = 'classeur.xlsx') => 
   addDeliverables(owResult.deliverables);
   addDeliverables(webResult.deliverables);
 
-  // Campagnes déduites
-  const campaigns = [
-    {
-      id: 'CAMP-ORANGE-WEEKEND',
-      name: 'Orange Weekend 2025',
-      client_id: 'orange-cm',
-      project_id: 'PRJ-ORANGE-WEEKEND',
-      brief_id: 'BR-2026-001',
-      objective: 'Amplification virale de l\'offre événementielle Orange Weekend via créateurs et relais locaux.',
-      period_start: '2025-11-01',
-      period_end: '2025-11-30',
-      status: 'completed',
-      budget_allocated: 15000000,
-      owner_id: 'Alain Patrick Eboa',
-      channels: ['Instagram', 'TikTok', 'Facebook'],
-      hashtags: ['#OrangeWeekend', '#OrangeCameroun', '#PulseOrange'],
-      notes: 'Importé depuis la feuille Orange Weekend'
-    },
-    {
-      id: 'CAMP-ORANGE-Q4-2025',
-      name: 'Campagnes & Challenges Q4 2025',
-      client_id: 'orange-cm',
-      project_id: 'PRJ-TELCO-Q4',
-      brief_id: 'BR-2026-002',
-      objective: 'Séquençage des activations Orange Money, Story Time Challenge et #DreamList.',
-      period_start: '2025-10-01',
-      period_end: '2025-12-31',
-      status: 'completed',
-      budget_allocated: 25000000,
-      owner_id: 'Alain Patrick Eboa',
-      channels: ['TikTok', 'Instagram', 'Facebook'],
-      hashtags: ['#OrangeMoney', '#OrangeStoryTimeChallenge', '#DreamList', '#OrangeCameroon'],
-      notes: 'Importé depuis la feuille INFLUENCEURS'
-    },
-    {
-      id: 'CAMP-ORANGE-RELAY-2025',
-      name: 'Relais Média & Webzines',
-      client_id: 'orange-cm',
-      project_id: 'PRJ-MEDIA-RELAY',
-      brief_id: 'BR-2026-003',
-      objective: 'Couverture médiatique et publication d\'articles récapitulatifs sur webzines référents.',
-      period_start: '2025-11-01',
-      period_end: '2025-12-15',
-      status: 'completed',
-      budget_allocated: 5000000,
-      owner_id: 'Influence Manager',
-      channels: ['Websites / Webzines'],
-      hashtags: ['#Presse', '#Webzines'],
-      notes: 'Importé depuis la feuille WEBZINES'
-    }
-  ];
+  // Campagnes déduites (uniquement réelles - aucune campagne exemple)
+  const campaigns = [];
 
   const talents = Array.from(allTalentsMap.values());
   const deliverables = Array.from(allDeliverablesMap.values());

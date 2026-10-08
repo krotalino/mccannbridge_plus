@@ -508,6 +508,9 @@ export default function InfluencePage() {
           data={data}
           setStatus={setDeliverableStatus}
           onOpenTalentProfile={(talent) => setProfileInf(talent)}
+          onAddCampaign={addCampaign}
+          onUpdateCampaign={updateCampaign}
+          onDeleteCampaign={deleteCampaign}
         />
       )}
 

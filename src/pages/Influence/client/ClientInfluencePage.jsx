@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useApp } from '../../../context/AppContext';
+import { useInfluenceStore } from '../InfluenceStore';
 import ClientInfluenceSwitchboardRibbon from './ClientInfluenceSwitchboardRibbon';
 import ClientInfluencePerspectiveBanner from './ClientInfluencePerspectiveBanner';
 import ClientInfluenceContextBar from './ClientInfluenceContextBar';
@@ -49,11 +51,42 @@ export default function ClientInfluencePage({ onSwitchToAgencyView }) {
   });
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Domain Data State
+  // Domain Data State & Centralized Stores
+  const { influenceCampaigns = [] } = useApp();
+  const { data: storeData } = useInfluenceStore();
+
+  const realCampaigns = useMemo(() => {
+    const list = [
+      ...(Array.isArray(storeData?.campaigns) ? storeData.campaigns : []),
+      ...(Array.isArray(influenceCampaigns) ? influenceCampaigns : [])
+    ];
+    const seen = new Set();
+    const result = [];
+    for (const c of list) {
+      if (!c || seen.has(c.id)) continue;
+      if (
+        c.isNewlyCreated === true &&
+        !c.isDemo &&
+        !c.isExample &&
+        !['CAMP-ORANGE-WEEKEND', 'CAMP-ORANGE-RELAY-2025', 'CAMP-ORANGE-Q4-2025', 'CAMP-001', 'CAMP-002', 'CAMP-003'].includes(c.id) &&
+        !['Orange Weekend 2025', 'Relais Média & Webzines', 'Campagnes & Challenges Q4 2025'].includes(c.name) &&
+        !c.id?.startsWith('mock-')
+      ) {
+        seen.add(c.id);
+        result.push(c);
+      }
+    }
+    return result;
+  }, [storeData?.campaigns, influenceCampaigns]);
+
   const [kpis, setKpis] = useState(INITIAL_CLIENT_COCKPIT_KPIS);
+  const effectiveKpis = useMemo(() => ({
+    ...kpis,
+    activationsEnCours: realCampaigns.length
+  }), [kpis, realCampaigns.length]);
+
   const [aRetenir, setARetenir] = useState(INITIAL_CLIENT_A_RETENIR);
   const [talents, setTalents] = useState(INITIAL_CLIENT_TALENTS);
-  const [campaigns, setCampaigns] = useState(INITIAL_CLIENT_CAMPAIGNS);
   const [calendarItems, setCalendarItems] = useState(INITIAL_CLIENT_CALENDAR_ITEMS);
   const [validations, setValidations] = useState(INITIAL_CLIENT_VALIDATIONS);
   const [alerts, setAlerts] = useState(INITIAL_CLIENT_ALERTS);
@@ -177,7 +210,7 @@ export default function ClientInfluencePage({ onSwitchToAgencyView }) {
         activeTab={activeTab}
         onSelectTab={setActiveTab}
         lastSyncTime={lastSyncTime}
-        kpis={kpis}
+        kpis={effectiveKpis}
         selectedEntity={filters.entity}
       />
 
@@ -198,15 +231,15 @@ export default function ClientInfluencePage({ onSwitchToAgencyView }) {
         onResetFilters={handleResetFilters}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        campaigns={campaigns}
+        campaigns={realCampaigns}
       />
 
       {/* ─── 4. ONGLET 1 : COCKPIT 360° (9 KPI + BLOC À RETENIR + ALERTES) ─── */}
       {activeTab === 'cockpit' && (
         <ClientCockpitInfluence
-          kpis={kpis}
+          kpis={effectiveKpis}
           aRetenir={aRetenir}
-          campaigns={campaigns}
+          campaigns={realCampaigns}
           alerts={alerts}
           onNavigateTab={setActiveTab}
           onSelectCampaign={setSelectedCampaign}
@@ -227,7 +260,7 @@ export default function ClientInfluencePage({ onSwitchToAgencyView }) {
       {/* ─── 6. ONGLET 3 : CAMPAGNES & ACTIVATIONS ─── */}
       {activeTab === 'campagnes' && (
         <ClientCampagnesActivations
-          campaigns={campaigns}
+          campaigns={realCampaigns}
           onSelectCampaign={setSelectedCampaign}
           onNavigateTab={setActiveTab}
           selectedEntity={filters.entity}
