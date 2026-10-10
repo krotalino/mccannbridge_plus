@@ -64,6 +64,9 @@ export default function InfluencePage() {
   const {
     data,
     runImport,
+    addCampaign,
+    updateCampaign,
+    deleteCampaign,
     setDeliverableStatus,
     addInsight,
     removeInsight,
@@ -210,7 +213,7 @@ export default function InfluencePage() {
   const tabs = [
     { id: 'cockpit', label: 'Vue d’ensemble 360°', icon: '📊', badge: null },
     { id: 'talents', label: 'Talents & Ambassadeurs', icon: '👥', badge: (influencers || []).length },
-    { id: 'campagnes', label: 'Campagnes & Activations', icon: '🗂', badge: (data.campaigns || []).length },
+    { id: 'campagnes', label: 'Campagnes & Activations', icon: '🗂', badge: (data.campaigns || []).filter(c => c && c.isNewlyCreated === true && !c.isDemo && !c.isExample).length },
     { id: 'livrables', label: 'Livrables & Validations', icon: '📄', badge: (data.deliverables || []).length },
     { id: 'reporting', label: 'Reporting & Analyses', icon: '📈', badge: kpis.rate ? `${kpis.rate}%` : null },
     { id: 'veille', label: 'Veille Stratégique', icon: '📡', badge: null },

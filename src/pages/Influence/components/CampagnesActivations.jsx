@@ -95,9 +95,9 @@ export default function CampagnesActivations({
     const q = search.trim().toLowerCase();
     if (!q) return campaignStats;
     return campaignStats.filter(c =>
-      c.camp.name.toLowerCase().includes(q) ||
-      (c.camp.source_sheet || '').toLowerCase().includes(q) ||
-      (c.camp.objective || '').toLowerCase().includes(q)
+      (c?.camp?.name || '').toLowerCase().includes(q) ||
+      (c?.camp?.source_sheet || c?.camp?.entity || '').toLowerCase().includes(q) ||
+      (c?.camp?.objective || '').toLowerCase().includes(q)
     );
   }, [campaignStats, search]);
 

@@ -4,16 +4,16 @@ import { formatNumber, Badge, PlatformIcon, Modal } from './InfluenceCommon';
 export default function CampaignModal({ campaign, data, snaps, onClose, onOpenDeliverable, onOpenTalentProfile }) {
   const [subtab, setSubtab] = useState('overview');
 
-  const deliverables = (data.deliverables || []).filter(d => d.campaign_id === campaign.id);
+  const deliverables = (data?.deliverables || []).filter(d => d && d.campaign_id === campaign?.id);
   const talentIds = [...new Set(deliverables.map(d => d.talent_id).filter(Boolean))];
-  const talents = talentIds.map(id => (data.talents || []).find(t => t.id === id)).filter(Boolean);
+  const talents = talentIds.map(id => (data?.talents || []).find(t => t && t.id === id)).filter(Boolean);
 
   let totalViews = 0;
   let totalEngagement = 0;
   let incompleteCount = 0;
 
   for (const d of deliverables) {
-    const s = snaps.get(d.id);
+    const s = snaps?.get ? snaps.get(d.id) : null;
     if (s) {
       if (s.views !== null && s.views !== undefined) totalViews += s.views;
       if (s.engagement_calculated) totalEngagement += s.engagement_calculated;
@@ -179,7 +179,7 @@ export default function CampaignModal({ campaign, data, snaps, onClose, onOpenDe
               </thead>
               <tbody>
                 {deliverables.map(d => {
-                  const s = snaps.get(d.id);
+                  const s = snaps?.get ? snaps.get(d.id) : null;
                   return (
                     <tr key={d.id}>
                       <td className="strong">{d.title || d.content_subject}</td>

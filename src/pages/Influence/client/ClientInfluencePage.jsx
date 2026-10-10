@@ -52,8 +52,33 @@ export default function ClientInfluencePage({ onSwitchToAgencyView }) {
   const [searchQuery, setSearchQuery] = useState('');
 
   // Domain Data State & Centralized Stores
-  const { influenceCampaigns = [] } = useApp();
-  const { data: storeData } = useInfluenceStore();
+  const {
+    influenceCampaigns = [],
+    addInfluenceCampaign,
+    updateInfluenceCampaign,
+    deleteInfluenceCampaign
+  } = useApp();
+  const {
+    data: storeData,
+    addCampaign,
+    updateCampaign,
+    deleteCampaign
+  } = useInfluenceStore();
+
+  const handleCreateCampaign = (camp) => {
+    if (addCampaign) addCampaign(camp);
+    if (addInfluenceCampaign) addInfluenceCampaign(camp);
+  };
+
+  const handleUpdateCampaign = (id, camp) => {
+    if (updateCampaign) updateCampaign(id, camp);
+    if (updateInfluenceCampaign) updateInfluenceCampaign(id, camp);
+  };
+
+  const handleDeleteCampaign = (id) => {
+    if (deleteCampaign) deleteCampaign(id);
+    if (deleteInfluenceCampaign) deleteInfluenceCampaign(id);
+  };
 
   const realCampaigns = useMemo(() => {
     const list = [
@@ -198,7 +223,7 @@ export default function ClientInfluencePage({ onSwitchToAgencyView }) {
               newStatus === 'cloture' ? 'Clôturé / Archivé' : 'À examiner par Orange'
           };
         }
-        return item;
+        return rec;
       })
     );
   };
@@ -261,9 +286,13 @@ export default function ClientInfluencePage({ onSwitchToAgencyView }) {
       {activeTab === 'campagnes' && (
         <ClientCampagnesActivations
           campaigns={realCampaigns}
+          talents={talents}
           onSelectCampaign={setSelectedCampaign}
           onNavigateTab={setActiveTab}
           selectedEntity={filters.entity}
+          onAddCampaign={handleCreateCampaign}
+          onUpdateCampaign={handleUpdateCampaign}
+          onDeleteCampaign={handleDeleteCampaign}
         />
       )}
 

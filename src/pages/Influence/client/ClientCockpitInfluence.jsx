@@ -473,10 +473,10 @@ export default function ClientCockpitInfluence({
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                     <span className="tag tag-orange" style={{ fontSize: 10, fontWeight: 800 }}>
-                      {camp.entityLabel}
+                      {camp.entityLabel || camp.entity || camp.source_sheet || 'Orange Cameroun'}
                     </span>
                     <span style={{ fontSize: 11, color: 'var(--muted)', fontWeight: 600 }}>
-                      {camp.period}
+                      {camp.period || 'Campagne en cours'}
                     </span>
                   </div>
 
@@ -485,7 +485,7 @@ export default function ClientCockpitInfluence({
                   </div>
 
                   <div style={{ fontSize: 12, color: '#475569', marginBottom: 10 }}>
-                    <strong>Livrables :</strong> {camp.publishedCount} diffusés sur {camp.contractualCount} prévus
+                    <strong>Livrables :</strong> {camp.publishedCount !== undefined ? `${camp.publishedCount} diffusés` : (camp.deliverablesCount ? `${camp.deliverablesCount} livrables` : 'Dispositif actif')} {camp.contractualCount ? `sur ${camp.contractualCount} prévus` : ''}
                   </div>
 
                   {/* Barre de progression */}
@@ -493,7 +493,7 @@ export default function ClientCockpitInfluence({
                     <div style={{ flex: 1, height: 6, borderRadius: 3, background: '#E2E8F0', overflow: 'hidden' }}>
                       <div
                         style={{
-                          width: `${camp.progressPercent}%`,
+                          width: `${camp.progressPercent ?? 100}%`,
                           height: '100%',
                           background: '#FF7900',
                           borderRadius: 3
@@ -501,7 +501,7 @@ export default function ClientCockpitInfluence({
                       />
                     </div>
                     <span style={{ fontSize: 11, fontWeight: 800, color: '#FF7900' }}>
-                      {camp.progressPercent}%
+                      {camp.progressPercent ?? 100}%
                     </span>
                   </div>
                 </div>
